@@ -42,7 +42,9 @@ header{
 	cursor: pointer;
 }
 .header-button:hover{
-	box-shadow: 10px 17px 34px 6px rgba(18, 61, 145, 0.43);
+	transition: all 0.8s ease;
+    	filter: drop-shadow(0px 0px 14px #000000);
+    	-webkit-filter: drop-shadow(0px 0px 14px #000000);
 }
 .header-button:focus{
 	opacity: 0.8;
@@ -131,7 +133,9 @@ footer{
 	margin-right: 13px;
 }
 .social-block a:hover{
-	box-shadow: 10px 17px 34px 6px rgba(18, 61, 145, 0.23);
+	transition: all 0.8s ease;
+        filter: drop-shadow(0px 0px 14px #000000);
+       -webkit-filter: drop-shadow(0px 0px 14px #000000);
 
 }
 .footer-cta-block{
@@ -152,7 +156,9 @@ footer{
 	outline: none;
 }
 .footer-button:hover{
-	box-shadow: 10px 17px 34px 6px rgba(18, 61, 145, 0.23);
+	transition: all 0.8s ease;
+    filter: drop-shadow(0px 0px 14px #000000);
+    -webkit-filter: drop-shadow(0px 0px 14px #000000);
 }
 .footer-button:focus{
 	opacity: 0.6;
