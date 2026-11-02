@@ -1,0 +1,15 @@
+const { test } = require('node:test');
+const assert = require('node:assert/strict');
+const B = require('./bank.js');
+const bill = b => ({type:'bill',id:b.id,key:'bill-' + b.id,account:b.account});
+const shop = (id='headphones',delivery='post') => ({type:'shop',id,key:'shop-' + id,delivery});
+test('Стартовий баланс і валідність збереження', () => { assert.equal(B.initial().balance,500000); assert.ok(B.valid(B.initial())); assert.equal(B.valid({...B.initial(),balance:2}),false); });
+test('Повний маршрут: 2490 грн і 12 балів', () => { let s=B.initial(); for(const b of B.bills) s=B.pay(s,bill(b),'246810'); s=B.pay(s,shop(),'246810'); s={...s,security:true,quiz:[1,1,1,0,1]}; assert.equal(s.balance,249000); assert.equal(B.score(s).total,12); assert.ok(B.valid(s)); });
+test('Хибний рахунок не списує кошти', () => { const s=B.initial(); assert.throws(() => B.pay(s,{...bill(B.bills[0]),account:'wrong'},'246810'),/рахунок/); assert.equal(s.balance,500000); });
+test('Хибний код не списує кошти', () => { const s=B.initial(); assert.throws(() => B.pay(s,bill(B.bills[0]),'000000'),/код/); assert.equal(s.transactions.length,0); });
+test('Повторна оплата відхиляється', () => { const s=B.pay(B.initial(),bill(B.bills[0]),'246810'); assert.throws(() => B.pay(s,bill(B.bills[0]),'246810'),/уже/); assert.equal(s.balance,435500); });
+test('Ліміт і баланс перевіряються окремо', () => { assert.throws(() => B.pay(B.initial(),shop('speaker'),'246810'),/ліміт/); let s=B.pay({...B.initial(),limit:500000},shop('speaker'),'246810'); assert.throws(() => B.pay(s,shop(),'246810'),/Недостатньо/); });
+test('Самовивіз безкоштовний', () => { const s=B.pay(B.initial(),shop('headphones','pickup'),'246810'); assert.equal(s.balance,380000); assert.equal(s.transactions[0].fee,0); });
+test('Без завершеної практики немає бала за резерв', () => { assert.equal(B.score(B.initial()).reserve,0); });
+test('Змінене або пошкоджене збереження відхиляється', () => { assert.equal(B.valid(null),false); assert.equal(B.valid({...B.initial(),transactions:[{}]}),false); assert.equal(B.valid({...B.initial(),quiz:[1]}),false); });
+test('Частковий тест дає пропорційні бали', () => { assert.equal(B.score({...B.initial(),quiz:[1,1,0,1,0]}).total,1.2); });

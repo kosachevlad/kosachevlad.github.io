@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="uk">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Навчальний симулятор інтернет-банкінгу для 11 класу: віртуальна картка, комунальні платежі, покупки та фінансова безпека.">
+  <meta name="theme-color" content="#113c38"><title>Навчальний банк — фінанси на практиці</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%23113c38'/%3E%3Ctext x='32' y='45' text-anchor='middle' font-size='44' fill='%23c4ef7b'%3E₴%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css"><script defer src="./bank.js"></script><script defer src="./app.js"></script>
+</head>
+<body>
+<a class="skip" href="#main">Перейти до вмісту</a>
+<aside class="sidebar">
+  <a class="brand" href="#home"><span class="brand-icon">₴</span><span>Навчальний<br><b>банк</b></span></a>
+  <div class="eyebrow side-label">ВАШ ФІНАНСОВИЙ ПРОСТІР</div>
+  <nav aria-label="Розділи тренажера">
+    <a href="#home" data-page="home"><span>▦</span> Огляд</a>
+    <a href="#card" data-page="card"><span>▤</span> Моя картка</a>
+    <a href="#utilities" data-page="utilities"><span>⌂</span> Комунальні послуги</a>
+    <a href="#shop" data-page="shop"><span>▧</span> Навчальний магазин</a>
+    <a href="#history" data-page="history"><span>↗</span> Історія операцій</a>
+    <a href="#security" data-page="security"><span>◇</span> Безпека й тест</a>
+    <a href="#results" data-page="results"><span>◎</span> Мій результат</a>
+  </nav>
+  <div class="side-bottom"><a href="#teacher">Посібник учителя ↗</a><p>11 клас · Практичний урок<br>45 хвилин</p><span class="pill">● Демонстраційний режим</span></div>
+</aside>
+<div class="workspace">
+  <header class="topbar"><span>Фінансова грамотність <span class="muted">/ Інтернет-банкінг</span></span><span class="avatar" aria-label="Навчальний профіль">11</span></header>
+  <div class="notice"><span aria-hidden="true">◇</span> Усі кошти й реквізити вигадані. Не вводьте справжні банківські або персональні дані.</div>
+  <main id="main" tabindex="-1"></main>
+  <footer>Навчальний банк · Практикуйся сьогодні, приймай зважені рішення завтра.<br>Прогрес зберігається лише в цьому браузері. Результат не є захищеним шкільним журналом.</footer>
+</div>
+<dialog id="modal" aria-labelledby="modal-title"><div id="modal-body"></div><button class="close" id="modal-close" aria-label="Закрити вікно">×</button></dialog>
+<div id="toast" role="status" aria-live="polite"></div>
+</body></html>
