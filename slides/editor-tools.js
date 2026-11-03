@@ -86,8 +86,10 @@ function localPointerPair(){
   const r=editorViewport.getBoundingClientRect();
   return [...editorPointers.values()].slice(0,2).map(p=>({x:p.x-r.left-r.width/2,y:p.y-r.top-r.height/2}));
 }
+function commitPendingText(){const e=element(),input=$('#textContent');if(e?.type!=='text'||!input||input.value===e.content)return;checkpoint();e.content=input.value;renderList();save();}
 editorViewport.addEventListener('pointerdown',ev=>{
   if(isSharedView||ev.button!==0)return;
+  commitPendingText();
   ev.preventDefault();closeEditorMenu();
   editorPointers.set(ev.pointerId,{x:ev.clientX,y:ev.clientY});
   editorViewport.setPointerCapture(ev.pointerId);
