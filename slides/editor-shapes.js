@@ -26,3 +26,30 @@ function calculatePinchView(start,a,b,width,height){
   const mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
   return constrainCanvasView(zoom,mid.x-(start.mid.x-start.x)*zoom/start.zoom,mid.y-(start.mid.y-start.y)*zoom/start.zoom,width,height);
 }
+function resizeBoxFromCorner(original,corner,dx,dy){
+  const west=corner.includes('w'),north=corner.includes('n');
+  const right=original.x+original.w,bottom=original.y+original.h;
+  const x=west?Math.max(0,Math.min(right-2,original.x+dx)):original.x;
+  const y=north?Math.max(0,Math.min(bottom-3,original.y+dy)):original.y;
+  const w=west?right-x:Math.max(2,Math.min(100-original.x,original.w+dx));
+  const h=north?bottom-y:Math.max(3,Math.min(100-original.y,original.h+dy));
+  return {x,y,w,h};
+}
+function resizeTextFromCorner(original,frame,corner,dx,dy){
+  if(!frame||frame.w<=0||frame.h<=0)return {};
+  const west=corner.includes('w'),north=corner.includes('n'),aspect=16/9;
+  const directionX=west?-1:1,directionY=north?-1:1;
+  const ratio=1+(directionX*dx*frame.w*aspect*aspect+directionY*dy*frame.h)/(frame.w*frame.w*aspect*aspect+frame.h*frame.h);
+  const minScale=1/original.size;
+  const maxWidth=west?frame.x+frame.w:100-frame.x,maxHeight=north?frame.y+frame.h:100-frame.y;
+  const maxScale=Math.max(minScale,Math.min(18/original.size,200/original.w,maxWidth/frame.w,maxHeight/frame.h));
+  const requested=Math.max(minScale,Math.min(maxScale,ratio));
+  let size=clampTextSize(original.size*requested);
+  if(size/original.size>maxScale)size=Math.max(1,Math.floor(original.size*maxScale*10)/10);
+  const scale=size/original.size;
+  const left=west?frame.x+frame.w-frame.w*scale:frame.x;
+  const top=north?frame.y+frame.h-frame.h*scale:frame.y;
+  // The inner frame can be centered/right-aligned inside a wider wrapping box.
+  // Scale that offset too so the diagonally opposite visible corner stays fixed.
+  return {size,w:original.w*scale,x:left-(frame.x-original.x)*scale,y:top-(frame.y-original.y)*scale};
+}

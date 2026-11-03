@@ -66,6 +66,8 @@ function changeTextSize(delta){
 function applyCanvasView(next){
   const r=editorViewport.getBoundingClientRect();
   canvasView=constrainCanvasView(next.zoom,next.x,next.y,r.width,r.height);
+  editorStage.style.setProperty('--handle-scale',1/canvasView.zoom);
+  editorStage.style.setProperty('--handle-inset',(5/canvasView.zoom)+'px');
   editorStage.style.transform=`translate(${canvasView.x}px,${canvasView.y}px) scale(${canvasView.zoom})`;
   $('#zoomReset').textContent=Math.round(canvasView.zoom*100)+'%';
   $('#zoomOut').disabled=canvasView.zoom<=.5;$('#zoomIn').disabled=canvasView.zoom>=3;
@@ -98,9 +100,15 @@ editorViewport.addEventListener('pointerdown',ev=>{
   const node=ev.target.closest('.element'),e=node&&slide().elements.find(item=>item.id===node.dataset.id);
   const start={sx:ev.clientX,sy:ev.clientY};
   if(e){
-    const resizing=ev.target.classList.contains('resize');selected=e.id;
+    const handle=ev.target.closest('.resize'),resizing=!!handle,corner=handle?.dataset.corner||'se';
+    let resizeFrame=null;
+    if(resizing){
+      const r=$('#canvas').getBoundingClientRect(),f=(node.querySelector('.text-content')||node).getBoundingClientRect();
+      resizeFrame={x:(f.left-r.left)/r.width*100,y:(f.top-r.top)/r.height*100,w:f.width/r.width*100,h:f.height/r.height*100};
+    }
+    selected=e.id;
     fillCanvas($('#canvas'),slide());renderProperties();
-    pointerGesture={kind:'element',...start,id:e.id,original:clone(e),before:clone(deck),resizing,changed:false};
+    pointerGesture={kind:'element',...start,id:e.id,original:clone(e),before:clone(deck),resizing,corner,resizeFrame,changed:false};
     if(!resizing)pointerGesture.holdTimer=setTimeout(()=>{
       if(pointerGesture?.kind!=='element'||editorPointers.size!==1||pointerGesture.changed)return;
       pointerGesture.kind='held';openElementMenu(e,start.sx,start.sy);
@@ -127,9 +135,7 @@ editorViewport.addEventListener('pointermove',ev=>{
   const e=slide().elements.find(item=>item.id===g.id);if(!e)return;
   g.changed=true;const r=$('#canvas').getBoundingClientRect(),x=dx/r.width*100,y=dy/r.height*100;
   if(g.resizing){
-    e.w=Math.max(8,Math.min(100-e.x,g.original.w+x));
-    if(e.type==='text')e.size=clampTextSize(g.original.size*e.w/g.original.w);
-    else e.h=Math.max(6,Math.min(100-e.y,g.original.h+y));
+    Object.assign(e,e.type==='text'?resizeTextFromCorner(g.original,g.resizeFrame,g.corner,x,y):resizeBoxFromCorner(g.original,g.corner,x,y));
   }else{e.x=Math.max(0,Math.min(95,g.original.x+x));e.y=Math.max(0,Math.min(92,g.original.y+y));}
   const n=$('#canvas').querySelector(`[data-id="${e.id}"]`);if(!n)return;
   n.style.left=e.x+'%';n.style.top=e.y+'%';n.style.width=e.w+'%';n.style.setProperty('--fs',e.size||3);
