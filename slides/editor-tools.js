@@ -1,5 +1,5 @@
 const editorViewport=$('#canvasViewport'),editorStage=$('#canvasStage');
-let canvasView={zoom:1,x:0,y:0},pointerGesture=null,shapePress=null,suppressShapeClick=false;
+let canvasView={zoom:1,x:0,y:0},pointerGesture=null;
 const editorPointers=new Map();
 const contextMenu=document.createElement('div');contextMenu.id='editorContextMenu';contextMenu.className='editor-context-menu';contextMenu.setAttribute('role','menu');contextMenu.hidden=true;document.body.append(contextMenu);
 let menuReturnFocus=null;
@@ -13,8 +13,8 @@ function showEditorMenu(items,x,y,label,returnFocus){
   contextMenu.setAttribute('aria-label',label);menuReturnFocus=returnFocus;
   for(const item of items){
     const button=document.createElement('button');button.type='button';button.setAttribute('role','menuitem');
-    if(item.kind)button.append(makeShapeSVG(item.kind));
-    const text=document.createElement('span');text.textContent=item.label;button.append(text);
+    if(item.kind){button.append(makeShapeSVG(item.kind));button.setAttribute('aria-label',item.label);button.title=item.label;}
+    else {const text=document.createElement('span');text.textContent=item.label;button.append(text);}
     if(item.danger)button.classList.add('danger');
     button.onclick=()=>{closeEditorMenu();item.action();};contextMenu.append(button);
   }
@@ -162,18 +162,11 @@ editorViewport.addEventListener('contextmenu',ev=>{
   ev.preventDefault();clearGestureHold();const r=n.getBoundingClientRect();
   openElementMenu(e,ev.clientX||r.left+r.width/2,ev.clientY||r.top+r.height/2);
 });
-const figureButton=$('#addShape');figureButton.setAttribute('aria-haspopup','menu');figureButton.title='Фігура · утримуйте, щоб вибрати';
-figureButton.addEventListener('pointerdown',ev=>{
-  if(ev.button!==0)return;
-  suppressShapeClick=false;shapePress={x:ev.clientX,y:ev.clientY,pointer:ev.pointerId};
-  shapePress.timer=setTimeout(()=>{if(!shapePress)return;suppressShapeClick=true;openShapeMenu();},550);
-});
-figureButton.addEventListener('pointermove',ev=>{if(shapePress&&Math.hypot(ev.clientX-shapePress.x,ev.clientY-shapePress.y)>8){clearTimeout(shapePress.timer);shapePress=null;}});
-function finishShapePress(){if(shapePress)clearTimeout(shapePress.timer);shapePress=null;}
-figureButton.addEventListener('pointerup',finishShapePress);figureButton.addEventListener('pointercancel',finishShapePress);figureButton.addEventListener('pointerleave',finishShapePress);
-figureButton.onclick=()=>{if(suppressShapeClick){suppressShapeClick=false;return;}insertFigure('circle');};
-figureButton.addEventListener('contextmenu',ev=>{ev.preventDefault();finishShapePress();suppressShapeClick=true;openShapeMenu();});
+const figureButton=$('#addShape');figureButton.setAttribute('aria-haspopup','menu');figureButton.title='Вибрати фігуру';
+figureButton.onclick=()=>openShapeMenu();
+figureButton.addEventListener('contextmenu',ev=>{ev.preventDefault();openShapeMenu();});
 figureButton.addEventListener('keydown',ev=>{if(ev.key==='ArrowDown'||(ev.shiftKey&&ev.key==='F10')){ev.preventDefault();openShapeMenu();}});
+
 document.addEventListener('pointerdown',ev=>{if(!contextMenu.hidden&&!contextMenu.contains(ev.target))closeEditorMenu();},true);
 document.addEventListener('keydown',ev=>{
   if(contextMenu.hidden)return;
@@ -185,5 +178,5 @@ document.addEventListener('keydown',ev=>{
   }
 });
 window.addEventListener('resize',()=>{closeEditorMenu();applyCanvasView(canvasView);});
-window.addEventListener('blur',()=>{clearGestureHold();restorePendingElement();editorPointers.clear();pointerGesture=null;finishShapePress();});
+window.addEventListener('blur',()=>{clearGestureHold();restorePendingElement();editorPointers.clear();pointerGesture=null;});
 applyCanvasView(canvasView);

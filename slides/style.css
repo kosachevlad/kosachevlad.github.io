@@ -64,3 +64,9 @@ body>header{justify-content:space-between}
 .element .resize-ne::after{left:-3px;top:19px}
 .element .resize-sw::after{left:19px;top:-3px}
 .element .resize-se::after{left:-3px;top:-3px}
+/* A compact palette with quiet icons; names remain available to screen readers. */
+.editor-context-menu.shape-palette{width:278px;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;padding:9px;border-color:#e1e6dc;box-shadow:0 8px 25px #273d221a}
+.shape-palette>button{min-height:60px;padding:12px;gap:0;background:transparent;color:#afbea5;border:1px solid transparent;border-radius:8px}
+.shape-palette>button:hover{background:#f4f7f0;border-color:#e6eddf}
+.shape-palette>button:focus-visible{background:#f1f5eb;outline:2px solid #b7c7aa;outline-offset:0}
+.shape-palette>button svg{width:32px;height:32px;fill:#bfccb6;stroke:#a1b296;stroke-width:1}

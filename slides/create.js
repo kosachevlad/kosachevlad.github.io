@@ -9,7 +9,7 @@ $('#cancelCreate').onclick=()=>createDialog.close();
 createDialog.addEventListener('close',()=>$('#createPresentation').focus({preventScroll:true}));
 $('#confirmCreate').onclick=()=>{
   if(isSharedView)return;
-  clearGestureHold();editorPointers.clear();pointerGesture=null;finishShapePress();closeEditorMenu();stopAuto();
+  clearGestureHold();editorPointers.clear();pointerGesture=null;closeEditorMenu();stopAuto();
   // Invalidate links and pending responses belonging to the previous draft.
   shareEpoch++;cachedShare=null;shareBusy=false;
   $('#createShare').disabled=false;$('#shareResult').hidden=true;$('#shareUrl').value='';$('#shareStatus').textContent='';
