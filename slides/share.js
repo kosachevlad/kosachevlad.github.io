@@ -4,7 +4,7 @@ const shareDialog = document.createElement('dialog');
 shareDialog.id = 'shareDialog';
 shareDialog.innerHTML = `<div class="share-heading"><h2>Поділитися з учителем</h2><button id="closeShare" class="icon" aria-label="Закрити">✕</button></div>
 <p>Збережіть копію презентації та надішліть посилання вчителю. Він зможе переглянути слайди, зображення й анімації без входу.</p>
-<div class="share-notice">Доступ матиме кожен, хто отримає посилання. Нотатки доповідача не передаються.</div>
+<div class="share-notice">Доступ матиме кожен, хто отримає посилання.</div>
 <button id="createShare" class="primary">Створити посилання</button>
 <div id="shareResult" hidden><label for="shareUrl" class="property-label">Посилання на збережену копію</label><input id="shareUrl" class="field" readonly><div class="row share-actions"><button id="copyShare" class="primary">Копіювати посилання</button><button id="sendShare" class="field">Надіслати…</button></div><p class="muted">Після редагування створіть нове посилання, щоб надіслати оновлену копію.</p></div>
 <p id="shareStatus" class="muted" role="status" aria-live="polite"></p>`;
@@ -95,12 +95,11 @@ async function loadSharedPresentation(id) {
     if (!validDeck(result.presentation)) throw new Error('invalid_presentation');
     deck = result.presentation; selected = null; active = 0; past = []; future = [];
     document.title = `${deck.title} — Слайд`;
-    $('#viewerBody').innerHTML = `<div class="viewer-title"><div><p>СПІЛЬНА ПРЕЗЕНТАЦІЯ</p><h1 id="sharedTitle"></h1></div><button id="viewerPlay" class="primary">▷ Показ слайдів</button></div><div id="sharedCanvas" class="slide-canvas"></div><div class="viewer-navigation"><button id="viewerPrev" class="field" aria-label="Попередній слайд">← Назад</button><span id="viewerCount"></span><button id="viewerNext" class="field" aria-label="Наступний слайд">Далі →</button></div><div class="viewer-bottom"><span>Збережена копія · лише перегляд</span><button id="viewerDownload" class="text-button">↓ Завантажити JSON</button></div>`;
+    $('#viewerBody').innerHTML = `<div class="viewer-title"><div><p>СПІЛЬНА ПРЕЗЕНТАЦІЯ</p><h1 id="sharedTitle"></h1></div><button id="viewerPlay" class="primary">▷ Показ слайдів</button></div><div id="sharedCanvas" class="slide-canvas"></div><div class="viewer-navigation"><button id="viewerPrev" class="field" aria-label="Попередній слайд">← Назад</button><span id="viewerCount"></span><button id="viewerNext" class="field" aria-label="Наступний слайд">Далі →</button></div><div class="viewer-bottom"><span>Збережена копія · лише перегляд</span></div>`;
     $('#sharedTitle').textContent = deck.title;
     $('#viewerPlay').onclick = startShow;
     $('#viewerPrev').onclick = () => { viewerIndex--; renderSharedSlide(); };
     $('#viewerNext').onclick = () => { viewerIndex++; renderSharedSlide(); };
-    $('#viewerDownload').onclick = () => $('#exportFile').click();
     let startX=0; $('#sharedCanvas').ontouchstart = e => startX=e.changedTouches[0].clientX;
     $('#sharedCanvas').ontouchend = e => {const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)<40)return;viewerIndex=Math.max(0,Math.min(deck.slides.length-1,viewerIndex+(dx<0?1:-1)));renderSharedSlide();};
     document.addEventListener('keydown',e=>{if(!$('#player').hidden||['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight'&&viewerIndex<deck.slides.length-1){viewerIndex++;renderSharedSlide()}if(e.key==='ArrowLeft'&&viewerIndex>0){viewerIndex--;renderSharedSlide()}});
