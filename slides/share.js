@@ -9,7 +9,7 @@ shareDialog.innerHTML = `<div class="share-heading"><h2>Поділитися з 
 <div id="shareResult" hidden><label for="shareUrl" class="property-label">Посилання на збережену копію</label><input id="shareUrl" class="field" readonly><div class="row share-actions"><button id="copyShare" class="primary">Копіювати посилання</button><button id="sendShare" class="field">Надіслати…</button></div><p class="muted">Після редагування створіть нове посилання, щоб надіслати оновлену копію.</p></div>
 <p id="shareStatus" class="muted" role="status" aria-live="polite"></p>`;
 document.body.append(shareDialog);
-let cachedShare = null, shareBusy = false;
+let cachedShare = null, shareBusy = false, shareEpoch = 0;
 $('#sharePresentation').onclick = () => {
   if (isSharedView) return;
   const unchanged = cachedShare?.snapshot === JSON.stringify(deck);
@@ -47,10 +47,12 @@ $('#createShare').onclick = async () => {
     $('#shareStatus').textContent = 'Презентація завелика для надсилання (до 8 МБ). Зменште кількість або розмір зображень.';
     return;
   }
+  const epoch = shareEpoch;
   shareBusy = true; $('#createShare').disabled = true; $('#shareResult').hidden = true;
   $('#shareStatus').textContent = 'Зберігаємо презентацію на сервері…';
   try {
     const result = await requestJSON(SHARE_API, {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${newCapability()}`}, body});
+    if (epoch !== shareEpoch) return;
     if (!/^[a-f0-9]{64}$/.test(result.id)) throw new Error('invalid_response');
     const url = new URL('https://kosachevlad.github.io/slides/'); url.search = ''; url.hash = ''; url.searchParams.set('id', result.id);
     cachedShare = {snapshot, url:url.href};
@@ -58,8 +60,9 @@ $('#createShare').onclick = async () => {
     $('#createShare').textContent = 'Створити нове посилання';
     $('#shareStatus').textContent = 'Копію збережено. Скопіюйте посилання та надішліть учителю.';
   } catch(error) {
+    if (epoch !== shareEpoch) return;
     $('#shareStatus').textContent = error.message === 'too_large' ? 'Презентація завелика. Максимальний розмір — 8 МБ.' : error.message === 'rate_limited' ? 'Забагато запитів. Спробуйте ще раз за хвилину.' : error.message === 'invalid_presentation' ? 'Не вдалося зберегти цю презентацію. Перевірте слайди й зображення.' : 'Не вдалося зберегти презентацію. Перевірте інтернет і спробуйте ще раз. Ваші слайди залишилися на пристрої.';
-  } finally { shareBusy = false; $('#createShare').disabled = false; }
+  } finally { if (epoch === shareEpoch) { shareBusy = false; $('#createShare').disabled = false; } }
 };
 $('#copyShare').onclick = async () => {
   try { await navigator.clipboard.writeText($('#shareUrl').value); $('#shareStatus').textContent = 'Посилання скопійовано — надішліть його вчителю.'; }
