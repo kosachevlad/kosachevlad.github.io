@@ -56,10 +56,11 @@ function openShapeMenu(){
   const r=$('#addShape').getBoundingClientRect();
   showEditorMenu(Object.entries(SHAPE_NAMES).map(([kind,label])=>({kind,label,action:()=>insertFigure(kind)})),r.left,r.bottom+6,'Фігури',$('#addShape'));
 }
+function syncFontSizeControls(){const e=element();if(e?.type!=='text'||!$('#fontSize'))return;$('#fontSize').value=e.size;$('#fontSmaller').disabled=e.size<=1;$('#fontLarger').disabled=e.size>=18;}
 function changeTextSize(delta){
   const e=element();if(e?.type!=='text')return;
   const size=clampTextSize(e.size+delta);if(size===e.size)return;
-  checkpoint();e.size=size;updateCanvas();renderProperties();
+  checkpoint();e.size=size;updateCanvas();syncFontSizeControls();
 }
 
 function applyCanvasView(next){
