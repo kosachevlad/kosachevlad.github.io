@@ -77,9 +77,9 @@ body>header{justify-content:space-between}
 .element.rotation-mode .resize:active{cursor:grabbing}
 .color-options{align-items:center;gap:10px;padding:3px 2px}
 .color-options .swatch{flex:0 0 30px}
-.custom-color-swatch{appearance:none;-webkit-appearance:none;display:block;flex:0 0 30px;width:30px;height:30px;min-height:30px;min-width:30px;padding:0;border:3px solid #fff;border-radius:6px;box-shadow:0 0 0 1px #dfe3d9;background:transparent;cursor:pointer;overflow:hidden}
+.custom-color-swatch{appearance:none;-webkit-appearance:none;display:block;flex:0 0 30px;width:30px;height:30px;min-height:30px;min-width:30px;padding:0;border:3px solid #fff;border-radius:6px;box-shadow:0 0 0 1px #dfe3d9;background:conic-gradient(#ed6a67,#f2ce69,#9ecb80,#70c8c5,#789bce,#b78dcc,#ed6a67);cursor:pointer;overflow:hidden}
 .custom-color-swatch::-webkit-color-swatch-wrapper{padding:0}
-.custom-color-swatch::-webkit-color-swatch{border:0;border-radius:2px}
-.custom-color-swatch::-moz-color-swatch{border:0;border-radius:2px}
+.custom-color-swatch::-webkit-color-swatch{border:0;border-radius:2px;opacity:0}
+.custom-color-swatch::-moz-color-swatch{border:0;border-radius:2px;opacity:0}
 .custom-color-swatch.active{box-shadow:0 0 0 2px #6c8b54}
 .custom-color-swatch:focus-visible{outline:2px solid #72a580;outline-offset:3px}
