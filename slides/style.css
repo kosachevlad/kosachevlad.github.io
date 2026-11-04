@@ -83,3 +83,9 @@ body>header{justify-content:space-between}
 .custom-color-swatch::-moz-color-swatch{border:0;border-radius:2px;opacity:0}
 .custom-color-swatch.active{box-shadow:0 0 0 2px #6c8b54}
 .custom-color-swatch:focus-visible{outline:2px solid #72a580;outline-offset:3px}
+
+.slide-item{-webkit-touch-callout:none;user-select:none}
+.editor-context-menu>button:disabled{opacity:.4;cursor:default}
+#preview{border:1px solid #71977a;border-radius:7px;background:#edf3e5;color:#2f684c;font-weight:600;padding:8px 12px;min-height:40px}
+#preview:hover{background:#dfebd7;border-color:#427a58}
+#preview:focus-visible{outline:2px solid #427a58;outline-offset:3px}
