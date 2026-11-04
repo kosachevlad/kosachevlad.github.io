@@ -55,3 +55,34 @@ function resizeTextFromCorner(original,frame,corner,dx,dy){
   // Scale that offset too so the diagonally opposite visible corner stays fixed.
   return {size,w:original.w*scale,x:left-(frame.x-original.x)*scale,y:top-(frame.y-original.y)*scale};
 }
+function normalizeRotation(value){
+  return Number.isFinite(value)?Math.round(((value%360+360)%360)*10)/10%360:0;
+}
+function rotationAngleDelta(previous,current){
+  return ((current-previous+540)%360+360)%360-180;
+}
+function rotateCanvasDelta(x,y,degrees){
+  const radians=degrees*Math.PI/180,c=Math.cos(radians),s=Math.sin(radians),aspect=16/9;
+  return {x:x*c-y*s/aspect,y:x*s*aspect+y*c};
+}
+function resizeRotatedElement(original,frame,corner,dx,dy){
+  const angle=normalizeRotation(original.rotation),local=rotateCanvasDelta(dx,dy,-angle);
+  const next=original.type==='text'?resizeTextFromCorner(original,frame,corner,local.x,local.y):resizeBoxFromCorner(original,corner,local.x,local.y);
+  if(!angle||!('x' in next))return next;
+  const oldFrame=original.type==='text'?frame:original;
+  let centerX,centerY;
+  if(original.type==='text'){
+    const scale=next.size/original.size;
+    centerX=next.x+(oldFrame.x-original.x)*scale+oldFrame.w*scale/2;
+    centerY=next.y+(oldFrame.y-original.y)*scale+oldFrame.h*scale/2;
+  }else {centerX=next.x+next.w/2;centerY=next.y+next.h/2;}
+  const shift={x:centerX-(oldFrame.x+oldFrame.w/2),y:centerY-(oldFrame.y+oldFrame.h/2)};
+  const rotated=rotateCanvasDelta(shift.x,shift.y,angle);
+  next.x+=rotated.x-shift.x;next.y+=rotated.y-shift.y;
+  return next;
+}
+function applyElementRotation(node,element){
+  const frame=node.querySelector('.text-content')||node;
+  frame.style.transformOrigin='50% 50%';
+  frame.style.transform=`rotate(${normalizeRotation(element.rotation)}deg)`;
+}

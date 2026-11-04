@@ -70,3 +70,8 @@ body>header{justify-content:space-between}
 .shape-palette>button:hover{background:#f4f7f0;border-color:#e6eddf}
 .shape-palette>button:focus-visible{background:#f1f5eb;outline:2px solid #b7c7aa;outline-offset:0}
 .shape-palette>button svg{width:32px;height:32px;fill:#bfccb6;stroke:#a1b296;stroke-width:1}
+.editor-context-menu .menu-icon{display:inline-flex;align-items:center;justify-content:center;color:#64816a;flex:0 0 20px}
+.editor-context-menu .menu-icon svg{width:20px;height:20px}
+.element.rotation-mode .resize::after{border-radius:50%}
+.element.rotation-mode .resize{cursor:grab}
+.element.rotation-mode .resize:active{cursor:grabbing}

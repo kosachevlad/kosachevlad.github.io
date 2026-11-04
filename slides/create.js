@@ -14,7 +14,7 @@ $('#confirmCreate').onclick=()=>{
   shareEpoch++;cachedShare=null;shareBusy=false;
   $('#createShare').disabled=false;$('#shareResult').hidden=true;$('#shareUrl').value='';$('#shareStatus').textContent='';
   deck={title:'Нова презентація',slides:[{id:uid(),bg:'#ffffff',notes:'',transition:'fade',elements:[]}]};
-  active=0;selected=null;tab='design';past=[];future=[];playerIndex=0;
+  active=0;selected=null;rotationTarget=null;tab='design';past=[];future=[];playerIndex=0;
   $('#imageInput').value='';
   applyCanvasView({zoom:1,x:0,y:0});
   render();

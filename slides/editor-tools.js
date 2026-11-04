@@ -14,7 +14,7 @@ function showEditorMenu(items,x,y,label,returnFocus){
   for(const item of items){
     const button=document.createElement('button');button.type='button';button.setAttribute('role','menuitem');
     if(item.kind){button.append(makeShapeSVG(item.kind));button.setAttribute('aria-label',item.label);button.title=item.label;}
-    else {const text=document.createElement('span');text.textContent=item.label;button.append(text);}
+    else {if(item.icon){const symbol=document.createElement('span');symbol.className='menu-icon';symbol.setAttribute('aria-hidden','true');symbol.innerHTML=icon(item.icon);button.append(symbol);}const text=document.createElement('span');text.textContent=item.label;button.append(text);}
     if(item.danger)button.classList.add('danger');
     button.onclick=()=>{closeEditorMenu();item.action();};contextMenu.append(button);
   }
@@ -26,7 +26,7 @@ function showEditorMenu(items,x,y,label,returnFocus){
   contextMenu.querySelector('button')?.focus({preventScroll:true});
 }
 function performElementAction(action){
-  const e=element();if(!e)return;
+  const e=element();if(!e)return;rotationTarget=null;
   if(action==='delete'){deleteSelected();return;}
   checkpoint();
   if(action==='copy'){
@@ -42,6 +42,7 @@ function openElementMenu(e,x,y){
   showEditorMenu([
     {label:'На задній план',action:()=>performElementAction('back')},
     {label:'На передній план',action:()=>performElementAction('front')},
+    {label:'Повернути',icon:'rotate',action:()=>startElementRotation(e)},
     {label:'Дублювати',action:()=>performElementAction('copy')},
     {label:'Видалити',danger:true,action:()=>performElementAction('delete')},
   ],x,y,'Дії з елементом',$('#canvas').querySelector(`[data-id="${e.id}"]`));
@@ -57,6 +58,23 @@ function openShapeMenu(){
   showEditorMenu(Object.entries(SHAPE_NAMES).map(([kind,label])=>({kind,label,action:()=>insertFigure(kind)})),r.left,r.bottom+6,'Фігури',$('#addShape'));
 }
 function syncFontSizeControls(){const e=element();if(e?.type!=='text'||!$('#fontSize'))return;$('#fontSize').value=e.size;$('#fontSmaller').disabled=e.size<=1;$('#fontLarger').disabled=e.size>=18;}
+function startElementRotation(e){
+  commitPendingText();selected=e.id;rotationTarget=e.id;
+  fillCanvas($('#canvas'),slide());renderProperties();
+}
+function exitElementRotation(){
+  if(!rotationTarget)return;
+  commitPendingText();rotationTarget=null;fillCanvas($('#canvas'),slide());
+  $('#canvasHint').textContent=element()?'Перетягніть елемент або змініть його параметри':'Виберіть елемент, щоб редагувати';
+}
+function measureElementFrame(node,e){
+  const r=$('#canvas').getBoundingClientRect(),frame=node.querySelector('.text-content')||node,bounds=frame.getBoundingClientRect();
+  if(!normalizeRotation(e.rotation))return {x:(bounds.left-r.left)/r.width*100,y:(bounds.top-r.top)/r.height*100,w:bounds.width/r.width*100,h:bounds.height/r.height*100};
+  const css=getComputedStyle(frame),zoom=canvasView.zoom;
+  const width=(parseFloat(css.width)||frame.offsetWidth)*zoom/r.width*100;
+  const height=(parseFloat(css.height)||frame.offsetHeight)*zoom/r.height*100;
+  return {x:(bounds.left+bounds.width/2-r.left)/r.width*100-width/2,y:(bounds.top+bounds.height/2-r.top)/r.height*100-height/2,w:width,h:height};
+}
 function changeTextSize(delta){
   const e=element();if(e?.type!=='text')return;
   const size=clampTextSize(e.size+delta);if(size===e.size)return;
@@ -102,21 +120,24 @@ editorViewport.addEventListener('pointerdown',ev=>{
   const node=ev.target.closest('.element'),e=node&&slide().elements.find(item=>item.id===node.dataset.id);
   const start={sx:ev.clientX,sy:ev.clientY};
   if(e){
-    const handle=ev.target.closest('.resize'),resizing=!!handle,corner=handle?.dataset.corner||'se';
+    if(rotationTarget!==e.id)rotationTarget=null;
+    const handle=ev.target.closest('.resize'),rotating=!!handle&&rotationTarget===e.id,resizing=!!handle&&!rotating,corner=handle?.dataset.corner||'se';
+    const visible=(node.querySelector('.text-content')||node).getBoundingClientRect();
+    const center={x:visible.left+visible.width/2,y:visible.top+visible.height/2};
+    const startAngle=Math.atan2(ev.clientY-center.y,ev.clientX-center.x)*180/Math.PI;
     let resizeFrame=null;
     if(resizing){
-      const r=$('#canvas').getBoundingClientRect(),f=(node.querySelector('.text-content')||node).getBoundingClientRect();
-      resizeFrame={x:(f.left-r.left)/r.width*100,y:(f.top-r.top)/r.height*100,w:f.width/r.width*100,h:f.height/r.height*100};
+      resizeFrame=measureElementFrame(node,e);
     }
     selected=e.id;
     fillCanvas($('#canvas'),slide());renderProperties();
-    pointerGesture={kind:'element',...start,id:e.id,original:clone(e),before:clone(deck),resizing,corner,resizeFrame,changed:false};
-    if(!resizing)pointerGesture.holdTimer=setTimeout(()=>{
+    pointerGesture={kind:'element',...start,id:e.id,original:clone(e),before:clone(deck),resizing,rotating,center,lastAngle:startAngle,totalAngle:0,corner,resizeFrame,changed:false};
+    if(!resizing&&!rotating)pointerGesture.holdTimer=setTimeout(()=>{
       if(pointerGesture?.kind!=='element'||editorPointers.size!==1||pointerGesture.changed)return;
       pointerGesture.kind='held';openElementMenu(e,start.sx,start.sy);
     },550);
   }else{
-    selected=null;fillCanvas($('#canvas'),slide());renderProperties();
+    rotationTarget=null;selected=null;fillCanvas($('#canvas'),slide());renderProperties();
     pointerGesture={kind:'pan',...start,x:canvasView.x,y:canvasView.y};
   }
 });
@@ -133,11 +154,19 @@ editorViewport.addEventListener('pointermove',ev=>{
   const dx=ev.clientX-g.sx,dy=ev.clientY-g.sy;
   if(Math.hypot(dx,dy)>8)clearGestureHold();
   if(g.kind==='pan'){applyCanvasView({...canvasView,x:g.x+dx,y:g.y+dy});return;}
-  if(!g.changed&&Math.hypot(dx,dy)<6)return;
+  if(!g.changed&&Math.hypot(dx,dy)<(g.rotating?2:6))return;
   const e=slide().elements.find(item=>item.id===g.id);if(!e)return;
+  if(g.rotating){
+    if(Math.hypot(ev.clientX-g.center.x,ev.clientY-g.center.y)<6)return;
+    const angle=Math.atan2(ev.clientY-g.center.y,ev.clientX-g.center.x)*180/Math.PI;
+    g.totalAngle+=rotationAngleDelta(g.lastAngle,angle);g.lastAngle=angle;
+    e.rotation=normalizeRotation((g.original.rotation||0)+g.totalAngle);g.changed=e.rotation!==normalizeRotation(g.original.rotation);
+    const n=$('#canvas').querySelector(`[data-id="${e.id}"]`);if(n)applyElementRotation(n,e);
+    $('#canvasHint').textContent='Поворот: '+e.rotation+'° · тягніть круглий маркер';return;
+  }
   g.changed=true;const r=$('#canvas').getBoundingClientRect(),x=dx/r.width*100,y=dy/r.height*100;
   if(g.resizing){
-    Object.assign(e,e.type==='text'?resizeTextFromCorner(g.original,g.resizeFrame,g.corner,x,y):resizeBoxFromCorner(g.original,g.corner,x,y));
+    Object.assign(e,resizeRotatedElement(g.original,g.resizeFrame,g.corner,x,y));
   }else{e.x=Math.max(0,Math.min(95,g.original.x+x));e.y=Math.max(0,Math.min(92,g.original.y+y));}
   const n=$('#canvas').querySelector(`[data-id="${e.id}"]`);if(!n)return;
   n.style.left=e.x+'%';n.style.top=e.y+'%';n.style.width=e.w+'%';n.style.setProperty('--fs',e.size||3);
@@ -167,9 +196,12 @@ figureButton.onclick=()=>openShapeMenu();
 figureButton.addEventListener('contextmenu',ev=>{ev.preventDefault();openShapeMenu();});
 figureButton.addEventListener('keydown',ev=>{if(ev.key==='ArrowDown'||(ev.shiftKey&&ev.key==='F10')){ev.preventDefault();openShapeMenu();}});
 
-document.addEventListener('pointerdown',ev=>{if(!contextMenu.hidden&&!contextMenu.contains(ev.target))closeEditorMenu();},true);
+document.addEventListener('pointerdown',ev=>{
+  if(rotationTarget&&!contextMenu.contains(ev.target)&&ev.target.closest('.element')?.dataset.id!==rotationTarget)exitElementRotation();
+  if(!contextMenu.hidden&&!contextMenu.contains(ev.target))closeEditorMenu();
+},true);
 document.addEventListener('keydown',ev=>{
-  if(contextMenu.hidden)return;
+  if(contextMenu.hidden){if(ev.key==='Escape'&&rotationTarget){ev.preventDefault();exitElementRotation();}return;}
   if(ev.key==='Escape'){ev.preventDefault();closeEditorMenu(true);return;}
   if(ev.key==='Tab'){closeEditorMenu();return;}
   if(['ArrowDown','ArrowUp','Home','End'].includes(ev.key)){
