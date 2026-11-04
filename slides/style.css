@@ -89,3 +89,6 @@ body>header{justify-content:space-between}
 #preview{border:1px solid #71977a;border-radius:7px;background:#edf3e5;color:#2f684c;font-weight:600;padding:8px 12px;min-height:40px}
 #preview:hover{background:#dfebd7;border-color:#427a58}
 #preview:focus-visible{outline:2px solid #427a58;outline-offset:3px}
+
+.brand-name{display:contents}
+@media(max-width:760px){.brand .brand-name{display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1}.brand .beta{display:block;margin:0;font-size:11px;font-weight:600;letter-spacing:1.2px;line-height:1;text-transform:lowercase;color:#81917c}}
