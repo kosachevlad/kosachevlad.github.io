@@ -78,8 +78,8 @@ let viewerIndex = 0;
 function renderSharedSlide() {
   fillCanvas($('#sharedCanvas'),deck.slides[viewerIndex],'show');
   const transition = deck.slides[viewerIndex].transition;
-  const c = $('#sharedCanvas'); c.classList.remove('fade','rise','zoom'); void c.offsetWidth;
-  if (['fade','rise','zoom'].includes(transition)) c.classList.add(transition);
+  const c = $('#sharedCanvas'); c.classList.remove(...animationClasses); void c.offsetWidth;
+  if (animationClasses.includes(transition)) c.classList.add(transition);
   $('#viewerCount').textContent = `${viewerIndex+1} / ${deck.slides.length}`;
   $('#viewerPrev').disabled = viewerIndex === 0;
   $('#viewerNext').disabled = viewerIndex === deck.slides.length-1;
