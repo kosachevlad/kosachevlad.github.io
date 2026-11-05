@@ -1,4 +1,4 @@
-const SHAPE_NAMES = {circle:'Коло',rectangle:'Прямокутник',star:'Зірочка',callout:'Виноска',heart:'Серце',arrow:'Стрілка',cloud:'Хмарка',triangle:'Трикутник'};
+const SHAPE_NAMES = {circle:'Коло',rectangle:'Прямокутник',star:'Зірочка',callout:'Виноска',heart:'Серце',arrow:'Стрілка',cloud:'Хмарка',triangle:'Трикутник',line:'Горизонтальна лінія',arc:'Дуга'};
 const SHAPE_PATHS = {
   circle:'<ellipse cx="50" cy="50" rx="49" ry="49"/>',
   rectangle:'<rect x="2" y="2" width="96" height="96" rx="3"/>',
@@ -8,6 +8,8 @@ const SHAPE_PATHS = {
   cloud:'<path d="M22 78C8 78 3 68 5 57C6 47 15 41 25 42C25 24 40 15 54 24C64 16 81 25 81 39C96 39 103 53 96 65C93 74 87 78 76 78Z"/>',
   triangle:'<path d="M50 4L98 94H2Z"/>',
   arrow:'<path d="M2 34H57V9L98 50 57 91V66H2Z"/>',
+  line:'<path d="M4 50H96" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>',
+  arc:'<path d="M8 82A44 44 0 0 1 92 82" fill="none" stroke="currentColor" stroke-width="10" stroke-linecap="round"/>',
 };
 function makeShapeSVG(kind='circle') {
   const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');
