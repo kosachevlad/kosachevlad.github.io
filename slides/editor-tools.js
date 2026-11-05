@@ -111,30 +111,15 @@ function localPointerPair(){
 }
 function commitPendingText(){const e=element(),input=$('#textContent');if(e?.type!=='text'||!input||input.value===e.content)return;checkpoint();e.content=input.value;renderList();save();}
 function canvasDragBounds(visible,canvas){
+  const visibleX=Math.min(32,visible.width),visibleY=Math.min(32,visible.height);
   return {
-    left:-(visible.left-canvas.left)/canvas.width*100,
-    right:(canvas.right-visible.right)/canvas.width*100,
-    top:-(visible.top-canvas.top)/canvas.height*100,
-    bottom:(canvas.bottom-visible.bottom)/canvas.height*100,
+    left:(canvas.left+visibleX-visible.right)/canvas.width*100,
+    right:(canvas.right-visibleX-visible.left)/canvas.width*100,
+    top:(canvas.top+visibleY-visible.bottom)/canvas.height*100,
+    bottom:(canvas.bottom-visibleY-visible.top)/canvas.height*100,
   };
 }
 function constrainCanvasDrag(dx,dy,bounds){return {x:Math.max(bounds.left,Math.min(bounds.right,dx)),y:Math.max(bounds.top,Math.min(bounds.bottom,dy))};}
-function keepDraggedElementOnCanvas(node,e){
-  const canvas=$('#canvas'),frame=node.querySelector('.text-content')||node;
-  const bounds=canvas.getBoundingClientRect(),visible=frame.getBoundingClientRect();
-  let shiftX=0,shiftY=0;
-  if(visible.width<=bounds.width){
-    if(visible.left<bounds.left)shiftX=bounds.left-visible.left;
-    else if(visible.right>bounds.right)shiftX=bounds.right-visible.right;
-  }
-  if(visible.height<=bounds.height){
-    if(visible.top<bounds.top)shiftY=bounds.top-visible.top;
-    else if(visible.bottom>bounds.bottom)shiftY=bounds.bottom-visible.bottom;
-  }
-  if(!shiftX&&!shiftY)return;
-  e.x+=shiftX/bounds.width*100;e.y+=shiftY/bounds.height*100;
-  node.style.left=e.x+'%';node.style.top=e.y+'%';
-}
 editorViewport.addEventListener('pointerdown',ev=>{
   if(isSharedView||ev.button!==0)return;
   commitPendingText();
@@ -204,7 +189,6 @@ editorViewport.addEventListener('pointermove',ev=>{
   const n=$('#canvas').querySelector(`[data-id="${e.id}"]`);if(!n)return;
   n.style.left=e.x+'%';n.style.top=e.y+'%';n.style.width=e.w+'%';n.style.setProperty('--fs',e.size||3);
   if(e.type!=='text')n.style.height=e.h+'%';
-  if(!g.resizing)keepDraggedElementOnCanvas(n,e);
 });
 function finishEditorPointer(ev){
   if(!editorPointers.has(ev.pointerId))return;
