@@ -4,7 +4,7 @@ const shareDialog = document.createElement('dialog');
 shareDialog.id = 'shareDialog';
 shareDialog.innerHTML = `<div class="share-heading"><h2>Поділитися з учителем</h2><button id="closeShare" class="icon" aria-label="Закрити">✕</button></div>
 <p>Збережіть копію презентації та надішліть посилання вчителю. Він зможе переглянути слайди, зображення й анімації без входу.</p>
-<div class="share-notice">Доступ матиме кожен, хто отримає посилання.</div>
+<div class="share-notice">Доступ матиме кожен, хто отримає посилання. Копія зберігається 90 днів від створення, після чого посилання перестає працювати.</div>
 <button id="createShare" class="primary">Створити посилання</button>
 <div id="shareResult" hidden><label for="shareUrl" class="property-label">Посилання на збережену копію</label><input id="shareUrl" class="field" readonly><div class="row share-actions"><button id="copyShare" class="primary">Копіювати посилання</button><button id="sendShare" class="field">Надіслати…</button></div><p class="muted">Після редагування створіть нове посилання, щоб надіслати оновлену копію.</p></div>
 <p id="shareStatus" class="muted" role="status" aria-live="polite"></p>`;
@@ -58,7 +58,7 @@ $('#createShare').onclick = async () => {
     cachedShare = {snapshot, url:url.href};
     $('#shareUrl').value = url.href; $('#shareResult').hidden = false;
     $('#createShare').textContent = 'Створити нове посилання';
-    $('#shareStatus').textContent = 'Копію збережено. Скопіюйте посилання та надішліть учителю.';
+    $('#shareStatus').textContent = 'Копію збережено на 90 днів. Скопіюйте посилання та надішліть учителю.';
   } catch(error) {
     if (epoch !== shareEpoch) return;
     $('#shareStatus').textContent = error.message === 'too_large' ? 'Презентація завелика. Максимальний розмір — 8 МБ.' : error.message === 'rate_limited' ? 'Забагато запитів. Спробуйте ще раз за хвилину.' : error.message === 'invalid_presentation' ? 'Не вдалося зберегти цю презентацію. Перевірте слайди й зображення.' : 'Не вдалося зберегти презентацію. Перевірте інтернет і спробуйте ще раз. Ваші слайди залишилися на пристрої.';
@@ -108,7 +108,7 @@ async function loadSharedPresentation(id) {
     document.addEventListener('keydown',e=>{if(!$('#player').hidden||['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight'&&viewerIndex<deck.slides.length-1){viewerIndex++;renderSharedSlide()}if(e.key==='ArrowLeft'&&viewerIndex>0){viewerIndex--;renderSharedSlide()}});
     renderSharedSlide();
   } catch(error) {
-    showSharedError(error.message==='not_found' ? 'Презентацію не знайдено. Перевірте посилання або попросіть автора надіслати нове.' : 'Не вдалося завантажити презентацію. Перевірте інтернет і спробуйте ще раз.');
+    showSharedError(error.message==='expired' ? 'Строк зберігання презентації (90 днів) минув. Попросіть автора створити нове посилання.' : error.message==='not_found' ? 'Презентацію не знайдено або строк зберігання (90 днів) минув. Попросіть автора надіслати нове посилання.' : 'Не вдалося завантажити презентацію. Перевірте інтернет і спробуйте ще раз.');
   }
 }
 function showSharedError(message) {
