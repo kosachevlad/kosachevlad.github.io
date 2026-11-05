@@ -110,3 +110,4 @@ body>header{justify-content:space-between}
 @keyframes slide-sway{0%,100%{rotate:0deg}20%{rotate:-12deg}40%{rotate:10deg}60%{rotate:-7deg}80%{rotate:4deg}}
 @keyframes slide-flip{from{rotate:y -90deg;opacity:0}to{rotate:y 0deg;opacity:1}}
 @media(prefers-reduced-motion:reduce){.fade,.rise,.zoom,.pulse,.spin,.bounce,.sway,.flip{animation-duration:.01ms!important;animation-delay:0ms!important}}
+@media(max-width:760px){#contactButton{position:fixed;z-index:220;right:14px;bottom:max(12px,env(safe-area-inset-bottom));min-height:46px;padding:10px 16px;border:1px solid #a9c19f;border-radius:23px;background:#fff;color:#336b50;font-size:12px;font-weight:800;box-shadow:0 8px 24px #26372f26}#contactButton:hover,#contactButton:active{background:#edf5e7}}
