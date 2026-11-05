@@ -16,7 +16,8 @@ function makeShapeSVG(kind='circle') {
   svg.innerHTML=SHAPE_PATHS[kind]||SHAPE_PATHS.circle;
   return svg;
 }
-function clampTextSize(value){return Math.round(Math.max(1,Math.min(18,value))*10)/10;}
+function maxTextSize(e){return /^(?:\p{Extended_Pictographic}|\p{Regional_Indicator}|\p{Emoji_Modifier}|\uFE0F|\u200D)+$/u.test((e?.content||'').trim())?100:18;}
+function clampTextSize(value,e){return Math.round(Math.max(1,Math.min(maxTextSize(e),value))*10)/10;}
 function constrainCanvasView(zoom,x,y,width,height){
   zoom=Math.max(.5,Math.min(3,zoom));
   const maxX=Math.max(0,width*(zoom-1)/2),maxY=Math.max(0,height*(zoom-1)/2);
@@ -44,9 +45,9 @@ function resizeTextFromCorner(original,frame,corner,dx,dy){
   const ratio=1+(directionX*dx*frame.w*aspect*aspect+directionY*dy*frame.h)/(frame.w*frame.w*aspect*aspect+frame.h*frame.h);
   const minScale=1/original.size;
   const maxWidth=west?frame.x+frame.w:100-frame.x,maxHeight=north?frame.y+frame.h:100-frame.y;
-  const maxScale=Math.max(minScale,Math.min(18/original.size,200/original.w,maxWidth/frame.w,maxHeight/frame.h));
+  const maxScale=Math.max(minScale,Math.min(maxTextSize(original)/original.size,200/original.w,maxWidth/frame.w,maxHeight/frame.h));
   const requested=Math.max(minScale,Math.min(maxScale,ratio));
-  let size=clampTextSize(original.size*requested);
+  let size=clampTextSize(original.size*requested,original);
   if(size/original.size>maxScale)size=Math.max(1,Math.floor(original.size*maxScale*10)/10);
   const scale=size/original.size;
   const left=west?frame.x+frame.w-frame.w*scale:frame.x;

@@ -62,7 +62,7 @@ function openShapeMenu(){
   const r=$('#addShape').getBoundingClientRect();
   showEditorMenu(Object.entries(SHAPE_NAMES).map(([kind,label])=>({kind,label,action:()=>insertFigure(kind)})),r.left,r.bottom+6,'Фігури',$('#addShape'));
 }
-function syncFontSizeControls(){const e=element();if(e?.type!=='text'||!$('#fontSize'))return;$('#fontSize').value=e.size;$('#fontSmaller').disabled=e.size<=1;$('#fontLarger').disabled=e.size>=18;}
+function syncFontSizeControls(){const e=element();if(e?.type!=='text'||!$('#fontSize'))return;$('#fontSize').max=maxTextSize(e);$('#fontSize').value=e.size;$('#fontSmaller').disabled=e.size<=1;$('#fontLarger').disabled=e.size>=maxTextSize(e);}
 function startElementRotation(e){
   commitPendingText();selected=e.id;rotationTarget=e.id;
   fillCanvas($('#canvas'),slide());renderProperties();
@@ -82,7 +82,7 @@ function measureElementFrame(node,e){
 }
 function changeTextSize(delta){
   const e=element();if(e?.type!=='text')return;
-  const size=clampTextSize(e.size+delta);if(size===e.size)return;
+  const size=clampTextSize(e.size+delta,e);if(size===e.size)return;
   checkpoint();e.size=size;updateCanvas();syncFontSizeControls();
 }
 
