@@ -110,6 +110,15 @@ function localPointerPair(){
   return [...editorPointers.values()].slice(0,2).map(p=>({x:p.x-r.left-r.width/2,y:p.y-r.top-r.height/2}));
 }
 function commitPendingText(){const e=element(),input=$('#textContent');if(e?.type!=='text'||!input||input.value===e.content)return;checkpoint();e.content=input.value;renderList();save();}
+function canvasDragBounds(visible,canvas){
+  return {
+    left:-(visible.left-canvas.left)/canvas.width*100,
+    right:(canvas.right-visible.right)/canvas.width*100,
+    top:-(visible.top-canvas.top)/canvas.height*100,
+    bottom:(canvas.bottom-visible.bottom)/canvas.height*100,
+  };
+}
+function constrainCanvasDrag(dx,dy,bounds){return {x:Math.max(bounds.left,Math.min(bounds.right,dx)),y:Math.max(bounds.top,Math.min(bounds.bottom,dy))};}
 editorViewport.addEventListener('pointerdown',ev=>{
   if(isSharedView||ev.button!==0)return;
   commitPendingText();
@@ -127,7 +136,7 @@ editorViewport.addEventListener('pointerdown',ev=>{
   if(e){
     if(rotationTarget!==e.id)rotationTarget=null;
     const handle=ev.target.closest('.resize'),rotating=!!handle&&rotationTarget===e.id,resizing=!!handle&&!rotating,corner=handle?.dataset.corner||'se';
-    const visible=(node.querySelector('.text-content')||node).getBoundingClientRect();
+    const visible=(node.querySelector('.text-content')||node).getBoundingClientRect(),canvasBounds=$('#canvas').getBoundingClientRect();
     const center={x:visible.left+visible.width/2,y:visible.top+visible.height/2};
     const startAngle=Math.atan2(ev.clientY-center.y,ev.clientX-center.x)*180/Math.PI;
     let resizeFrame=null;
@@ -136,7 +145,7 @@ editorViewport.addEventListener('pointerdown',ev=>{
     }
     selected=e.id;
     fillCanvas($('#canvas'),slide());renderProperties();
-    pointerGesture={kind:'element',...start,id:e.id,original:clone(e),before:clone(deck),resizing,rotating,center,lastAngle:startAngle,totalAngle:0,corner,resizeFrame,changed:false};
+    pointerGesture={kind:'element',...start,id:e.id,original:clone(e),before:clone(deck),resizing,rotating,center,lastAngle:startAngle,totalAngle:0,corner,resizeFrame,dragBounds:canvasDragBounds(visible,canvasBounds),changed:false};
     if(!resizing&&!rotating)pointerGesture.holdTimer=setTimeout(()=>{
       if(pointerGesture?.kind!=='element'||editorPointers.size!==1||pointerGesture.changed)return;
       pointerGesture.kind='held';openElementMenu(e,start.sx,start.sy);
@@ -172,7 +181,10 @@ editorViewport.addEventListener('pointermove',ev=>{
   g.changed=true;const r=$('#canvas').getBoundingClientRect(),x=dx/r.width*100,y=dy/r.height*100;
   if(g.resizing){
     Object.assign(e,resizeRotatedElement(g.original,g.resizeFrame,g.corner,x,y));
-  }else{e.x=Math.max(0,Math.min(95,g.original.x+x));e.y=Math.max(0,Math.min(92,g.original.y+y));}
+  }else{
+    const delta=constrainCanvasDrag(x,y,g.dragBounds);
+    e.x=g.original.x+delta.x;e.y=g.original.y+delta.y;
+  }
   const n=$('#canvas').querySelector(`[data-id="${e.id}"]`);if(!n)return;
   n.style.left=e.x+'%';n.style.top=e.y+'%';n.style.width=e.w+'%';n.style.setProperty('--fs',e.size||3);
   if(e.type!=='text')n.style.height=e.h+'%';
