@@ -6,14 +6,18 @@ let menuReturnFocus=null;
 
 function closeEditorMenu(restoreFocus=false){
   contextMenu.hidden=true;
+  $('#addEmoji')?.setAttribute('aria-expanded','false');
   if(restoreFocus&&menuReturnFocus?.isConnected)menuReturnFocus.focus({preventScroll:true});
 }
 function showEditorMenu(items,x,y,label,returnFocus){
   contextMenu.innerHTML='';contextMenu.classList.toggle('shape-palette',label==='Фігури');
+  contextMenu.classList.toggle('emoji-palette',label==='Емодзі');
   contextMenu.setAttribute('aria-label',label);menuReturnFocus=returnFocus;
   for(const item of items){
+    if(item.heading){const heading=document.createElement('div');heading.className='emoji-heading';heading.setAttribute('role','presentation');heading.textContent=item.heading;contextMenu.append(heading);continue;}
     const button=document.createElement('button');button.type='button';button.setAttribute('role','menuitem');
-    if(item.kind){button.append(makeShapeSVG(item.kind));button.setAttribute('aria-label',item.label);button.title=item.label;}
+    if(item.emoji){button.textContent=item.emoji;button.setAttribute('aria-label',item.label);button.title=item.label;}
+    else if(item.kind){button.append(makeShapeSVG(item.kind));button.setAttribute('aria-label',item.label);button.title=item.label;}
     else {if(item.icon){const symbol=document.createElement('span');symbol.className='menu-icon';symbol.setAttribute('aria-hidden','true');symbol.innerHTML=icon(item.icon);button.append(symbol);}const text=document.createElement('span');text.textContent=item.label;button.append(text);}
     if(item.danger)button.classList.add('danger');
     button.disabled=!!item.disabled;
@@ -197,6 +201,33 @@ figureButton.onclick=()=>openShapeMenu();
 figureButton.addEventListener('contextmenu',ev=>{ev.preventDefault();openShapeMenu();});
 figureButton.addEventListener('keydown',ev=>{if(ev.key==='ArrowDown'||(ev.shiftKey&&ev.key==='F10')){ev.preventDefault();openShapeMenu();}});
 
+const EMOJI_GROUPS=[
+  ['Обличчя та емоції','😀 Усмішка|😃 Радість|😄 Щастя|😁 Широка усмішка|😆 Сміх|😅 Усмішка з потом|😂 Сльози радості|🤣 Регіт|😊 Задоволення|🙂 Легка усмішка|😉 Підморгування|😍 Закоханість|🥰 Ніжність|😘 Поцілунок|😎 Круто|🤩 Захоплення|🥳 Свято|🤔 Роздуми|🤨 Сумнів|😐 Нейтрально|😴 Сон|🥱 Позіхання|😢 Сум|😭 Плач|😮 Подив|😲 Здивування|😱 Переляк|😡 Злість|🤯 Враження|🤗 Обійми|🤫 Тиша|🤭 Зніяковіння|🙃 Догори дриґом|😇 Янгол|🤓 Розумник|🧐 Дослідник'],
+  ['Жести та люди','👍 Подобається|👎 Не подобається|👏 Оплески|🙌 Успіх|👋 Привіт|🤝 Рукостискання|✌️ Мир|🤞 Побажання удачі|👌 Чудово|💪 Сила|🙏 Подяка|🫶 Руки серцем|👆 Угору|👇 Униз|👉 Праворуч|👈 Ліворуч|✍️ Письмо|🧑‍🏫 Учитель|🧑‍🎓 Учень|🧑‍💻 Програміст|🧑‍🔬 Науковець|🧑‍🚀 Космонавт|👨‍👩‍👧‍👦 Родина|🦸 Супергерой'],
+  ['Тварини та природа','🐶 Собака|🐱 Кіт|🐭 Миша|🐹 Хом’як|🐰 Кролик|🦊 Лисиця|🐻 Ведмідь|🐼 Панда|🐨 Коала|🐯 Тигр|🦁 Лев|🐮 Корова|🐷 Порося|🐸 Жаба|🐵 Мавпа|🐔 Курка|🐧 Пінгвін|🦉 Сова|🦋 Метелик|🐝 Бджола|🐞 Сонечко|🐢 Черепаха|🐬 Дельфін|🐳 Кит|🌳 Дерево|🌲 Ялинка|🌱 Паросток|🌿 Зелень|🌸 Квітка|🌻 Соняшник|🌹 Троянда|🍀 Конюшина|🍁 Осінній листок|🍄 Гриб|🌍 Земля|🌈 Веселка|☀️ Сонце|🌙 Місяць|⭐ Зірка|☁️ Хмаринка|🌧️ Дощ|❄️ Сніжинка'],
+  ['Їжа та напої','🍎 Яблуко|🍐 Груша|🍊 Апельсин|🍋 Лимон|🍌 Банан|🍉 Кавун|🍇 Виноград|🍓 Полуниця|🍒 Вишні|🍑 Персик|🍍 Ананас|🥝 Ківі|🥕 Морква|🌽 Кукурудза|🥦 Броколі|🍅 Помідор|🍞 Хліб|🥐 Круасан|🧀 Сир|🍕 Піца|🍔 Бургер|🍟 Картопля фрі|🍿 Попкорн|🍦 Морозиво|🍰 Торт|🎂 День народження|🍪 Печиво|🍫 Шоколад|☕ Кава|🫖 Чай|🧃 Сік|💧 Вода'],
+  ['Навчання та техніка','📚 Книги|📖 Читання|📕 Підручник|📓 Зошит|📝 Нотатки|✏️ Олівець|🖊️ Ручка|🖌️ Пензлик|🎨 Палітра|📏 Лінійка|📐 Косинець|✂️ Ножиці|📌 Кнопка|📎 Скріпка|🔍 Пошук|💡 Ідея|🧠 Мозок|🎓 Освіта|🏫 Школа|💻 Ноутбук|🖥️ Комп’ютер|⌨️ Клавіатура|🖱️ Мишка|📱 Телефон|🤖 Робот|⚙️ Налаштування|🔋 Батарея|🔌 Живлення|📷 Фотоапарат|🎥 Відеокамера|🔬 Мікроскоп|🔭 Телескоп|🧪 Пробірка|🧲 Магніт|🧩 Пазл|🗂️ Документи'],
+  ['Подорожі та місця','🏠 Дім|🏙️ Місто|🏛️ Музей|🏰 Замок|⛪ Церква|⛲ Фонтан|🌉 Міст|🏞️ Парк|🏔️ Гори|🏖️ Пляж|🗺️ Карта|🧭 Компас|🚶 Прогулянка|🚲 Велосипед|🚗 Автомобіль|🚌 Автобус|🚎 Тролейбус|🚋 Трамвай|🚇 Метро|🚆 Потяг|✈️ Літак|🚀 Ракета|🚢 Корабель|⛵ Вітрильник'],
+  ['Спорт та свята','⚽ Футбол|🏀 Баскетбол|🏐 Волейбол|🎾 Теніс|🏓 Настільний теніс|🏸 Бадмінтон|🏊 Плавання|🏃 Біг|🚴 Велоспорт|🏆 Кубок|🥇 Золота медаль|🎯 Мета|🎲 Гральний кубик|♟️ Шахи|🎮 Відеогра|🎵 Нота|🎶 Музика|🎤 Мікрофон|🎧 Навушники|🎸 Гітара|🎹 Піаніно|🎭 Театр|🎬 Кіно|🎉 Вітання|🎊 Конфеті|🎈 Повітряна кулька|🎁 Подарунок|🎀 Стрічка|🪄 Чарівна паличка|✨ Блискітки'],
+  ['Серця та символи','❤️ Червоне серце|🧡 Помаранчеве серце|💛 Жовте серце|💚 Зелене серце|💙 Синє серце|💜 Фіолетове серце|🖤 Чорне серце|🤍 Біле серце|💕 Два серця|💔 Розбите серце|🔥 Вогонь|⚡ Блискавка|💯 Сто відсотків|✅ Виконано|❌ Помилка|❓ Питання|❗ Увага|⚠️ Попередження|♻️ Переробка|🔒 Замок|🔑 Ключ|🔔 Дзвінок|⏰ Будильник|📅 Календар|📊 Діаграма|📈 Зростання|➡️ Стрілка праворуч|⬅️ Стрілка ліворуч|⬆️ Стрілка вгору|⬇️ Стрілка вниз|🔄 Оновлення|🇺🇦 Україна'],
+];
+function insertEmoji(value){
+  if(isSharedView)return;
+  commitPendingText();checkpoint();const e=text(value,38,30,24,12);slide().elements.push(e);selected=e.id;rotationTarget=null;tab='design';render();
+}
+function openEmojiMenu(){
+  if(isSharedView)return;
+  const button=$('#addEmoji'),r=button.getBoundingClientRect();
+  const items=EMOJI_GROUPS.flatMap(([heading,values])=>[{heading},...values.split('|').map(entry=>{
+    const space=entry.indexOf(' '),emoji=entry.slice(0,space),label=entry.slice(space+1);
+    return {emoji,label,action:()=>insertEmoji(emoji)};
+  })]);
+  showEditorMenu(items,r.left,r.bottom+6,'Емодзі',button);button.setAttribute('aria-expanded','true');
+}
+const emojiButton=$('#addEmoji');
+emojiButton.onclick=()=>{if(!contextMenu.hidden&&contextMenu.classList.contains('emoji-palette'))closeEditorMenu();else openEmojiMenu();};
+emojiButton.addEventListener('keydown',ev=>{if(ev.key==='ArrowDown'){ev.preventDefault();openEmojiMenu();}});
+
 const slideStrip=$('#slideList');
 let slideHold=null,suppressedSlideClick=null;
 function cancelSlideHold(){if(slideHold)clearTimeout(slideHold.timer);slideHold=null;}
@@ -252,7 +283,7 @@ slideStrip.addEventListener('keydown',ev=>{
 
 document.addEventListener('pointerdown',ev=>{
   if(rotationTarget&&!contextMenu.contains(ev.target)&&ev.target.closest('.element')?.dataset.id!==rotationTarget)exitElementRotation();
-  if(!contextMenu.hidden&&!contextMenu.contains(ev.target))closeEditorMenu();
+  if(!contextMenu.hidden&&!contextMenu.contains(ev.target)&&!ev.target.closest('#addEmoji'))closeEditorMenu();
 },true);
 document.addEventListener('keydown',ev=>{
   if(contextMenu.hidden){if(ev.key==='Escape'&&rotationTarget){ev.preventDefault();exitElementRotation();}return;}

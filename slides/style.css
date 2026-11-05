@@ -92,3 +92,8 @@ body>header{justify-content:space-between}
 
 .brand-name{display:contents}
 @media(max-width:760px){.brand .brand-name{display:flex;flex-direction:column;align-items:center;gap:3px;line-height:1}.brand .beta{display:block;margin:0;font-size:11px;font-weight:600;letter-spacing:1.2px;line-height:1;text-transform:lowercase;color:#81917c}}
+
+.editor-context-menu.emoji-palette{width:min(342px,calc(100vw - 20px));max-height:min(440px,65dvh);overflow-y:auto;overscroll-behavior:contain;grid-template-columns:repeat(6,minmax(0,1fr));gap:3px;padding:10px;scroll-padding:10px;border-color:#dfe7d9}
+.emoji-palette>.emoji-heading{grid-column:1/-1;padding:12px 5px 5px;font-size:11px;font-weight:600;color:#6d7b66;pointer-events:none}
+.emoji-palette>button{display:flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:4px;border:1px solid transparent;border-radius:8px;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;font-size:28px;line-height:1.2;background:transparent}
+.emoji-palette>button:hover,.emoji-palette>button:focus-visible{background:#edf3e5;border-color:#c6d8bc;outline:none}
