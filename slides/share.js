@@ -1,1 +1,121 @@
-LyogU2hhcmVkIHNuYXBzaG90cyBsaXZlIGluIFIyOyBvbmx5IHRoZSBvcGFxdWUgc25hcHNob3QgSUQgdHJhdmVscyBpbiB0aGUgVVJMLiAqLw0KY29uc3QgU0hBUkVfQVBJID0gJ2h0dHBzOi8vc2xheWQtc2hhcmUtbmIxMTAzLmtvc2FjaGV2bGFkLmNoYXRncHQuc2l0ZS9hcGkvcHJlc2VudGF0aW9ucyc7DQpjb25zdCBzaGFyZURpYWxvZyA9IGRvY3VtZW50LmNyZWF0ZUVsZW1lbnQoJ2RpYWxvZycpOw0Kc2hhcmVEaWFsb2cuaWQgPSAnc2hhcmVEaWFsb2cnOw0Kc2hhcmVEaWFsb2cuaW5uZXJIVE1MID0gYDxkaXYgY2xhc3M9InNoYXJlLWhlYWRpbmciPjxoMj7Qn9C+0LTRltC70LjRgtC40YHRjyDQtyDRg9GH0LjRgtC10LvQtdC8PC9oMj48YnV0dG9uIGlkPSJjbG9zZVNoYXJlIiBjbGFzcz0iaWNvbiIgYXJpYS1sYWJlbD0i0JfQsNC60YDQuNGC0LgiPuKclTwvYnV0dG9uPjwvZGl2Pg0KPHA+0JfQsdC10YDQtdC20ZbRgtGMINC60L7Qv9GW0Y4g0L/RgNC10LfQtdC90YLQsNGG0ZbRlyDRgtCwINC90LDQtNGW0YjQu9GW0YLRjCDQv9C+0YHQuNC70LDQvdC90Y8g0LLRh9C40YLQtdC70Y4uINCS0ZbQvSDQt9C80L7QttC1INC/0LXRgNC10LPQu9GP0L3Rg9GC0Lgg0YHQu9Cw0LnQtNC4LCDQt9C+0LHRgNCw0LbQtdC90L3RjyDQuSDQsNC90ZbQvNCw0YbRltGXINCx0LXQtyDQstGF0L7QtNGDLjwvcD4NCjxkaXYgY2xhc3M9InNoYXJlLW5vdGljZSI+0JTQvtGB0YLRg9C/INC80LDRgtC40LzQtSDQutC+0LbQtdC9LCDRhdGC0L4g0L7RgtGA0LjQvNCw0ZQg0L/QvtGB0LjQu9Cw0L3QvdGPLiDQmtC+0L/RltGPINC30LHQtdGA0ZbQs9Cw0ZTRgtGM0YHRjyA5MCDQtNC90ZbQsiDQstGW0LQg0YHRgtCy0L7RgNC10L3QvdGPLCDQv9GW0YHQu9GPINGH0L7Qs9C+INC/0L7RgdC40LvQsNC90L3RjyDQv9C10YDQtdGB0YLQsNGUINC/0YDQsNGG0Y7QstCw0YLQuC48L2Rpdj4NCjxidXR0b24gaWQ9ImNyZWF0ZVNoYXJlIiBjbGFzcz0icHJpbWFyeSI+0KHRgtCy0L7RgNC40YLQuCDQv9C+0YHQuNC70LDQvdC90Y88L2J1dHRvbj4NCjxkaXYgaWQ9InNoYXJlUmVzdWx0IiBoaWRkZW4+PGxhYmVsIGZvcj0ic2hhcmVVcmwiIGNsYXNzPSJwcm9wZXJ0eS1sYWJlbCI+0J/QvtGB0LjQu9Cw0L3QvdGPINC90LAg0LfQsdC10YDQtdC20LXQvdGDINC60L7Qv9GW0Y48L2xhYmVsPjxpbnB1dCBpZD0ic2hhcmVVcmwiIGNsYXNzPSJmaWVsZCIgcmVhZG9ubHk+PGRpdiBjbGFzcz0icm93IHNoYXJlLWFjdGlvbnMiPjxidXR0b24gaWQ9ImNvcHlTaGFyZSIgY2xhc3M9InByaW1hcnkiPtCa0L7Qv9GW0Y7QstCw0YLQuCDQv9C+0YHQuNC70LDQvdC90Y88L2J1dHRvbj48YnV0dG9uIGlkPSJzZW5kU2hhcmUiIGNsYXNzPSJmaWVsZCI+0J3QsNC00ZbRgdC70LDRgtC44oCmPC9idXR0b24+PC9kaXY+PHAgY2xhc3M9Im11dGVkIj7Qn9GW0YHQu9GPINGA0LXQtNCw0LPRg9Cy0LDQvdC90Y8g0YHRgtCy0L7RgNGW0YLRjCDQvdC+0LLQtSDQv9C+0YHQuNC70LDQvdC90Y8sINGJ0L7QsSDQvdCw0LTRltGB0LvQsNGC0Lgg0L7QvdC+0LLQu9C10L3RgyDQutC+0L/RltGOLjwvcD48L2Rpdj4NCjxwIGlkPSJzaGFyZVN0YXR1cyIgY2xhc3M9Im11dGVkIiByb2xlPSJzdGF0dXMiIGFyaWEtbGl2ZT0icG9saXRlIj48L3A+YDsNCmRvY3VtZW50LmJvZHkuYXBwZW5kKHNoYXJlRGlhbG9nKTsNCmxldCBjYWNoZWRTaGFyZSA9IG51bGwsIHNoYXJlQnVzeSA9IGZhbHNlLCBzaGFyZUVwb2NoID0gMDsNCiQoJyNzaGFyZVByZXNlbnRhdGlvbicpLm9uY2xpY2sgPSAoKSA9PiB7DQogIGlmIChpc1NoYXJlZFZpZXcpIHJldHVybjsNCiAgY29uc3QgdW5jaGFuZ2VkID0gY2FjaGVkU2hhcmU/LnNuYXBzaG90ID09PSBKU09OLnN0cmluZ2lmeShkZWNrKTsNCiAgJCgnI3NoYXJlUmVzdWx0JykuaGlkZGVuID0gIXVuY2hhbmdlZDsNCiAgaWYgKHVuY2hhbmdlZCkgJCgnI3NoYXJlVXJsJykudmFsdWUgPSBjYWNoZWRTaGFyZS51cmw7DQogICQoJyNjcmVhdGVTaGFyZScpLnRleHRDb250ZW50ID0gdW5jaGFuZ2VkID8gJ9Ch0YLQstC+0YDQuNGC0Lgg0L3QvtCy0LUg0L/QvtGB0LjQu9Cw0L3QvdGPJyA6ICfQodGC0LLQvtGA0LjRgtC4INC/0L7RgdC40LvQsNC90L3Rjyc7DQogIGlmICghc2hhcmVCdXN5KSAkKCcjc2hhcmVTdGF0dXMnKS50ZXh0Q29udGVudCA9ICcnOw0KICAkKCcjc2VuZFNoYXJlJykuaGlkZGVuID0gIW5hdmlnYXRvci5zaGFyZTsNCiAgc2hhcmVEaWFsb2cuc2hvd01vZGFsKCk7DQp9Ow0KJCgnI2Nsb3NlU2hhcmUnKS5vbmNsaWNrID0gKCkgPT4gc2hhcmVEaWFsb2cuY2xvc2UoKTsNCg0KZnVuY3Rpb24gc25hcHNob3RGb3JTaGFyaW5nKCkgew0KICBjb25zdCBzbmFwc2hvdCA9IGNsb25lKGRlY2spOw0KICBzbmFwc2hvdC5zbGlkZXMuZm9yRWFjaChzID0+IHsgcy5ub3RlcyA9ICcnOyB9KTsNCiAgcmV0dXJuIHNuYXBzaG90Ow0KfQ0KZnVuY3Rpb24gbmV3Q2FwYWJpbGl0eSgpIHsNCiAgcmV0dXJuIFsuLi5jcnlwdG8uZ2V0UmFuZG9tVmFsdWVzKG5ldyBVaW50OEFycmF5KDMyKSldLm1hcChiID0+IGIudG9TdHJpbmcoMTYpLnBhZFN0YXJ0KDIsJzAnKSkuam9pbignJyk7DQp9DQphc3luYyBmdW5jdGlvbiByZXF1ZXN0SlNPTih1cmwsIG9wdGlvbnMgPSB7fSkgew0KICBjb25zdCBjb250cm9sbGVyID0gbmV3IEFib3J0Q29udHJvbGxlcigpOw0KICBjb25zdCB0aW1lb3V0ID0gc2V0VGltZW91dCgoKSA9PiBjb250cm9sbGVyLmFib3J0KCksIDQ1MDAwKTsNCiAgdHJ5IHsNCiAgICBjb25zdCByZXNwb25zZSA9IGF3YWl0IGZldGNoKHVybCwgey4uLm9wdGlvbnMsIHNpZ25hbDpjb250cm9sbGVyLnNpZ25hbCwgY3JlZGVudGlhbHM6J29taXQnLCBjYWNoZTonbm8tc3RvcmUnLCByZWZlcnJlclBvbGljeTonbm8tcmVmZXJyZXInfSk7DQogICAgY29uc3QgcmVzdWx0ID0gYXdhaXQgcmVzcG9uc2UuanNvbigpOw0KICAgIGlmICghcmVzcG9uc2Uub2spIHRocm93IG5ldyBFcnJvcihyZXN1bHQuZXJyb3IgfHwgJ3NlcnZlcl9lcnJvcicpOw0KICAgIHJldHVybiByZXN1bHQ7DQogIH0gZmluYWxseSB7IGNsZWFyVGltZW91dCh0aW1lb3V0KTsgfQ0KfQ0KJCgnI2NyZWF0ZVNoYXJlJykub25jbGljayA9IGFzeW5jICgpID0+IHsNCiAgaWYgKHNoYXJlQnVzeSkgcmV0dXJuOw0KICBjb25zdCBzbmFwc2hvdCA9IEpTT04uc3RyaW5naWZ5KGRlY2spLCBwcmVzZW50YXRpb24gPSBzbmFwc2hvdEZvclNoYXJpbmcoKSwgYm9keSA9IEpTT04uc3RyaW5naWZ5KHByZXNlbnRhdGlvbik7DQogIGlmIChuZXcgQmxvYihbYm9keV0pLnNpemUgPiA4ICogMTAyNCAqIDEwMjQpIHsNCiAgICAkKCcjc2hhcmVTdGF0dXMnKS50ZXh0Q29udGVudCA9ICfQn9GA0LXQt9C10L3RgtCw0YbRltGPINC30LDQstC10LvQuNC60LAg0LTQu9GPINC90LDQtNGB0LjQu9Cw0L3QvdGPICjQtNC+IDgg0JzQkSkuINCX0LzQtdC90YjRgtC1INC60ZbQu9GM0LrRltGB0YLRjCDQsNCx0L4g0YDQvtC30LzRltGAINC30L7QsdGA0LDQttC10L3RjC4nOw0KICAgIHJldHVybjsNCiAgfQ0KICBjb25zdCBlcG9jaCA9IHNoYXJlRXBvY2g7DQogIHNoYXJlQnVzeSA9IHRydWU7ICQoJyNjcmVhdGVTaGFyZScpLmRpc2FibGVkID0gdHJ1ZTsgJCgnI3NoYXJlUmVzdWx0JykuaGlkZGVuID0gdHJ1ZTsNCiAgJCgnI3NoYXJlU3RhdHVzJykudGV4dENvbnRlbnQgPSAn0JfQsdC10YDRltCz0LDRlNC80L4g0L/RgNC10LfQtdC90YLQsNGG0ZbRjiDQvdCwINGB0LXRgNCy0LXRgNGW4oCmJzsNCiAgdHJ5IHsNCiAgICBjb25zdCByZXN1bHQgPSBhd2FpdCByZXF1ZXN0SlNPTihTSEFSRV9BUEksIHttZXRob2Q6J1BPU1QnLCBoZWFkZXJzOnsnQ29udGVudC1UeXBlJzonYXBwbGljYXRpb24vanNvbicsJ0F1dGhvcml6YXRpb24nOmBCZWFyZXIgJHtuZXdDYXBhYmlsaXR5KCl9YH0sIGJvZHl9KTsNCiAgICBpZiAoZXBvY2ggIT09IHNoYXJlRXBvY2gpIHJldHVybjsNCiAgICBpZiAoIS9eW2EtZjAtOV17NjR9JC8udGVzdChyZXN1bHQuaWQpKSB0aHJvdyBuZXcgRXJyb3IoJ2ludmFsaWRfcmVzcG9uc2UnKTsNCiAgICBjb25zdCB1cmwgPSBuZXcgVVJMKCdodHRwczovL2tvc2FjaGV2bGFkLmdpdGh1Yi5pby9zbGlkZXMvJyk7IHVybC5zZWFyY2ggPSAnJzsgdXJsLmhhc2ggPSAnJzsgdXJsLnNlYXJjaFBhcmFtcy5zZXQoJ2lkJywgcmVzdWx0LmlkKTsNCiAgICBjYWNoZWRTaGFyZSA9IHtzbmFwc2hvdCwgdXJsOnVybC5ocmVmfTsNCiAgICAkKCcjc2hhcmVVcmwnKS52YWx1ZSA9IHVybC5ocmVmOyAkKCcjc2hhcmVSZXN1bHQnKS5oaWRkZW4gPSBmYWxzZTsNCiAgICAkKCcjY3JlYXRlU2hhcmUnKS50ZXh0Q29udGVudCA9ICfQodGC0LLQvtGA0LjRgtC4INC90L7QstC1INC/0L7RgdC40LvQsNC90L3Rjyc7DQogICAgJCgnI3NoYXJlU3RhdHVzJykudGV4dENvbnRlbnQgPSAn0JrQvtC/0ZbRjiDQt9Cx0LXRgNC10LbQtdC90L4g0L3QsCA5MCDQtNC90ZbQsi4g0KHQutC+0L/RltGO0LnRgtC1INC/0L7RgdC40LvQsNC90L3RjyDRgtCwINC90LDQtNGW0YjQu9GW0YLRjCDRg9GH0LjRgtC10LvRji4nOw0KICB9IGNhdGNoKGVycm9yKSB7DQogICAgaWYgKGVwb2NoICE9PSBzaGFyZUVwb2NoKSByZXR1cm47DQogICAgJCgnI3NoYXJlU3RhdHVzJykudGV4dENvbnRlbnQgPSBlcnJvci5tZXNzYWdlID09PSAndG9vX2xhcmdlJyA/ICfQn9GA0LXQt9C10L3RgtCw0YbRltGPINC30LDQstC10LvQuNC60LAuINCc0LDQutGB0LjQvNCw0LvRjNC90LjQuSDRgNC+0LfQvNGW0YAg4oCUIDgg0JzQkS4nIDogZXJyb3IubWVzc2FnZSA9PT0gJ3JhdGVfbGltaXRlZCcgPyAn0JfQsNCx0LDQs9Cw0YLQviDQt9Cw0L/QuNGC0ZbQsi4g0KHQv9GA0L7QsdGD0LnRgtC1INGJ0LUg0YDQsNC3INC30LAg0YXQstC40LvQuNC90YMuJyA6IGVycm9yLm1lc3NhZ2UgPT09ICdpbnZhbGlkX3ByZXNlbnRhdGlvbicgPyAn0J3QtSDQstC00LDQu9C+0YHRjyDQt9Cx0LXRgNC10LPRgtC4INGG0Y4g0L/RgNC10LfQtdC90YLQsNGG0ZbRji4g0J/QtdGA0LXQstGW0YDRgtC1INGB0LvQsNC50LTQuCDQuSDQt9C+0LHRgNCw0LbQtdC90L3Rjy4nIDogJ9Cd0LUg0LLQtNCw0LvQvtGB0Y8g0LfQsdC10YDQtdCz0YLQuCDQv9GA0LXQt9C10L3RgtCw0YbRltGOLiDQn9C10YDQtdCy0ZbRgNGC0LUg0ZbQvdGC0LXRgNC90LXRgiDRliDRgdC/0YDQvtCx0YPQudGC0LUg0YnQtSDRgNCw0LcuINCS0LDRiNGWINGB0LvQsNC50LTQuCDQt9Cw0LvQuNGI0LjQu9C40YHRjyDQvdCwINC/0YDQuNGB0YLRgNC+0ZcuJzsNCiAgfSBmaW5hbGx5IHsgaWYgKGVwb2NoID09PSBzaGFyZUVwb2NoKSB7IHNoYXJlQnVzeSA9IGZhbHNlOyAkKCcjY3JlYXRlU2hhcmUnKS5kaXNhYmxlZCA9IGZhbHNlOyB9IH0NCn07DQokKCcjY29weVNoYXJlJykub25jbGljayA9IGFzeW5jICgpID0+IHsNCiAgdHJ5IHsgYXdhaXQgbmF2aWdhdG9yLmNsaXBib2FyZC53cml0ZVRleHQoJCgnI3NoYXJlVXJsJykudmFsdWUpOyAkKCcjc2hhcmVTdGF0dXMnKS50ZXh0Q29udGVudCA9ICfQn9C+0YHQuNC70LDQvdC90Y8g0YHQutC+0L/RltC50L7QstCw0L3QviDigJQg0L3QsNC00ZbRiNC70ZbRgtGMINC50L7Qs9C+INCy0YfQuNGC0LXQu9GOLic7IH0NCiAgY2F0Y2ggeyAkKCcjc2hhcmVVcmwnKS5mb2N1cygpOyAkKCcjc2hhcmVVcmwnKS5zZWxlY3QoKTsgJCgnI3NoYXJlU3RhdHVzJykudGV4dENvbnRlbnQgPSAn0JLQuNC00ZbQu9GW0YLRjCDRliDRgdC60L7Qv9GW0Y7QudGC0LUg0L/QvtGB0LjQu9Cw0L3QvdGPINC3INC/0L7Qu9GPINCy0YDRg9GH0L3Rgy4nOyB9DQp9Ow0KJCgnI3NlbmRTaGFyZScpLm9uY2xpY2sgPSBhc3luYyAoKSA9PiB7DQogIGlmICghY2FjaGVkU2hhcmUpIHJldHVybjsNCiAgdHJ5IHsgYXdhaXQgbmF2aWdhdG9yLnNoYXJlKHt0aXRsZTpkZWNrLnRpdGxlLCB0ZXh0OifQnNC+0Y8g0L/RgNC10LfQtdC90YLQsNGG0ZbRjycsIHVybDpjYWNoZWRTaGFyZS51cmx9KTsgfQ0KICBjYXRjaChlcnJvcikgeyBpZiAoZXJyb3IubmFtZSAhPT0gJ0Fib3J0RXJyb3InKSAkKCcjc2hhcmVTdGF0dXMnKS50ZXh0Q29udGVudCA9ICfQodC60L7Qv9GW0Y7QudGC0LUg0L/QvtGB0LjQu9Cw0L3QvdGPINGC0LAg0L3QsNC00ZbRiNC70ZbRgtGMINC50L7Qs9C+INCy0YDRg9GH0L3Rgy4nOyB9DQp9Ow0KDQpsZXQgdmlld2VySW5kZXggPSAwOw0KZnVuY3Rpb24gcmVuZGVyU2hhcmVkU2xpZGUoKSB7DQogIGZpbGxDYW52YXMoJCgnI3NoYXJlZENhbnZhcycpLGRlY2suc2xpZGVzW3ZpZXdlckluZGV4XSwnc2hvdycpOw0KICBjb25zdCB0cmFuc2l0aW9uID0gZGVjay5zbGlkZXNbdmlld2VySW5kZXhdLnRyYW5zaXRpb247DQogIGNvbnN0IGMgPSAkKCcjc2hhcmVkQ2FudmFzJyk7IGMuY2xhc3NMaXN0LnJlbW92ZSguLi5hbmltYXRpb25DbGFzc2VzKTsgdm9pZCBjLm9mZnNldFdpZHRoOw0KICBpZiAoYW5pbWF0aW9uQ2xhc3Nlcy5pbmNsdWRlcyh0cmFuc2l0aW9uKSkgYy5jbGFzc0xpc3QuYWRkKHRyYW5zaXRpb24pOw0KICAkKCcjdmlld2VyQ291bnQnKS50ZXh0Q29udGVudCA9IGAke3ZpZXdlckluZGV4KzF9IC8gJHtkZWNrLnNsaWRlcy5sZW5ndGh9YDsNCiAgJCgnI3ZpZXdlclByZXYnKS5kaXNhYmxlZCA9IHZpZXdlckluZGV4ID09PSAwOw0KICAkKCcjdmlld2VyTmV4dCcpLmRpc2FibGVkID0gdmlld2VySW5kZXggPT09IGRlY2suc2xpZGVzLmxlbmd0aC0xOw0KICBhY3RpdmUgPSB2aWV3ZXJJbmRleDsNCn0NCmFzeW5jIGZ1bmN0aW9uIGxvYWRTaGFyZWRQcmVzZW50YXRpb24oaWQpIHsNCiAgaXNTaGFyZWRWaWV3ID0gdHJ1ZTsNCiAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LmNsYXNzTGlzdC5hZGQoJ3NoYXJlZC12aWV3Jyk7DQogIGNvbnN0IHZpZXcgPSBkb2N1bWVudC5jcmVhdGVFbGVtZW50KCdzZWN0aW9uJyk7IHZpZXcuaWQgPSAnc2hhcmVkVmlld2VyJzsNCiAgdmlldy5pbm5lckhUTUwgPSBgPGhlYWRlciBjbGFzcz0idmlld2VyLWhlYWRlciI+PGEgY2xhc3M9ImJyYW5kIiBocmVmPSIuLyI+4pawINGB0LvQsNC50LQ8L2E+PHNwYW4+0J/QtdGA0LXQs9C70Y/QtCDQv9GA0LXQt9C10L3RgtCw0YbRltGXPC9zcGFuPjxhIGhyZWY9Ii4vIiBjbGFzcz0idmlld2VyLWhvbWUiPtCc0ZbQuSDRgNC10LTQsNC60YLQvtGAIOKGlzwvYT48L2hlYWRlcj48ZGl2IGlkPSJ2aWV3ZXJCb2R5Ij48ZGl2IGNsYXNzPSJ2aWV3ZXItbG9hZGluZyIgcm9sZT0ic3RhdHVzIj48aDE+0JLRltC00LrRgNC40LLQsNGU0LzQviDQv9GA0LXQt9C10L3RgtCw0YbRltGO4oCmPC9oMT48cD7Ql9Cw0LLQsNC90YLQsNC20YPRlNC80L4g0YHQu9Cw0LnQtNC4LCDQt9C+0LHRgNCw0LbQtdC90L3RjyDQuSDQsNC90ZbQvNCw0YbRltGXLjwvcD48L2Rpdj48L2Rpdj5gOw0KICBkb2N1bWVudC5ib2R5LmFwcGVuZCh2aWV3KTsNCiAgZG9jdW1lbnQuZG9jdW1lbnRFbGVtZW50LmNsYXNzTGlzdC5yZW1vdmUoJ3NoYXJlZC1sb2FkaW5nJyk7DQogIGlmICghL15bYS1mMC05XXs2NH0kLy50ZXN0KGlkKSkgeyBzaG93U2hhcmVkRXJyb3IoJ9Cd0LXQutC+0YDQtdC60YLQvdC1INC/0L7RgdC40LvQsNC90L3RjyDQvdCwINC/0YDQtdC30LXQvdGC0LDRhtGW0Y4uINCf0LXRgNC10LLRltGA0YLQtSwg0YfQuCDQudC+0LPQviDRgdC60L7Qv9GW0LnQvtCy0LDQvdC+INC/0L7QstC90ZbRgdGC0Y4uJyk7IHJldHVybjsgfQ0KICB0cnkgew0KICAgIGNvbnN0IHJlc3VsdCA9IGF3YWl0IHJlcXVlc3RKU09OKGAke1NIQVJFX0FQSX0vJHtlbmNvZGVVUklDb21wb25lbnQoaWQpfWApOw0KICAgIGlmICghdmFsaWREZWNrKHJlc3VsdC5wcmVzZW50YXRpb24pKSB0aHJvdyBuZXcgRXJyb3IoJ2ludmFsaWRfcHJlc2VudGF0aW9uJyk7DQogICAgZGVjayA9IHJlc3VsdC5wcmVzZW50YXRpb247IHNlbGVjdGVkID0gbnVsbDsgYWN0aXZlID0gMDsgcGFzdCA9IFtdOyBmdXR1cmUgPSBbXTsNCiAgICBkb2N1bWVudC50aXRsZSA9IGAke2RlY2sudGl0bGV9IOKAlCDQodC70LDQudC0YDsNCiAgICAkKCcjdmlld2VyQm9keScpLmlubmVySFRNTCA9IGA8ZGl2IGNsYXNzPSJ2aWV3ZXItdGl0bGUiPjxkaXY+PHA+0KHQn9CG0JvQrNCd0JAg0J/QoNCV0JfQldCd0KLQkNCm0IbQrzwvcD48aDEgaWQ9InNoYXJlZFRpdGxlIj48L2gxPjwvZGl2PjxidXR0b24gaWQ9InZpZXdlclBsYXkiIGNsYXNzPSJwcmltYXJ5Ij7ilrcg0J/QvtC60LDQtyDRgdC70LDQudC00ZbQsjwvYnV0dG9uPjwvZGl2PjxkaXYgaWQ9InNoYXJlZENhbnZhcyIgY2xhc3M9InNsaWRlLWNhbnZhcyI+PC9kaXY+PGRpdiBjbGFzcz0idmlld2VyLW5hdmlnYXRpb24iPjxidXR0b24gaWQ9InZpZXdlclByZXYiIGNsYXNzPSJmaWVsZCIgYXJpYS1sYWJlbD0i0J/QvtC/0LXRgNC10LTQvdGW0Lkg0YHQu9Cw0LnQtCI+4oaQINCd0LDQt9Cw0LQ8L2J1dHRvbj48c3BhbiBpZD0idmlld2VyQ291bnQiPjwvc3Bhbj48YnV0dG9uIGlkPSJ2aWV3ZXJOZXh0IiBjbGFzcz0iZmllbGQiIGFyaWEtbGFiZWw9ItCd0LDRgdGC0YPQv9C90LjQuSDRgdC70LDQudC0Ij7QlNCw0LvRliDihpI8L2J1dHRvbj48L2Rpdj48ZGl2IGNsYXNzPSJ2aWV3ZXItYm90dG9tIj48c3Bhbj7Ql9Cx0LXRgNC10LbQtdC90LAg0LrQvtC/0ZbRjyDCtyDQu9C40YjQtSDQv9C10YDQtdCz0LvRj9C0PC9zcGFuPjwvZGl2PmA7DQogICAgJCgnI3NoYXJlZFRpdGxlJykudGV4dENvbnRlbnQgPSBkZWNrLnRpdGxlOw0KICAgICQoJyN2aWV3ZXJQbGF5Jykub25jbGljayA9IHN0YXJ0U2hvdzsNCiAgICAkKCcjdmlld2VyUHJldicpLm9uY2xpY2sgPSAoKSA9PiB7IHZpZXdlckluZGV4LS07IHJlbmRlclNoYXJlZFNsaWRlKCk7IH07DQogICAgJCgnI3ZpZXdlck5leHQnKS5vbmNsaWNrID0gKCkgPT4geyB2aWV3ZXJJbmRleCsrOyByZW5kZXJTaGFyZWRTbGlkZSgpOyB9Ow0KICAgIGxldCBzdGFydFg9MDsgJCgnI3NoYXJlZENhbnZhcycpLm9udG91Y2hzdGFydCA9IGUgPT4gc3RhcnRYPWUuY2hhbmdlZFRvdWNoZXNbMF0uY2xpZW50WDsNCiAgICAkKCcjc2hhcmVkQ2FudmFzJykub250b3VjaGVuZCA9IGUgPT4ge2NvbnN0IGR4PWUuY2hhbmdlZFRvdWNoZXNbMF0uY2xpZW50WC1zdGFydFg7aWYoTWF0aC5hYnMoZHgpPDQwKXJldHVybjt2aWV3ZXJJbmRleD1NYXRoLm1heCgwLE1hdGgubWluKGRlY2suc2xpZGVzLmxlbmd0aC0xLHZpZXdlckluZGV4KyhkeDwwPzE6LTEpKSk7cmVuZGVyU2hhcmVkU2xpZGUoKTt9Ow0KICAgIGRvY3VtZW50LmFkZEV2ZW50TGlzdGVuZXIoJ2tleWRvd24nLGU9PntpZighJCgnI3BsYXllcicpLmhpZGRlbnx8WydJTlBVVCcsJ1RFWFRBUkVBJ10uaW5jbHVkZXMoZG9jdW1lbnQuYWN0aXZlRWxlbWVudC50YWdOYW1lKSlyZXR1cm47aWYoZS5rZXk9PT0nQXJyb3dSaWdodCcmJnZpZXdlckluZGV4PGRlY2suc2xpZGVzLmxlbmd0aC0xKXt2aWV3ZXJJbmRleCsrO3JlbmRlclNoYXJlZFNsaWRlKCl9aWYoZS5rZXk9PT0nQXJyb3dMZWZ0JyYmdmlld2VySW5kZXg+MCl7dmlld2VySW5kZXgtLTtyZW5kZXJTaGFyZWRTbGlkZSgpfX0pOw0KICAgIHJlbmRlclNoYXJlZFNsaWRlKCk7DQogIH0gY2F0Y2goZXJyb3IpIHsNCiAgICBzaG93U2hhcmVkRXJyb3IoZXJyb3IubWVzc2FnZT09PSdleHBpcmVkJyA/ICfQodGC0YDQvtC6INC30LHQtdGA0ZbQs9Cw0L3QvdGPINC/0YDQtdC30LXQvdGC0LDRhtGW0ZcgKDkwINC00L3RltCyKSDQvNC40L3Rg9CyLiDQn9C+0L/RgNC+0YHRltGC0Ywg0LDQstGC0L7RgNCwINGB0YLQstC+0YDQuNGC0Lgg0L3QvtCy0LUg0L/QvtGB0LjQu9Cw0L3QvdGPLicgOiBlcnJvci5tZXNzYWdlPT09J25vdF9mb3VuZCcgPyAn0J/RgNC10LfQtdC90YLQsNGG0ZbRjiDQvdC1INC30L3QsNC50LTQtdC90L4g0LDQsdC+INGB0YLRgNC+0Log0LfQsdC10YDRltCz0LDQvdC90Y8gKDkwINC00L3RltCyKSDQvNC40L3Rg9CyLiDQn9C+0L/RgNC+0YHRltGC0Ywg0LDQstGC0L7RgNCwINC90LDQtNGW0YHQu9Cw0YLQuCDQvdC+0LLQtSDQv9C+0YHQuNC70LDQvdC90Y8uJyA6ICfQndC1INCy0LTQsNC70L7RgdGPINC30LDQstCw0L3RgtCw0LbQuNGC0Lgg0L/RgNC10LfQtdC90YLQsNGG0ZbRji4g0J/QtdGA0LXQstGW0YDRgtC1INGW0L3RgtC10YDQvdC10YIg0ZYg0YHQv9GA0L7QsdGD0LnRgtC1INGJ0LUg0YDQsNC3LicpOw0KICB9DQp9DQpmdW5jdGlvbiBzaG93U2hhcmVkRXJyb3IobWVzc2FnZSkgew0KICAkKCcjdmlld2VyQm9keScpLmlubmVySFRNTCA9ICc8ZGl2IGNsYXNzPSJ2aWV3ZXItbG9hZGluZyI+PGgxPtCd0LUg0LLQtNCw0LvQvtGB0Y8g0LLRltC00LrRgNC40YLQuCDQv9GA0LXQt9C10L3RgtCw0YbRltGOPC9oMT48cCBpZD0idmlld2VyRXJyb3IiIHJvbGU9ImFsZXJ0Ij48L3A+PGJ1dHRvbiBpZD0idmlld2VyUmV0cnkiIGNsYXNzPSJwcmltYXJ5Ij7QodC/0YDQvtCx0YPQstCw0YLQuCDRidC1INGA0LDQtzwvYnV0dG9uPjxwPjxhIGhyZWY9Ii4vIj7Qn9C10YDQtdC50YLQuCDQtNC+INC80L7Qs9C+INGA0LXQtNCw0LrRgtC+0YDQsDwvYT48L3A+PC9kaXY+JzsNCiAgJCgnI3ZpZXdlckVycm9yJykudGV4dENvbnRlbnQgPSBtZXNzYWdlOw0KICAkKCcjdmlld2VyUmV0cnknKS5vbmNsaWNrID0gKCkgPT4gbG9jYXRpb24ucmVsb2FkKCk7DQp9DQpjb25zdCBzaGFyZWRJZCA9IG5ldyBVUkxTZWFyY2hQYXJhbXMobG9jYXRpb24uc2VhcmNoKS5nZXQoJ2lkJyk7DQppZiAoc2hhcmVkSWQgIT09IG51bGwpIGxvYWRTaGFyZWRQcmVzZW50YXRpb24oc2hhcmVkSWQpOw0KDQo=
+/* Shared snapshots live in R2; only the opaque snapshot ID travels in the URL. */
+const SHARE_API = 'https://slayd-share-nb1103.kosachevlad.chatgpt.site/api/presentations';
+const shareDialog = document.createElement('dialog');
+shareDialog.id = 'shareDialog';
+shareDialog.innerHTML = `<div class="share-heading"><h2>Поділитися з учителем</h2><button id="closeShare" class="icon" aria-label="Закрити">✕</button></div>
+<p>Збережіть копію презентації та надішліть посилання вчителю. Він зможе переглянути слайди, зображення й анімації без входу.</p>
+<div class="share-notice">Доступ матиме кожен, хто отримає посилання. Копія зберігається 90 днів від створення, після чого посилання перестає працювати.</div>
+<button id="createShare" class="primary">Створити посилання</button>
+<div id="shareResult" hidden><label for="shareUrl" class="property-label">Посилання на збережену копію</label><input id="shareUrl" class="field" readonly><div class="row share-actions"><button id="copyShare" class="primary">Копіювати посилання</button><button id="sendShare" class="field">Надіслати…</button></div><p class="muted">Після редагування створіть нове посилання, щоб надіслати оновлену копію.</p></div>
+<p id="shareStatus" class="muted" role="status" aria-live="polite"></p>`;
+document.body.append(shareDialog);
+let cachedShare = null, shareBusy = false, shareEpoch = 0;
+$('#sharePresentation').onclick = () => {
+  if (isSharedView) return;
+  const unchanged = cachedShare?.snapshot === JSON.stringify(deck);
+  $('#shareResult').hidden = !unchanged;
+  if (unchanged) $('#shareUrl').value = cachedShare.url;
+  $('#createShare').textContent = unchanged ? 'Створити нове посилання' : 'Створити посилання';
+  if (!shareBusy) $('#shareStatus').textContent = '';
+  $('#sendShare').hidden = !navigator.share;
+  shareDialog.showModal();
+};
+$('#closeShare').onclick = () => shareDialog.close();
+
+function snapshotForSharing() {
+  const snapshot = clone(deck);
+  snapshot.slides.forEach(s => { s.notes = ''; });
+  return snapshot;
+}
+function newCapability() {
+  return [...crypto.getRandomValues(new Uint8Array(32))].map(b => b.toString(16).padStart(2,'0')).join('');
+}
+async function requestJSON(url, options = {}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 45000);
+  try {
+    const response = await fetch(url, {...options, signal:controller.signal, credentials:'omit', cache:'no-store', referrerPolicy:'no-referrer'});
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.error || 'server_error');
+    return result;
+  } finally { clearTimeout(timeout); }
+}
+$('#createShare').onclick = async () => {
+  if (shareBusy) return;
+  const snapshot = JSON.stringify(deck), presentation = snapshotForSharing(), body = JSON.stringify(presentation);
+  if (new Blob([body]).size > 8 * 1024 * 1024) {
+    $('#shareStatus').textContent = 'Презентація завелика для надсилання (до 8 МБ). Зменште кількість або розмір зображень.';
+    return;
+  }
+  const epoch = shareEpoch;
+  shareBusy = true; $('#createShare').disabled = true; $('#shareResult').hidden = true;
+  $('#shareStatus').textContent = 'Зберігаємо презентацію на сервері…';
+  try {
+    const result = await requestJSON(SHARE_API, {method:'POST', headers:{'Content-Type':'application/json','Authorization':`Bearer ${newCapability()}`}, body});
+    if (epoch !== shareEpoch) return;
+    if (!/^[a-f0-9]{64}$/.test(result.id)) throw new Error('invalid_response');
+    const url = new URL('https://kosachevlad.github.io/slides/'); url.search = ''; url.hash = ''; url.searchParams.set('id', result.id);
+    cachedShare = {snapshot, url:url.href};
+    $('#shareUrl').value = url.href; $('#shareResult').hidden = false;
+    $('#createShare').textContent = 'Створити нове посилання';
+    $('#shareStatus').textContent = 'Копію збережено на 90 днів. Скопіюйте посилання та надішліть учителю.';
+  } catch(error) {
+    if (epoch !== shareEpoch) return;
+    $('#shareStatus').textContent = error.message === 'too_large' ? 'Презентація завелика. Максимальний розмір — 8 МБ.' : error.message === 'rate_limited' ? 'Забагато запитів. Спробуйте ще раз за хвилину.' : error.message === 'invalid_presentation' ? 'Не вдалося зберегти цю презентацію. Перевірте слайди й зображення.' : 'Не вдалося зберегти презентацію. Перевірте інтернет і спробуйте ще раз. Ваші слайди залишилися на пристрої.';
+  } finally { if (epoch === shareEpoch) { shareBusy = false; $('#createShare').disabled = false; } }
+};
+$('#copyShare').onclick = async () => {
+  try { await navigator.clipboard.writeText($('#shareUrl').value); $('#shareStatus').textContent = 'Посилання скопійовано — надішліть його вчителю.'; }
+  catch { $('#shareUrl').focus(); $('#shareUrl').select(); $('#shareStatus').textContent = 'Виділіть і скопіюйте посилання з поля вручну.'; }
+};
+$('#sendShare').onclick = async () => {
+  if (!cachedShare) return;
+  try { await navigator.share({title:deck.title, text:'Моя презентація', url:cachedShare.url}); }
+  catch(error) { if (error.name !== 'AbortError') $('#shareStatus').textContent = 'Скопіюйте посилання та надішліть його вручну.'; }
+};
+
+let viewerIndex = 0;
+function renderSharedSlide() {
+  fillCanvas($('#sharedCanvas'),deck.slides[viewerIndex],'show');
+  const transition = deck.slides[viewerIndex].transition;
+  const c = $('#sharedCanvas'); c.classList.remove(...animationClasses); void c.offsetWidth;
+  if (animationClasses.includes(transition)) c.classList.add(transition);
+  $('#viewerCount').textContent = `${viewerIndex+1} / ${deck.slides.length}`;
+  $('#viewerPrev').disabled = viewerIndex === 0;
+  $('#viewerNext').disabled = viewerIndex === deck.slides.length-1;
+  active = viewerIndex;
+}
+async function loadSharedPresentation(id) {
+  isSharedView = true;
+  document.documentElement.classList.add('shared-view');
+  const view = document.createElement('section'); view.id = 'sharedViewer';
+  view.innerHTML = `<header class="viewer-header"><a class="brand" href="./">▰ слайд</a><span>Перегляд презентації</span><a href="./" class="viewer-home">Мій редактор ↗</a></header><div id="viewerBody"><div class="viewer-loading" role="status"><h1>Відкриваємо презентацію…</h1><p>Завантажуємо слайди, зображення й анімації.</p></div></div>`;
+  document.body.append(view);
+  document.documentElement.classList.remove('shared-loading');
+  if (!/^[a-f0-9]{64}$/.test(id)) { showSharedError('Некоректне посилання на презентацію. Перевірте, чи його скопійовано повністю.'); return; }
+  try {
+    const result = await requestJSON(`${SHARE_API}/${encodeURIComponent(id)}`);
+    if (!validDeck(result.presentation)) throw new Error('invalid_presentation');
+    deck = result.presentation; selected = null; active = 0; past = []; future = [];
+    document.title = `${deck.title} — Слайд`;
+    $('#viewerBody').innerHTML = `<div class="viewer-title"><div><p>СПІЛЬНА ПРЕЗЕНТАЦІЯ</p><h1 id="sharedTitle"></h1></div><button id="viewerPlay" class="primary">▷ Показ слайдів</button></div><div id="sharedCanvas" class="slide-canvas"></div><div class="viewer-navigation"><button id="viewerPrev" class="field" aria-label="Попередній слайд">← Назад</button><span id="viewerCount"></span><button id="viewerNext" class="field" aria-label="Наступний слайд">Далі →</button></div><div class="viewer-bottom"><span>Збережена копія · лише перегляд</span></div>`;
+    $('#sharedTitle').textContent = deck.title;
+    $('#viewerPlay').onclick = startShow;
+    $('#viewerPrev').onclick = () => { viewerIndex--; renderSharedSlide(); };
+    $('#viewerNext').onclick = () => { viewerIndex++; renderSharedSlide(); };
+    let startX=0; $('#sharedCanvas').ontouchstart = e => startX=e.changedTouches[0].clientX;
+    $('#sharedCanvas').ontouchend = e => {const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)<40)return;viewerIndex=Math.max(0,Math.min(deck.slides.length-1,viewerIndex+(dx<0?1:-1)));renderSharedSlide();};
+    document.addEventListener('keydown',e=>{if(!$('#player').hidden||['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight'&&viewerIndex<deck.slides.length-1){viewerIndex++;renderSharedSlide()}if(e.key==='ArrowLeft'&&viewerIndex>0){viewerIndex--;renderSharedSlide()}});
+    renderSharedSlide();
+  } catch(error) {
+    showSharedError(error.message==='expired' ? 'Строк зберігання презентації (90 днів) минув. Попросіть автора створити нове посилання.' : error.message==='not_found' ? 'Презентацію не знайдено або строк зберігання (90 днів) минув. Попросіть автора надіслати нове посилання.' : 'Не вдалося завантажити презентацію. Перевірте інтернет і спробуйте ще раз.');
+  }
+}
+function showSharedError(message) {
+  $('#viewerBody').innerHTML = '<div class="viewer-loading"><h1>Не вдалося відкрити презентацію</h1><p id="viewerError" role="alert"></p><button id="viewerRetry" class="primary">Спробувати ще раз</button><p><a href="./">Перейти до мого редактора</a></p></div>';
+  $('#viewerError').textContent = message;
+  $('#viewerRetry').onclick = () => location.reload();
+}
+const sharedId = new URLSearchParams(location.search).get('id');
+if (sharedId !== null) loadSharedPresentation(sharedId);
+
