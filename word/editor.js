@@ -20,6 +20,7 @@ const icons = {
   file:"M5 2h9l5 5v15H5zM14 2v6h5m-11 4h8m-8 4h8",
   open:"M3 20V5h7l3 3h8v4M3 20l4-9h15l-4 9z",
   save:"M3 3h15l3 3v15H3zM7 3h9v6H7zm0 10h10v8H7z",
+  share:"M14 3h7v7m0-7-9 9m8 2v7H3V4h7",
   break:"M5 2h14v7H5zm0 13h14v7H5zM2 12h3m2 0h3m2 0h3m2 0h4",
   table:"M3 4h18v16H3zM3 9h18M3 14h18M9 4v16m6-16v16",
   shapes:"M20 8a5 5 0 1 0-10 0m-7 1h10v11H3zm10 12 5-10 5 10z",
@@ -607,6 +608,44 @@ $("#dialog").addEventListener("cancel",event => {
   event.preventDefault();
   finishDialog(null);
 });
+const shareDialog = $("#share-dialog");
+const shareNative = $("#share-native");
+const shareStatus = $("#share-status");
+let shareFile;
+function showShareDialog(file) {
+  shareFile = file;
+  $("#share-filename").textContent = file.name;
+  shareStatus.hidden = true;
+  shareNative.disabled = false;
+  shareNative.hidden = !(typeof navigator.share === "function" && navigator.canShare?.({files:[file]}));
+  shareDialog.showModal();
+}
+shareDialog.addEventListener("close",() => {
+  if (!shareDialog.open) {
+    shareFile = null;
+    restore();
+  }
+});
+$("#share-email").addEventListener("click",() => {
+  if (shareFile) location.href = "mailto:?subject=" + encodeURIComponent(shareFile.name);
+});
+shareNative.addEventListener("click",async () => {
+  const file = shareFile;
+  if (!file || shareNative.disabled) return;
+  shareNative.disabled = true;
+  shareStatus.hidden = true;
+  try {
+    await navigator.share({files:[file]});
+    if (shareFile === file) shareDialog.close();
+  } catch (error) {
+    if (shareFile === file && error.name !== "AbortError") {
+      shareStatus.textContent = "Не вдалося передати DOCX через системне меню. Прикріпіть завантажений файл у потрібному застосунку.";
+      shareStatus.hidden = false;
+    }
+  } finally {
+    if (shareFile === file) shareNative.disabled = false;
+  }
+});
 async function confirmReplace() {
   return html() === savedHtml || await ask({title:"Замінити документ?",info:"У поточному документі є незбережені зміни.",ok:"Продовжити"});
 }
@@ -706,21 +745,26 @@ async function action(type) {
         if (await confirmReplace()) loadDocument([newPage()],"Документ 1");
         break;
       }
-      case "saveDoc": {
-        const input = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти"});
+      case "saveDoc":
+      case "saveAndShare": {
+        const share = type === "saveAndShare";
+        const input = await ask({title:share ? "Зберегти й поділитися" : "Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти"});
         if (!input) break;
         const filename = input.trim().replace(/\.docx$/i,"").replace(/[<>:"/\\|?*\x00-\x1f]/g,"_").trim() || "Документ";
         const snapshot = html();
+        const blob = Docx.write(editor);
+        const file = new File([blob],filename + ".docx",{type:blob.type});
         const link = document.createElement("a");
-        link.href = URL.createObjectURL(Docx.write(editor));
-        link.download = filename + ".docx";
+        link.href = URL.createObjectURL(file);
+        link.download = file.name;
         link.click();
         setTimeout(() => URL.revokeObjectURL(link.href),30000);
         name = filename;
         savedHtml = snapshot;
         update();
         flash("Збережено " + link.download);
-        restore();
+        if (share) showShareDialog(file);
+        else restore();
         break;
       }
       case "imageWeb": {
@@ -847,7 +891,7 @@ document.addEventListener("keydown",event => {
       restore();
     }
   }
-  if ($("#dialog").open || event.target.matches?.("input,select")) return;
+  if ($("#dialog").open || shareDialog.open || event.target.matches?.("input,select")) return;
   const editing = event.target === editor || editor.contains(event.target);
   if (editing && event.key === "Tab") {
     const parent = element(savedRange?.startContainer);

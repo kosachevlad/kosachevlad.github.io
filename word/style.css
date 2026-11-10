@@ -119,5 +119,7 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
 .dialog-actions button{border:1px solid #a5a5a5;min-width:86px;padding:5px 9px}
 .dialog-actions .primary{background:#2b579a;color:white;border-color:#234779}
 .dialog-actions .primary:hover{background:#20467f}
+.share-actions{flex-wrap:wrap}
+#share-filename{overflow-wrap:anywhere}
 @media(max-width:850px){:root{--paper-width:calc(100vw - 32px);--margin:clamp(22px,9vw,94px);--paper-height:calc((100vw - 32px) * 1.414)}.page::before,.tab-stop{display:none}.ruler{width:calc(100% - 34px)}}
 @media(max-width:475px){.title-spacer,.quick{width:82px}.quick{padding-left:6px}.status{gap:9px;padding:0 6px}.language{display:none}}

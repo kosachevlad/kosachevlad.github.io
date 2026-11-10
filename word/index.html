@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=font-size-1">
+<link rel="stylesheet" href="./style.css?v=share-1">
 <script defer src="./docx.js"></script>
-<script defer src="./editor.js?v=save-name-1"></script>
+<script defer src="./editor.js?v=share-1"></script>
 </head>
 <body>
 <header class="office">
@@ -102,6 +102,7 @@
     <button class="large" data-action="newDoc"><i data-icon="file"></i>Новий<br>документ</button>
     <button class="large" data-action="openDoc"><i data-icon="open"></i>Відкрити</button>
     <button class="large" data-action="saveDoc"><i data-icon="save"></i>Зберегти як</button>
+    <button class="large" data-action="saveAndShare"><i data-icon="share"></i>Зберегти й<br>поділитися</button>
   </div>
 </header>
 <div class="ruler-bar"><span class="tab-stop" aria-hidden="true">∟</span><div class="ruler" aria-hidden="true" id="ruler"><span class="left-indent">⧗</span><span class="right-indent">▴</span></div></div>
@@ -123,5 +124,16 @@
 <input id="file-input" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
 <input id="image-input" type="file" accept="image/*" hidden>
 <dialog id="dialog"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-info"></p><label id="dialog-field"><span id="dialog-label"></span><input id="dialog-input" required></label><div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
+<dialog id="share-dialog" aria-labelledby="share-title" aria-describedby="share-hint">
+  <h2 id="share-title">Поділитися документом</h2>
+  <p><strong id="share-filename"></strong></p>
+  <p id="share-hint">Щоб надіслати документ через Viber, пошту чи інший застосунок, прикріпіть файл із папки «Завантаження».</p>
+  <p id="share-status" role="status" hidden></p>
+  <form method="dialog" class="dialog-actions share-actions">
+    <button type="submit" autofocus>Закрити</button>
+    <button type="button" id="share-email">Відкрити пошту</button>
+    <button type="button" class="primary" id="share-native" hidden>Вибрати застосунок</button>
+  </form>
+</dialog>
 </body>
 </html>
