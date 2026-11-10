@@ -288,6 +288,10 @@ function inline(node) {
 }
 
 const workspace = $("#workspace");
+const rulerBar = $("#ruler").parentElement;
+workspace.addEventListener("scroll",() => {
+  if (rulerBar.scrollLeft !== workspace.scrollLeft) rulerBar.scrollLeft = workspace.scrollLeft;
+},{passive:true});
 const resizeFrame = document.createElement("div");
 resizeFrame.className = "object-frame";
 resizeFrame.hidden = true;
@@ -343,6 +347,12 @@ function sizeObject(object,width,height) {
   }
 }
 
+function resizeGeometry(object) {
+  const {width,height} = object.getBoundingClientRect();
+  const scale = parseFloat(getComputedStyle(object.closest(".page")).zoom) || 1;
+  return {width:width / scale,height:height / scale,scale};
+}
+
 function resizeDimensions(object,width,height,dx,dy,proportional) {
   const container = object.closest("td,th,.page");
   const style = getComputedStyle(container);
@@ -391,11 +401,11 @@ for (const [corner,label,horizontal,vertical] of [
     if (!selectedObject || event.button !== 0 || resizeDrag) return;
     event.preventDefault();
     const object = selectedObject;
-    const {width,height} = object.getBoundingClientRect();
+    const {width,height,scale} = resizeGeometry(object);
     if (width <= 0 || height <= 0) return;
     beforeEdit();
     resizeDrag = {
-      object,width,height,horizontal,vertical,x:event.clientX,y:event.clientY,pointer:event.pointerId,
+      object,width,height,scale,horizontal,vertical,x:event.clientX,y:event.clientY,pointer:event.pointerId,
       attributes:["width","height","style"].map(key => [key,object.getAttribute(key)])
     };
     resizeFrame.setPointerCapture(event.pointerId);
@@ -405,7 +415,7 @@ for (const [corner,label,horizontal,vertical] of [
     if (!selectedObject || !direction || event.ctrlKey || event.metaKey || event.altKey) return;
     event.preventDefault();
     const object = selectedObject;
-    const {width,height} = object.getBoundingClientRect();
+    const {width,height} = resizeGeometry(object);
     if (width <= 0 || height <= 0) return;
     const [nextWidth,nextHeight] = resizeDimensions(object,width,height,direction[0] * horizontal * 4,direction[1] * vertical * 4,event.shiftKey);
     beforeEdit();
@@ -418,8 +428,8 @@ for (const [corner,label,horizontal,vertical] of [
 resizeFrame.addEventListener("pointermove",event => {
   const drag = resizeDrag;
   if (!drag || event.pointerId !== drag.pointer) return;
-  const dx = (event.clientX - drag.x) * drag.horizontal;
-  const dy = (event.clientY - drag.y) * drag.vertical;
+  const dx = (event.clientX - drag.x) * drag.horizontal / drag.scale;
+  const dy = (event.clientY - drag.y) * drag.vertical / drag.scale;
   if (!dx && !dy && !drag.changed) return;
   sizeObject(drag.object,...resizeDimensions(drag.object,drag.width,drag.height,dx,dy,event.shiftKey));
   drag.changed = true;
