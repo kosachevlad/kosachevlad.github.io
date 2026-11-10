@@ -37,7 +37,7 @@ for (let tick = -8; tick <= 46; tick++) {
   $("#ruler").append(mark);
 }
 
-let savedRange, selectedShape, activeMenu, noticeTimer, resolveDialog, localClipboard;
+let savedRange, selectedObject, activeMenu, noticeTimer, resolveDialog, localClipboard;
 let name = "Документ 1";
 let savedHtml;
 let history = [], index = -1, previousType = "", lastChange = 0;
@@ -110,9 +110,7 @@ function tidy() {
   }
 }
 function html() {
-  const clone = editor.cloneNode(true);
-  clone.querySelectorAll(".selected").forEach(shape => shape.classList.remove("selected"));
-  return clone.innerHTML;
+  return editor.innerHTML;
 }
 function beforeEdit() {
   if (history[index]) history[index].mark = bookmark();
@@ -137,13 +135,14 @@ function change(fn) {
   beforeEdit();
   fn();
   record();
+  positionFrame();
 }
 function step(delta) {
+  selectObject(null);
   const snapshot = history[index + delta];
   if (!snapshot) return;
   index += delta;
   previousType = "";
-  selectedShape = null;
   editor.innerHTML = snapshot.html;
   savedRange = fromBookmark(snapshot.mark);
   restore();
@@ -284,7 +283,153 @@ function inline(node) {
     range.collapse(true);
     setRange(range);
   });
+  selectObject(node);
 }
+
+const workspace = $("#workspace");
+const resizeFrame = document.createElement("div");
+resizeFrame.className = "object-frame";
+resizeFrame.hidden = true;
+workspace.append(resizeFrame);
+let resizeDrag;
+
+function positionFrame() {
+  if (!selectedObject?.isConnected || !editor.contains(selectedObject)) {
+    resizeFrame.hidden = true;
+    return;
+  }
+  const box = selectedObject.getBoundingClientRect();
+  const area = workspace.getBoundingClientRect();
+  resizeFrame.style.left = box.left - area.left + workspace.scrollLeft - workspace.clientLeft + "px";
+  resizeFrame.style.top = box.top - area.top + workspace.scrollTop - workspace.clientTop + "px";
+  resizeFrame.style.width = box.width + "px";
+  resizeFrame.style.height = box.height + "px";
+  resizeFrame.hidden = false;
+}
+
+const frameObserver = new ResizeObserver(positionFrame);
+frameObserver.observe(editor);
+workspace.addEventListener("click",event => {
+  if (event.target === workspace) selectObject(null);
+});
+
+function selectObject(object) {
+  if (resizeDrag) finishResize(false);
+  if (selectedObject) frameObserver.unobserve(selectedObject);
+  selectedObject = object;
+  if (object) {
+    frameObserver.observe(object);
+    const range = document.createRange();
+    range.setStartAfter(object);
+    range.collapse(true);
+    setRange(range);
+    if (object.matches(".shape")) {
+      fill = object.dataset.color;
+      updateFill();
+    }
+  }
+  positionFrame();
+}
+
+function sizeObject(object,width,height) {
+  if (object.matches("img")) {
+    object.width = width;
+    object.height = height;
+    if (width > 0 && height > 0) object.style.aspectRatio = width + " / " + height;
+  } else {
+    object.style.width = width + "px";
+    object.style.height = height + "px";
+  }
+}
+
+function resizeDimensions(object,width,height,dx,dy,proportional) {
+  const container = object.closest("td,th,.page");
+  const style = getComputedStyle(container);
+  const maxWidth = Math.max(1,Math.floor(container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)));
+  const minWidth = Math.min(width,16,maxWidth);
+  const minHeight = Math.min(height,16);
+  if (proportional) {
+    const horizontal = dx / width, vertical = dy / height;
+    const factor = 1 + (Math.abs(horizontal) > Math.abs(vertical) ? horizontal : vertical);
+    const scale = Math.min(maxWidth / width,2000 / height,Math.max(minWidth / width,minHeight / height,factor));
+    return [Math.max(1,Math.round(width * scale)),Math.max(1,Math.round(height * scale))];
+  }
+  return [
+    Math.max(1,Math.round(Math.min(maxWidth,Math.max(minWidth,width + dx)))),
+    Math.max(1,Math.round(Math.min(2000,Math.max(minHeight,height + dy))))
+  ];
+}
+
+function finishResize(commit) {
+  const drag = resizeDrag;
+  if (!drag) return;
+  resizeDrag = null;
+  if (resizeFrame.hasPointerCapture(drag.pointer)) resizeFrame.releasePointerCapture(drag.pointer);
+  if (commit && drag.changed) {
+    record();
+  } else if (drag.changed) {
+    for (const [attribute,value] of drag.attributes) {
+      if (value === null) drag.object.removeAttribute(attribute);
+      else drag.object.setAttribute(attribute,value);
+    }
+  }
+  positionFrame();
+}
+
+for (const [corner,label,horizontal,vertical] of [
+  ["nw","Верхній лівий",-1,-1],["ne","Верхній правий",1,-1],
+  ["sw","Нижній лівий",-1,1],["se","Нижній правий",1,1]
+]) {
+  const handle = document.createElement("button");
+  handle.type = "button";
+  handle.className = "resize-handle " + corner;
+  handle.setAttribute("aria-label",label + " кут — змінити розмір");
+  handle.title = "Перетягніть для зміни розміру. Shift зберігає пропорції.";
+  resizeFrame.append(handle);
+  handle.addEventListener("pointerdown",event => {
+    if (!selectedObject || event.button !== 0 || resizeDrag) return;
+    event.preventDefault();
+    const object = selectedObject;
+    const {width,height} = object.getBoundingClientRect();
+    if (width <= 0 || height <= 0) return;
+    beforeEdit();
+    resizeDrag = {
+      object,width,height,horizontal,vertical,x:event.clientX,y:event.clientY,pointer:event.pointerId,
+      attributes:["width","height","style"].map(key => [key,object.getAttribute(key)])
+    };
+    resizeFrame.setPointerCapture(event.pointerId);
+  });
+  handle.addEventListener("keydown",event => {
+    const direction = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+    if (!selectedObject || !direction || event.ctrlKey || event.metaKey || event.altKey) return;
+    event.preventDefault();
+    const object = selectedObject;
+    const {width,height} = object.getBoundingClientRect();
+    if (width <= 0 || height <= 0) return;
+    const [nextWidth,nextHeight] = resizeDimensions(object,width,height,direction[0] * horizontal * 4,direction[1] * vertical * 4,event.shiftKey);
+    beforeEdit();
+    sizeObject(object,nextWidth,nextHeight);
+    record();
+    positionFrame();
+  });
+}
+
+resizeFrame.addEventListener("pointermove",event => {
+  const drag = resizeDrag;
+  if (!drag || event.pointerId !== drag.pointer) return;
+  const dx = (event.clientX - drag.x) * drag.horizontal;
+  const dy = (event.clientY - drag.y) * drag.vertical;
+  if (!dx && !dy && !drag.changed) return;
+  sizeObject(drag.object,...resizeDimensions(drag.object,drag.width,drag.height,dx,dy,event.shiftKey));
+  drag.changed = true;
+  positionFrame();
+});
+for (const type of ["pointerup","pointercancel","lostpointercapture"]) {
+  resizeFrame.addEventListener(type,event => {
+    if (resizeDrag?.pointer === event.pointerId) finishResize(type === "pointerup");
+  });
+}
+
 function table(columns,rows) {
   change(() => {
     const range = selection().getRangeAt(0);
@@ -423,10 +568,14 @@ async function confirmReplace() {
   return html() === savedHtml || await ask({title:"Замінити документ?",info:"У поточному документі є незбережені зміни.",ok:"Продовжити"});
 }
 function loadDocument(pages,filename) {
+  selectObject(null);
   editor.replaceChildren(...pages);
   tidy();
+  editor.querySelectorAll("img[width][height]").forEach(image => {
+    sizeObject(image,Number(image.getAttribute("width")),Number(image.getAttribute("height")));
+  });
   name = filename;
-  savedRange = selectedShape = null;
+  savedRange = null;
   history = [];
   index = -1;
   previousType = "";
@@ -492,6 +641,7 @@ async function addImage(blob, label) {
     image.src = canvas.toDataURL("image/png");
   }
   image.alt = label || "Зображення";
+  sizeObject(image,image.width,image.height);
   inline(image);
 }
 let busy = false;
@@ -582,9 +732,9 @@ document.addEventListener("click",event => {
   if (data.fill) {
     fill = data.fill;
     updateFill();
-    if (selectedShape && editor.contains(selectedShape)) change(() => {
-      selectedShape.dataset.color = fill;
-      selectedShape.replaceChildren(Docx.makeShape(selectedShape.dataset.shape,fill).firstChild);
+    if (selectedObject?.matches(".shape") && editor.contains(selectedObject)) change(() => {
+      selectedObject.dataset.color = fill;
+      selectedObject.replaceChildren(Docx.makeShape(selectedObject.dataset.shape,fill).firstChild);
     });
     return;
   }
@@ -594,11 +744,8 @@ document.addEventListener("click",event => {
   else if (data.action) void action(data.action);
   else if (data.spacing) change(() => blocks().forEach(block => block.style.lineHeight = data.spacing));
   else if (data.columns) table(+data.columns,+data.rows);
-  else if (data.shape) {
-    selectedShape?.classList.remove("selected");
-    selectedShape = null;
-    inline(Docx.makeShape(data.shape,fill));
-  } else if (data.color) {
+  else if (data.shape) inline(Docx.makeShape(data.shape,fill));
+  else if (data.color) {
     exec(menuId === "color-menu" ? "foreColor" : "hiliteColor",data.color);
     $("[data-menu=" + menuId + "] .ink").style.setProperty("--ink",data.color);
   }
@@ -613,20 +760,15 @@ $("#size").addEventListener("keydown",event => {
   }
 });
 document.addEventListener("selectionchange",() => { if (capture()) update(); });
-editor.addEventListener("click",event => {
-  selectedShape?.classList.remove("selected");
-  selectedShape = event.target.closest(".shape");
-  if (selectedShape) {
-    selectedShape.classList.add("selected");
-    fill = selectedShape.dataset.color;
-    updateFill();
-  }
-});
+editor.addEventListener("click",event => selectObject(event.target.closest(".shape,img")));
 editor.addEventListener("beforeinput",event => {
   if (["historyUndo","historyRedo"].includes(event.inputType)) {
     event.preventDefault();
     step(event.inputType === "historyUndo" ? -1 : 1);
-  } else beforeEdit();
+  } else {
+    selectObject(null);
+    beforeEdit();
+  }
 });
 editor.addEventListener("input",event => {
   const groups = ["insertText","deleteContentBackward","deleteContentForward","insertCompositionText"];
@@ -653,7 +795,14 @@ for (const type of ["cut","copy"]) editor.addEventListener(type,event => {
 });
 editor.addEventListener("drop",event => event.preventDefault());
 document.addEventListener("keydown",event => {
-  if (event.key === "Escape") closeMenu();
+  if (event.key === "Escape") {
+    if (resizeDrag) finishResize(false);
+    else if (activeMenu) closeMenu();
+    else if (selectedObject) {
+      selectObject(null);
+      restore();
+    }
+  }
   if ($("#dialog").open || event.target.matches?.("input,select")) return;
   const editing = event.target === editor || editor.contains(event.target);
   if (editing && event.key === "Tab") {
@@ -671,9 +820,11 @@ document.addEventListener("keydown",event => {
       }
     }
   }
-  if (editing && selectedShape && ["Backspace","Delete"].includes(event.key)) {
+  if ((editing || resizeFrame.contains(event.target)) && selectedObject && ["Backspace","Delete"].includes(event.key)) {
     event.preventDefault();
-    change(() => { selectedShape.remove(); selectedShape = null; });
+    const object = selectedObject;
+    selectObject(null);
+    change(() => object.remove());
   }
   if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
   const command = ({z:event.shiftKey?"redo":"undo",y:"redo",s:"saveDoc",enter:"pageBreak"})[event.key.toLowerCase()];
