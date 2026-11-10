@@ -42,6 +42,9 @@ let savedRange, selectedObject, activeMenu, noticeTimer, resolveDialog, localCli
 let name = "Документ 1";
 let savedHtml;
 let history = [], index = -1, previousType = "", lastChange = 0;
+const touchListTools = $("#touch-list-tools");
+const touchOutdent = touchListTools.querySelector("[data-action=outdentList]");
+const touchIndent = touchListTools.querySelector("[data-action=indentList]");
 const selection = () => getSelection();
 const element = node => node?.nodeType === 1 ? node : node?.parentElement;
 const pageAt = () => element(savedRange?.startContainer)?.closest(".page") || editor.firstElementChild;
@@ -157,6 +160,12 @@ function update() {
   $("[data-action=undo]").disabled = index <= 0;
   $("[data-action=redo]").disabled = index >= history.length-1;
   const parent = element(savedRange?.startContainer);
+  const item = parent?.closest("li");
+  touchListTools.hidden = !item || !editor.contains(item);
+  if (!touchListTools.hidden) {
+    touchOutdent.disabled = !item.parentElement.parentElement.closest("li");
+    touchIndent.disabled = item.previousElementSibling?.tagName !== "LI";
+  }
   if (!parent || !editor.contains(parent)) return;
   const style = getComputedStyle(parent);
   const font = style.fontFamily.split(",")[0].replace(/["']/g,"").trim();
@@ -224,7 +233,8 @@ function fontSize(value) {
 }
 function listLevel(out) {
   change(() => {
-    const item = element(savedRange.startContainer)?.closest("li");
+    const {startContainer,startOffset,endContainer,endOffset} = savedRange;
+    const item = element(startContainer)?.closest("li");
     if (!item) return;
     const list = item.parentElement;
     if (out) {
@@ -248,7 +258,12 @@ function listLevel(out) {
       }
       sub.append(item);
     }
-    caret(item);
+    if (item.contains(startContainer) && item.contains(endContainer)) {
+      const range = document.createRange();
+      range.setStart(startContainer,startOffset);
+      range.setEnd(endContainer,endOffset);
+      setRange(range);
+    } else caret(item);
   });
 }
 function multilevel() {

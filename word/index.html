@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=phone-layout-1">
+<link rel="stylesheet" href="./style.css?v=touch-list-1">
 <script defer src="./docx.js"></script>
-<script defer src="./editor.js?v=phone-layout-1"></script>
+<script defer src="./editor.js?v=touch-list-1"></script>
 </head>
 <body>
 <header class="office">
@@ -103,6 +103,10 @@
     <button class="large" data-action="openDoc"><i data-icon="open"></i>Відкрити</button>
     <button class="large" data-action="saveDoc"><i data-icon="save"></i>Зберегти як</button>
     <button class="large" data-action="saveAndShare"><i data-icon="share"></i>Зберегти й<br>поділитися</button>
+  </div>
+  <div id="touch-list-tools" class="touch-list-tools" role="group" aria-label="Рівень списку" hidden>
+    <button type="button" data-action="outdentList"><span aria-hidden="true">←</span> Зменшити рівень</button>
+    <button type="button" data-action="indentList">Збільшити рівень <span aria-hidden="true">→</span></button>
   </div>
 </header>
 <div class="ruler-bar"><span class="tab-stop" aria-hidden="true">∟</span><div class="ruler" aria-hidden="true" id="ruler"><span class="left-indent">⧗</span><span class="right-indent">▴</span></div></div>
