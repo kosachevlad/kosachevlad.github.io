@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Документ — вебредактор</title>
+<link rel="stylesheet" href="./style.css">
+<script defer src="./docx.js"></script>
+<script defer src="./editor.js"></script>
+</head>
+<body>
+<header class="office">
+  <div class="titlebar">
+    <div class="quick">
+      <span class="app-icon" aria-hidden="true">W</span>
+      <button data-action="undo" title="Скасувати (Ctrl+Z)" aria-label="Скасувати" disabled><i data-icon="undo"></i></button>
+      <button data-action="redo" title="Повторити (Ctrl+Y)" aria-label="Повторити" disabled><i data-icon="redo"></i></button>
+    </div>
+    <div id="title">Документ 1 — Вебредактор</div>
+    <span class="title-spacer" aria-hidden="true"></span>
+  </div>
+  <nav class="tabs" role="tablist" aria-label="Стрічка">
+    <button id="file-tab" class="file-tab" role="tab" aria-controls="file-panel" aria-selected="false">Файл</button>
+    <button id="home-tab" role="tab" aria-controls="home-panel" aria-selected="true">Основне</button>
+    <button id="insert-tab" role="tab" aria-controls="insert-panel" aria-selected="false">Вставлення</button>
+  </nav>
+  <div class="ribbon" id="home-panel" role="tabpanel" aria-labelledby="home-tab">
+    <section class="group clipboard" aria-label="Буфер обміну">
+      <div class="tools clip-tools">
+        <button class="large" data-action="paste" title="Вставити (Ctrl+V)"><i data-icon="paste"></i>Вставити</button>
+        <div class="stack">
+          <button data-action="cut" title="Вирізати (Ctrl+X)"><i data-icon="cut"></i>Вирізати</button>
+          <button data-action="copy" title="Копіювати (Ctrl+C)"><i data-icon="copy"></i>Копіювати</button>
+        </div>
+      </div>
+      <div class="group-name">Буфер обміну</div>
+    </section>
+    <section class="group font" aria-label="Шрифт">
+      <div class="tools rows">
+        <div class="row font-select">
+          <select id="font" aria-label="Шрифт" title="Шрифт">
+            <option>Calibri</option><option>Aptos</option><option>Arial</option><option>Cambria</option>
+            <option>Georgia</option><option>Times New Roman</option><option>Verdana</option><option>Courier New</option>
+          </select>
+          <input type="text" id="size" inputmode="decimal" list="sizes" value="11" aria-label="Розмір шрифту" title="Розмір шрифту (пт)" autocomplete="off">
+          <datalist id="sizes"><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option><option>32</option><option>36</option><option>48</option><option>72</option></datalist>
+        </div>
+        <div class="row">
+          <button class="symbol" data-command="bold" title="Жирний (Ctrl+B)" aria-label="Жирний"><b>Ж</b></button>
+          <button class="symbol" data-command="italic" title="Курсив (Ctrl+I)" aria-label="Курсив"><em>К</em></button>
+          <button class="symbol" data-command="underline" title="Підкреслений (Ctrl+U)" aria-label="Підкреслений"><u>П</u></button>
+          <span class="separator"></span>
+          <button class="symbol" data-command="subscript" title="Підрядковий" aria-label="Підрядковий">x<sub>2</sub></button>
+          <button class="symbol" data-command="superscript" title="Надрядковий" aria-label="Надрядковий">x<sup>2</sup></button>
+          <span class="separator"></span>
+          <button class="color-button" data-menu="highlight-menu" title="Колір виділення" aria-label="Колір виділення"><i data-icon="highlight"></i><span class="ink" style="--ink:#ffff00"></span><span class="chevron"></span></button>
+          <button class="color-button" data-menu="color-menu" title="Колір шрифту" aria-label="Колір шрифту"><b>A</b><span class="ink" style="--ink:#c00000"></span><span class="chevron"></span></button>
+        </div>
+      </div>
+      <div class="group-name">Шрифт</div>
+    </section>
+    <section class="group paragraph" aria-label="Абзац">
+      <div class="tools rows">
+        <div class="row">
+          <button data-command="insertUnorderedList" title="Маркери" aria-label="Маркери"><i data-icon="bullets"></i></button>
+          <button data-command="insertOrderedList" title="Нумерація" aria-label="Нумерація"><i data-icon="numbers"></i></button>
+          <button data-menu="levels-menu" title="Багаторівневий список" aria-label="Багаторівневий список"><i data-icon="levels"></i><span class="chevron"></span></button>
+        </div>
+        <div class="row">
+          <button data-command="justifyLeft" title="Ліворуч" aria-label="Вирівняти ліворуч"><i data-icon="left"></i></button>
+          <button data-command="justifyCenter" title="По центру" aria-label="Вирівняти по центру"><i data-icon="center"></i></button>
+          <button data-command="justifyRight" title="Праворуч" aria-label="Вирівняти праворуч"><i data-icon="right"></i></button>
+          <button data-command="justifyFull" title="По ширині" aria-label="Вирівняти по ширині"><i data-icon="justify"></i></button>
+          <span class="separator"></span>
+          <button data-menu="spacing-menu" title="Міжрядковий інтервал" aria-label="Міжрядковий інтервал"><i data-icon="spacing"></i><span class="chevron"></span></button>
+        </div>
+      </div>
+      <div class="group-name">Абзац</div>
+    </section>
+  </div>
+  <div class="ribbon" id="insert-panel" role="tabpanel" aria-labelledby="insert-tab" hidden>
+    <section class="group" aria-label="Сторінки">
+      <div class="tools"><button class="large" data-action="pageBreak" title="Розрив сторінки (Ctrl+Enter)"><i data-icon="break"></i>Розрив<br>сторінки</button></div>
+      <div class="group-name">Сторінки</div>
+    </section>
+    <section class="group" aria-label="Таблиці">
+      <div class="tools"><button class="large" data-menu="table-menu"><i data-icon="table"></i>Таблиця <span class="chevron"></span></button></div>
+      <div class="group-name">Таблиці</div>
+    </section>
+    <section class="group" aria-label="Ілюстрації">
+      <div class="tools">
+        <button class="large" data-menu="shapes-menu"><i data-icon="shapes"></i>Фігури <span class="chevron"></span></button>
+        <button class="large" data-action="imageLocal"><i data-icon="image"></i>Зображення<br>з пристрою</button>
+        <button class="large" data-action="imageWeb"><i data-icon="web"></i>Зображення<br>з інтернету</button>
+      </div>
+      <div class="group-name">Ілюстрації</div>
+    </section>
+  </div>
+  <div class="ribbon file-panel" id="file-panel" role="tabpanel" aria-labelledby="file-tab" hidden>
+    <button class="large" data-action="newDoc"><i data-icon="file"></i>Новий<br>документ</button>
+    <button class="large" data-action="openDoc"><i data-icon="open"></i>Відкрити</button>
+    <button class="large" data-action="saveDoc"><i data-icon="save"></i>Зберегти як</button>
+  </div>
+</header>
+<div class="ruler-bar"><span class="tab-stop" aria-hidden="true">∟</span><div class="ruler" aria-hidden="true" id="ruler"><span class="left-indent">⧗</span><span class="right-indent">▴</span></div></div>
+<main class="workspace" id="workspace" aria-label="Робоча область">
+  <div id="editor" contenteditable="true" role="textbox" aria-label="Документ" aria-multiline="true" spellcheck="true"><section class="page"><p><br></p></section></div>
+</main>
+<footer class="status"><span id="page-status">Сторінка 1 з 1</span><span id="word-status">Слів: 0</span><span class="language">Українська</span><span id="notice" role="status" aria-live="polite"></span><span class="zoom">100%</span></footer>
+<div class="popup" id="color-menu" hidden></div>
+<div class="popup" id="highlight-menu" hidden></div>
+<div class="popup simple-menu" id="levels-menu" hidden>
+  <button data-action="multilevel"><i data-icon="levels"></i> Почати багаторівневий список</button>
+  <button data-action="indentList">Збільшити рівень <small>Tab</small></button>
+  <button data-action="outdentList">Зменшити рівень <small>Shift+Tab</small></button>
+</div>
+<div class="popup simple-menu" id="spacing-menu" hidden></div>
+<div class="popup" id="table-menu" hidden><div class="popup-title" id="table-label">Вставити таблицю</div><div id="table-grid" class="table-grid"></div></div>
+<div class="popup" id="shapes-menu" hidden><div class="popup-title">Фігури</div><div class="shape-grid" id="shape-grid"></div><div class="shape-fill"><span>Заливка</span><div id="shape-colors" class="swatches"></div></div></div>
+<input id="file-input" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
+<input id="image-input" type="file" accept="image/*" hidden>
+<dialog id="dialog"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-info"></p><label id="dialog-field"><span id="dialog-label"></span><input id="dialog-input" required></label><div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
+</body>
+</html>
