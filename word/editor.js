@@ -196,8 +196,8 @@ function exec(command,value) {
     document.execCommand(command,false,value);
   });
 }
-function fontSize() {
-  const size = Number($("#size").value.trim().replace(",","."));
+function fontSize(value) {
+  const size = Number(value.trim().replace(",","."));
   if (!size || size < 1 || size > 1638) {
     flash("Вкажіть розмір шрифту від 1 до 1638 пт.");
     restore();
@@ -455,7 +455,7 @@ function closeMenu() {
   $("[data-menu=" + activeMenu.id + "]").setAttribute("aria-expanded","false");
   activeMenu = null;
 }
-function showMenu(button) {
+function showMenu(button,keyboard = false) {
   const popup = document.getElementById(button.dataset.menu);
   const alreadyOpen = popup === activeMenu;
   closeMenu();
@@ -463,9 +463,16 @@ function showMenu(button) {
   activeMenu = popup;
   popup.hidden = false;
   button.setAttribute("aria-expanded","true");
-  const rect = button.getBoundingClientRect();
+  const rect = (button.closest(".size-control") || button).getBoundingClientRect();
   popup.style.left = Math.max(4,Math.min(rect.left,innerWidth-popup.offsetWidth-4)) + "px";
   popup.style.top = Math.max(4,Math.min(rect.bottom+2,innerHeight-popup.offsetHeight-4)) + "px";
+  if (popup === sizeMenu) {
+    const size = Number(sizeInput.value.replace(",","."));
+    const current = sizeOptions.find(option => Number(option.dataset.size) === size);
+    sizeOptions.forEach(option => option.setAttribute("aria-selected",option === current));
+    (current || sizeOptions[0]).scrollIntoView({block:"nearest"});
+    if (keyboard) (current || sizeOptions[0]).focus();
+  }
 }
 function tab(id) {
   closeMenu();
@@ -476,9 +483,45 @@ function tab(id) {
   });
 }
 $$("[data-menu]").forEach(button => {
-  button.setAttribute("aria-haspopup","true");
+  if (!button.hasAttribute("aria-haspopup")) button.setAttribute("aria-haspopup","true");
   button.setAttribute("aria-expanded","false");
   button.setAttribute("aria-controls",button.dataset.menu);
+});
+const sizeInput = $("#size");
+const sizeMenu = $("#size-menu");
+const sizeToggle = $("[data-menu=size-menu]");
+const sizeOptions = [8,9,10,11,12,14,16,18,20,22,24,26,28,36,48,72].map(size => {
+  const option = document.createElement("button");
+  option.type = "button";
+  option.tabIndex = -1;
+  option.setAttribute("role","option");
+  option.dataset.size = size;
+  option.textContent = size;
+  sizeMenu.append(option);
+  return option;
+});
+sizeToggle.addEventListener("keydown",event => {
+  if (event.key !== "ArrowDown") return;
+  event.preventDefault();
+  if (activeMenu === sizeMenu) {
+    (sizeMenu.querySelector('[aria-selected="true"]') || sizeOptions[0]).focus();
+  } else showMenu(sizeToggle,true);
+});
+sizeMenu.addEventListener("keydown",event => {
+  const index = sizeOptions.indexOf(event.target);
+  if (index < 0) return;
+  const next = {ArrowDown:index+1,ArrowUp:index-1,Home:0,End:sizeOptions.length-1}[event.key];
+  if (next !== undefined) {
+    event.preventDefault();
+    sizeOptions[Math.max(0,Math.min(next,sizeOptions.length-1))].focus();
+  } else if (event.key === "Escape" || event.key === "Tab") {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    closeMenu();
+    sizeToggle.focus();
+  }
 });
 const colors = ["#000000","#ffffff","#7f7f7f","#d9d9d9","#1f4e79","#4472c4","#5b9bd5","#70ad47","#c00000","#ff0000","#ffc000","#ffff00","#92d050","#00b0f0","#002060","#7030a0"];
 const highlights = ["#ffff00","#00ff00","#00ffff","#ff00ff","#0000ff","#ff0000","#000080","#008080","#008000","#800080","#800000","#808000","#808080","#c0c0c0","#000000","#ffffff"];
@@ -728,7 +771,7 @@ document.addEventListener("click",event => {
   if (!button) return;
   const data = button.dataset;
   if (button.getAttribute("role") === "tab") return tab(button.id);
-  if (data.menu) return showMenu(button);
+  if (data.menu) return showMenu(button,event.detail === 0);
   if (data.fill) {
     fill = data.fill;
     updateFill();
@@ -742,6 +785,7 @@ document.addEventListener("click",event => {
   closeMenu();
   if (data.command) exec(data.command);
   else if (data.action) void action(data.action);
+  else if (data.size) fontSize(data.size);
   else if (data.spacing) change(() => blocks().forEach(block => block.style.lineHeight = data.spacing));
   else if (data.columns) table(+data.columns,+data.rows);
   else if (data.shape) inline(Docx.makeShape(data.shape,fill));
@@ -751,8 +795,8 @@ document.addEventListener("click",event => {
   }
 });
 $("#font").addEventListener("change",event => exec("fontName",event.target.value));
-$("#size").addEventListener("change",fontSize);
-$("#size").addEventListener("keydown",event => {
+sizeInput.addEventListener("change",event => fontSize(event.target.value));
+sizeInput.addEventListener("keydown",event => {
   if (event.key === "Enter") {
     event.preventDefault();
     event.target.blur();

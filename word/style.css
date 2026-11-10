@@ -37,7 +37,12 @@ i svg{width:100%;height:100%}
 .font-select{gap:2px}
 .font-select select,.font-select input{height:24px;border:1px solid #c6c6c6;background:white;padding:1px 4px;border-radius:0}
 .font-select select{width:138px}
-.font-select input{width:54px}
+.size-control{display:flex;width:56px;height:24px;border:1px solid #c6c6c6;background:#fff}
+.size-control:focus-within{border-color:#4676bf}
+.font-select .size-control input{width:100%;min-width:0;height:22px;border:0}
+.row .size-toggle{flex:none;min-width:20px;height:22px;padding:0;border:0;border-left:1px solid #c6c6c6;background:#f3f3f3}
+.row .size-toggle:hover,.row .size-toggle[aria-expanded=true]{background:#ddd}
+.size-arrow{width:8px;height:8px;border:solid #444;border-width:0 1px 1px 0;transform:translateY(-2px) rotate(45deg)}
 .separator{display:block;height:16px;width:1px;background:#d2d2d2;margin:0 2px}
 .chevron{display:inline-block;width:0;height:0;border:3px solid transparent;border-bottom:0;border-top-color:currentColor;vertical-align:middle;opacity:.7}
 .group-name{text-align:center;font-size:11px;color:#4d4d4d;line-height:15px;white-space:nowrap}
@@ -87,6 +92,10 @@ i svg{width:100%;height:100%}
 .popup{position:fixed;z-index:6;min-width:142px;background:white;border:1px solid #a5a5a5;box-shadow:0 3px 9px #0003;padding:6px}
 .popup-title{background:#f2f2f2;padding:5px 6px;font-weight:600;margin:-6px -6px 6px;font-size:12px}
 .simple-menu button{display:block;width:100%;padding:5px 9px;text-align:left}
+.size-menu{min-width:0;width:56px;max-height:min(420px,calc(100dvh - 8px));overflow-y:auto;padding:1px 0}
+.size-menu button{display:block;width:100%;min-height:23px;padding:2px 5px;text-align:left}
+.size-menu button[aria-selected=true]{background:#e2e2e2}
+.size-menu button:hover,.size-menu button:focus-visible{background:#d5e4f8;outline-offset:-2px}
 .simple-menu small{float:right;margin-left:10px;color:#666}
 .swatches{display:grid;grid-template-columns:repeat(8,20px);gap:3px;padding:2px}
 .swatches button{height:20px;width:20px;background:var(--swatch);border:1px solid #888;padding:0}

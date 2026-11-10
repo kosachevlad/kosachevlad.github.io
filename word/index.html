@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=resize-1">
+<link rel="stylesheet" href="./style.css?v=font-size-1">
 <script defer src="./docx.js"></script>
-<script defer src="./editor.js?v=resize-1"></script>
+<script defer src="./editor.js?v=font-size-1"></script>
 </head>
 <body>
 <header class="office">
@@ -42,8 +42,10 @@
             <option>Calibri</option><option>Aptos</option><option>Arial</option><option>Cambria</option>
             <option>Georgia</option><option>Times New Roman</option><option>Verdana</option><option>Courier New</option>
           </select>
-          <input type="text" id="size" inputmode="decimal" list="sizes" value="11" aria-label="Розмір шрифту" title="Розмір шрифту (пт)" autocomplete="off">
-          <datalist id="sizes"><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>14</option><option>16</option><option>18</option><option>20</option><option>24</option><option>28</option><option>32</option><option>36</option><option>48</option><option>72</option></datalist>
+          <div class="size-control">
+            <input type="text" id="size" inputmode="decimal" value="11" aria-label="Розмір шрифту" title="Розмір шрифту (пт)" autocomplete="off">
+            <button type="button" class="size-toggle" data-menu="size-menu" aria-label="Вибрати розмір шрифту" aria-haspopup="listbox" title="Вибрати розмір шрифту"><span class="size-arrow" aria-hidden="true"></span></button>
+          </div>
         </div>
         <div class="row">
           <button class="symbol" data-command="bold" title="Жирний (Ctrl+B)" aria-label="Жирний"><b>Ж</b></button>
@@ -115,6 +117,7 @@
   <button data-action="outdentList">Зменшити рівень <small>Shift+Tab</small></button>
 </div>
 <div class="popup simple-menu" id="spacing-menu" hidden></div>
+<div class="popup size-menu" id="size-menu" role="listbox" aria-label="Розміри шрифту в пунктах" hidden></div>
 <div class="popup" id="table-menu" hidden><div class="popup-title" id="table-label">Вставити таблицю</div><div id="table-grid" class="table-grid"></div></div>
 <div class="popup" id="shapes-menu" hidden><div class="popup-title">Фігури</div><div class="shape-grid" id="shape-grid"></div><div class="shape-fill"><span>Заливка</span><div id="shape-colors" class="swatches"></div></div></div>
 <input id="file-input" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
