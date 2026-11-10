@@ -101,7 +101,54 @@ function fromBookmark(mark) {
   range.setEnd(end,Math.min(mark[3],limit(end)));
   return range;
 }
+function normalizeParagraphLists() {
+  const paragraphs = new Set([...editor.querySelectorAll("p > ol,p > ul")].map(list => list.parentElement));
+  if (!paragraphs.size) return;
+  const current = capture();
+  const range = current && document.createRange();
+  function boundary(node,offset,end) {
+    if (!paragraphs.has(node)) return () => {
+      if (end) range.setEnd(node,offset);
+      else range.setStart(node,offset);
+    };
+    const next = node.childNodes[offset];
+    const neighbor = next || node.lastChild;
+    return () => {
+      if (end) {
+        if (next) range.setEndBefore(neighbor);
+        else range.setEndAfter(neighbor);
+      } else if (next) range.setStartBefore(neighbor);
+      else range.setStartAfter(neighbor);
+    };
+  }
+  const start = current && boundary(current.startContainer,current.startOffset,false);
+  const end = current && boundary(current.endContainer,current.endOffset,true);
+
+  for (const paragraph of paragraphs) {
+    let text = paragraph.cloneNode(false);
+    for (const child of [...paragraph.childNodes]) {
+      if (child.matches?.("ol,ul")) {
+        if (text.firstChild) paragraph.before(text);
+        if (paragraph.style.cssText) {
+          for (const item of child.children) {
+            if (item.tagName === "LI") item.style.cssText = paragraph.style.cssText + item.style.cssText;
+          }
+        }
+        paragraph.before(child);
+        text = paragraph.cloneNode(false);
+      } else text.append(child);
+    }
+    if (text.firstChild) paragraph.before(text);
+    paragraph.remove();
+  }
+  if (range) {
+    start();
+    end();
+    setRange(range);
+  }
+}
 function tidy() {
+  normalizeParagraphLists();
   if (!editor.firstChild) editor.append(newPage());
   for (const node of [...editor.childNodes]) {
     if (node.nodeType === 1 && node.classList.contains("page")) {
