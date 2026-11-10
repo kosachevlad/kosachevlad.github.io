@@ -707,9 +707,9 @@ async function action(type) {
         break;
       }
       case "saveDoc": {
-        const input = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name + ".docx",ok:"Зберегти"});
+        const input = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти"});
         if (!input) break;
-        const filename = input.replace(/\.docx$/i,"").replace(/[<>:"/\\|?*\x00-\x1f]/g,"_").trim() || "Документ";
+        const filename = input.trim().replace(/\.docx$/i,"").replace(/[<>:"/\\|?*\x00-\x1f]/g,"_").trim() || "Документ";
         const snapshot = html();
         const link = document.createElement("a");
         link.href = URL.createObjectURL(Docx.write(editor));
