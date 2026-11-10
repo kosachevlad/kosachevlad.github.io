@@ -42,9 +42,6 @@ let savedRange, selectedObject, activeMenu, noticeTimer, resolveDialog, localCli
 let name = "Документ 1";
 let savedHtml;
 let history = [], index = -1, previousType = "", lastChange = 0;
-const touchListTools = $("#touch-list-tools");
-const touchOutdent = touchListTools.querySelector("[data-action=outdentList]");
-const touchIndent = touchListTools.querySelector("[data-action=indentList]");
 const selection = () => getSelection();
 const element = node => node?.nodeType === 1 ? node : node?.parentElement;
 const pageAt = () => element(savedRange?.startContainer)?.closest(".page") || editor.firstElementChild;
@@ -101,54 +98,7 @@ function fromBookmark(mark) {
   range.setEnd(end,Math.min(mark[3],limit(end)));
   return range;
 }
-function normalizeParagraphLists() {
-  const paragraphs = new Set([...editor.querySelectorAll("p > ol,p > ul")].map(list => list.parentElement));
-  if (!paragraphs.size) return;
-  const current = capture();
-  const range = current && document.createRange();
-  function boundary(node,offset,end) {
-    if (!paragraphs.has(node)) return () => {
-      if (end) range.setEnd(node,offset);
-      else range.setStart(node,offset);
-    };
-    const next = node.childNodes[offset];
-    const neighbor = next || node.lastChild;
-    return () => {
-      if (end) {
-        if (next) range.setEndBefore(neighbor);
-        else range.setEndAfter(neighbor);
-      } else if (next) range.setStartBefore(neighbor);
-      else range.setStartAfter(neighbor);
-    };
-  }
-  const start = current && boundary(current.startContainer,current.startOffset,false);
-  const end = current && boundary(current.endContainer,current.endOffset,true);
-
-  for (const paragraph of paragraphs) {
-    let text = paragraph.cloneNode(false);
-    for (const child of [...paragraph.childNodes]) {
-      if (child.matches?.("ol,ul")) {
-        if (text.firstChild) paragraph.before(text);
-        if (paragraph.style.cssText) {
-          for (const item of child.children) {
-            if (item.tagName === "LI") item.style.cssText = paragraph.style.cssText + item.style.cssText;
-          }
-        }
-        paragraph.before(child);
-        text = paragraph.cloneNode(false);
-      } else text.append(child);
-    }
-    if (text.firstChild) paragraph.before(text);
-    paragraph.remove();
-  }
-  if (range) {
-    start();
-    end();
-    setRange(range);
-  }
-}
 function tidy() {
-  normalizeParagraphLists();
   if (!editor.firstChild) editor.append(newPage());
   for (const node of [...editor.childNodes]) {
     if (node.nodeType === 1 && node.classList.contains("page")) {
@@ -207,12 +157,6 @@ function update() {
   $("[data-action=undo]").disabled = index <= 0;
   $("[data-action=redo]").disabled = index >= history.length-1;
   const parent = element(savedRange?.startContainer);
-  const item = parent?.closest("li");
-  touchListTools.hidden = !item || !editor.contains(item);
-  if (!touchListTools.hidden) {
-    touchOutdent.disabled = !item.parentElement.parentElement.closest("li");
-    touchIndent.disabled = item.previousElementSibling?.tagName !== "LI";
-  }
   if (!parent || !editor.contains(parent)) return;
   const style = getComputedStyle(parent);
   const font = style.fontFamily.split(",")[0].replace(/["']/g,"").trim();
@@ -280,8 +224,7 @@ function fontSize(value) {
 }
 function listLevel(out) {
   change(() => {
-    const {startContainer,startOffset,endContainer,endOffset} = savedRange;
-    const item = element(startContainer)?.closest("li");
+    const item = element(savedRange.startContainer)?.closest("li");
     if (!item) return;
     const list = item.parentElement;
     if (out) {
@@ -305,12 +248,7 @@ function listLevel(out) {
       }
       sub.append(item);
     }
-    if (item.contains(startContainer) && item.contains(endContainer)) {
-      const range = document.createRange();
-      range.setStart(startContainer,startOffset);
-      range.setEnd(endContainer,endOffset);
-      setRange(range);
-    } else caret(item);
+    caret(item);
   });
 }
 function multilevel() {
