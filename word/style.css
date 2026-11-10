@@ -120,6 +120,23 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
 .dialog-actions .primary{background:#2b579a;color:white;border-color:#234779}
 .dialog-actions .primary:hover{background:#20467f}
 .share-actions{flex-wrap:wrap}
-#share-filename{overflow-wrap:anywhere}
+#share-filename{overflow-wrap:anywhere;unicode-bidi:isolate}
+.viber-steps{list-style:none;margin:0 0 13px;padding:5px;border-radius:8px;background:#201a2b;color:#fff}
+.viber-steps li{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;min-height:48px;padding:6px 8px;border-radius:5px;line-height:1.4}
+.viber-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;color:#fff}
+.viber-icon svg{width:20px;height:20px}
+.viber-plus{background:#6b49ce;font-size:24px;line-height:1}
+.viber-file{background:#007fa7}
+.viber-folder{background:#516079}
+.share-windows{font-size:12px;color:#4d4d4d}
+@media (prefers-reduced-motion:no-preference){
+  #share-dialog[open] .viber-steps li{animation:viber-step 1.4s ease}
+  #share-dialog[open] .viber-steps li:nth-child(2){animation-delay:1.4s}
+  #share-dialog[open] .viber-steps li:nth-child(3){animation-delay:2.8s}
+}
+@keyframes viber-step{
+  0%,100%{background:transparent}
+  18%,78%{background:#4c3779}
+}
 @media(max-width:850px){:root{--paper-width:calc(100vw - 32px);--margin:clamp(22px,9vw,94px);--paper-height:calc((100vw - 32px) * 1.414)}.page::before,.tab-stop{display:none}.ruler{width:calc(100% - 34px)}}
 @media(max-width:475px){.title-spacer,.quick{width:82px}.quick{padding-left:6px}.status{gap:9px;padding:0 6px}.language{display:none}}

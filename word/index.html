@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=share-1">
+<link rel="stylesheet" href="./style.css?v=viber-help-1">
 <script defer src="./docx.js"></script>
 <script defer src="./editor.js?v=native-share-1"></script>
 </head>
@@ -125,9 +125,23 @@
 <input id="image-input" type="file" accept="image/*" hidden>
 <dialog id="dialog"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-info"></p><label id="dialog-field"><span id="dialog-label"></span><input id="dialog-input" required></label><div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
 <dialog id="share-dialog" aria-labelledby="share-title" aria-describedby="share-hint">
-  <h2 id="share-title">Поділитися у Windows</h2>
-  <p><strong id="share-filename"></strong></p>
-  <p id="share-hint">Браузер не зміг відкрити системне меню для DOCX. У Провіднику знайдіть файл у «Завантаженнях», клацніть його правою кнопкою миші та виберіть «Поділитися».</p>
+  <h2 id="share-title">Як надіслати файл учителю у Viber</h2>
+  <p id="share-hint">Відкрийте чат з учителем у Viber.</p>
+  <ol class="viber-steps" role="list">
+    <li>
+      <span class="viber-icon viber-plus" aria-hidden="true">+</span>
+      <span>Натисніть <strong>«+»</strong> біля поля повідомлення.</span>
+    </li>
+    <li>
+      <span class="viber-icon viber-file" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h8l4 4v14H6zM14 3v5h4M9 12h6m-6 4h6"/></svg></span>
+      <span>Виберіть <strong>«Файл»</strong>.</span>
+    </li>
+    <li>
+      <span class="viber-icon viber-folder" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h7l2 2h9v11H3z"/></svg></span>
+      <span>У папці <strong>«Завантаження»</strong> знайдіть файл <strong id="share-filename" dir="auto"></strong> і надішліть його.</span>
+    </li>
+  </ol>
+  <p class="share-windows">У Провіднику Windows також можна клацнути файл правою кнопкою й вибрати «Поділитися».</p>
   <form method="dialog" class="dialog-actions share-actions">
     <button type="submit" autofocus>Закрити</button>
   </form>
