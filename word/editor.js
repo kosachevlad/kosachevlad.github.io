@@ -609,43 +609,22 @@ $("#dialog").addEventListener("cancel",event => {
   finishDialog(null);
 });
 const shareDialog = $("#share-dialog");
-const shareNative = $("#share-native");
-const shareStatus = $("#share-status");
-let shareFile;
-function showShareDialog(file) {
-  shareFile = file;
+shareDialog.addEventListener("close",() => {
+  if (!shareDialog.open) restore();
+});
+async function shareSavedFile(file) {
+  const data = {files:[file]};
+  try {
+    if (typeof navigator.share === "function" && navigator.canShare?.(data)) {
+      await navigator.share(data);
+      return;
+    }
+  } catch (error) {
+    if (error.name === "AbortError") return;
+  }
   $("#share-filename").textContent = file.name;
-  shareStatus.hidden = true;
-  shareNative.disabled = false;
-  shareNative.hidden = !(typeof navigator.share === "function" && navigator.canShare?.({files:[file]}));
   shareDialog.showModal();
 }
-shareDialog.addEventListener("close",() => {
-  if (!shareDialog.open) {
-    shareFile = null;
-    restore();
-  }
-});
-$("#share-email").addEventListener("click",() => {
-  if (shareFile) location.href = "mailto:?subject=" + encodeURIComponent(shareFile.name);
-});
-shareNative.addEventListener("click",async () => {
-  const file = shareFile;
-  if (!file || shareNative.disabled) return;
-  shareNative.disabled = true;
-  shareStatus.hidden = true;
-  try {
-    await navigator.share({files:[file]});
-    if (shareFile === file) shareDialog.close();
-  } catch (error) {
-    if (shareFile === file && error.name !== "AbortError") {
-      shareStatus.textContent = "Не вдалося передати DOCX через системне меню. Прикріпіть завантажений файл у потрібному застосунку.";
-      shareStatus.hidden = false;
-    }
-  } finally {
-    if (shareFile === file) shareNative.disabled = false;
-  }
-});
 async function confirmReplace() {
   return html() === savedHtml || await ask({title:"Замінити документ?",info:"У поточному документі є незбережені зміни.",ok:"Продовжити"});
 }
@@ -763,8 +742,8 @@ async function action(type) {
         savedHtml = snapshot;
         update();
         flash("Збережено " + link.download);
-        if (share) showShareDialog(file);
-        else restore();
+        if (share) await shareSavedFile(file);
+        if (!shareDialog.open) restore();
         break;
       }
       case "imageWeb": {

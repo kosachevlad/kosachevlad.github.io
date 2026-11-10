@@ -6,7 +6,7 @@
 <title>Документ — вебредактор</title>
 <link rel="stylesheet" href="./style.css?v=share-1">
 <script defer src="./docx.js"></script>
-<script defer src="./editor.js?v=share-1"></script>
+<script defer src="./editor.js?v=native-share-1"></script>
 </head>
 <body>
 <header class="office">
@@ -125,14 +125,11 @@
 <input id="image-input" type="file" accept="image/*" hidden>
 <dialog id="dialog"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-info"></p><label id="dialog-field"><span id="dialog-label"></span><input id="dialog-input" required></label><div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
 <dialog id="share-dialog" aria-labelledby="share-title" aria-describedby="share-hint">
-  <h2 id="share-title">Поділитися документом</h2>
+  <h2 id="share-title">Поділитися у Windows</h2>
   <p><strong id="share-filename"></strong></p>
-  <p id="share-hint">Щоб надіслати документ через Viber, пошту чи інший застосунок, прикріпіть файл із папки «Завантаження».</p>
-  <p id="share-status" role="status" hidden></p>
+  <p id="share-hint">Браузер не зміг відкрити системне меню для DOCX. У Провіднику знайдіть файл у «Завантаженнях», клацніть його правою кнопкою миші та виберіть «Поділитися».</p>
   <form method="dialog" class="dialog-actions share-actions">
     <button type="submit" autofocus>Закрити</button>
-    <button type="button" id="share-email">Відкрити пошту</button>
-    <button type="button" class="primary" id="share-native" hidden>Вибрати застосунок</button>
   </form>
 </dialog>
 </body>
