@@ -371,6 +371,13 @@ rotationHandle.innerHTML = objectIcon("right");
 rotationHandle.setAttribute("aria-label","Повернути перетягуванням або стрілками");
 rotationHandle.title = "Повернути. Shift — крок 15°";
 resizeFrame.append(rotationHandle);
+const moveHandle = document.createElement("button");
+moveHandle.type = "button";
+moveHandle.className = "move-handle";
+moveHandle.innerHTML = objectIcon("move");
+moveHandle.setAttribute("aria-label","Перемістити об’єкт");
+moveHandle.title = "Перетягніть, щоб перемістити об’єкт";
+resizeFrame.append(moveHandle);
 
 function objectIcon(name) {
   const paths = {
@@ -381,6 +388,7 @@ function objectIcon(name) {
     end:"M4 5h16M10 10h10M4 15h16M10 20h10",
     lock:"M8 11V7a4 4 0 0 1 8 0v4M6 11h12v9H6z",
     reset:"M5 5h14v14H5zM9 15l6-6m-4 0h4v4",
+    move:"M12 2v20M2 12h20M9 5l3-3 3 3M9 19l3 3 3-3M5 9l-3 3 3 3m14-6 3 3-3 3",
     remove:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13m-8 3v7m4-7v7"
   };
   return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+paths[name]+'"/></svg>';
@@ -564,12 +572,19 @@ function resizeDimensions(object,width,height,dx,dy,proportional) {
   ];
 }
 
-function finishResize(commit) {
+function finishResize(commit,event) {
   const drag = resizeDrag;
   if (!drag) return;
   resizeDrag = null;
   if (resizeFrame.hasPointerCapture(drag.pointer)) resizeFrame.releasePointerCapture(drag.pointer);
-  if (commit && drag.changed) record();
+  resizeFrame.classList.remove("moving");
+  if (drag.mode === "move") {
+    drag.object.style.translate = drag.translate;
+    if (commit && drag.changed && dropObject(drag,event)) {
+      selectObject(drag.object);
+      record();
+    }
+  } else if (commit && drag.changed) record();
   else if (drag.changed) {
     for (const [attribute,value] of drag.attributes) {
       if (value === null) drag.object.removeAttribute(attribute);
@@ -577,6 +592,72 @@ function finishResize(commit) {
     }
   }
   positionFrame();
+}
+
+function freeObject(object) {
+  return ["front","behind"].includes(object.dataset.wrap);
+}
+function objectOffset(object,axis) {
+  return parseFloat(object.style.getPropertyValue("--object-"+axis)) || 0;
+}
+function setObjectOffset(object,x,y) {
+  for (const [axis,value] of [["x",Math.round(x)],["y",Math.round(y)]]) {
+    if (value) object.style.setProperty("--object-"+axis,value+"px");
+    else object.style.removeProperty("--object-"+axis);
+  }
+}
+function objectDropRange(x,y,page) {
+  const caret = document.caretPositionFromPoint?.(x,y) || document.caretRangeFromPoint?.(x,y);
+  const node = caret?.offsetNode || caret?.startContainer;
+  const offset = caret?.offset ?? caret?.startOffset;
+  const range = document.createRange();
+  if (!node || !page.contains(node)) {
+    range.selectNodeContents(page);
+    range.collapse(false);
+    return range;
+  }
+  const object = element(node)?.closest(".shape,img");
+  if (object) {
+    const box = object.getBoundingClientRect();
+    if (x < (box.left + box.right) / 2) range.setStartBefore(object);
+    else range.setStartAfter(object);
+  } else {
+    if (element(node)?.matches("table,thead,tbody,tfoot,tr,ol,ul")) return null;
+    range.setStart(node,offset);
+  }
+  range.collapse(true);
+  return range;
+}
+function dropObject(drag,event) {
+  const {object,scale} = drag;
+  const {clientX:x,clientY:y} = event;
+  const page = document.elementsFromPoint(x,y).find(node => node.classList.contains("page") && editor.contains(node));
+  if (!page) return false;
+  const oldPage = object.closest(".page");
+  if (!freeObject(object)) {
+    const target = objectDropRange(x,y,page);
+    if (!target) return false;
+    target.insertNode(object);
+    if (["left","right"].includes(object.dataset.wrap)) {
+      const box = page.getBoundingClientRect();
+      object.dataset.wrap = x < (box.left + box.right) / 2 ? "left" : "right";
+    }
+    return true;
+  }
+  const current = object.getBoundingClientRect();
+  const desiredX = current.left + drag.dx * scale;
+  const desiredY = current.top + drag.dy * scale;
+  if (page !== oldPage) {
+    const target = objectDropRange(x,y,page);
+    if (!target) return false;
+    target.insertNode(object);
+  }
+  const box = object.getBoundingClientRect();
+  const bounds = page.getBoundingClientRect();
+  const left = Math.max(bounds.left,Math.min(desiredX,bounds.right-box.width));
+  const top = Math.max(bounds.top,Math.min(desiredY,bounds.bottom-box.height));
+  setObjectOffset(object,objectOffset(object,"x")+(left-box.left)/scale,objectOffset(object,"y")+(top-box.top)/scale);
+  return true;
 }
 
 function pointerAngle(x,y,cx,cy) {
@@ -595,11 +676,21 @@ function beginObjectDrag(event,mode,horizontal=0,vertical=0) {
     mode,object,width,height,scale,horizontal,vertical,cx,cy,
     angle:objectAngle(object),pointerAngle:pointerAngle(event.clientX,event.clientY,cx,cy),
     x:event.clientX,y:event.clientY,pointer:event.pointerId,
+    scrollX:workspace.scrollLeft,scrollY:workspace.scrollTop,translate:object.style.translate,
     attributes:["width","height","style"].map(key => [key,object.getAttribute(key)])
   };
   resizeFrame.setPointerCapture(event.pointerId);
   positionFrame();
 }
+moveHandle.addEventListener("pointerdown",event => beginObjectDrag(event,"move"));
+moveHandle.addEventListener("keydown",event => {
+  const direction = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
+  if (!direction || !selectedObject || !freeObject(selectedObject) || event.ctrlKey || event.metaKey || event.altKey) return;
+  event.preventDefault();
+  const stepSize = event.shiftKey ? 10 : 1;
+  editObject(object => setObjectOffset(object,objectOffset(object,"x")+direction[0]*stepSize,
+    objectOffset(object,"y")+direction[1]*stepSize));
+});
 rotationHandle.addEventListener("pointerdown",event => beginObjectDrag(event,"rotate"));
 rotationHandle.addEventListener("keydown",event => {
   const direction = {ArrowLeft:-1,ArrowDown:-1,ArrowRight:1,ArrowUp:1}[event.key];
@@ -635,7 +726,15 @@ for (const [corner,label,horizontal,vertical] of [
 resizeFrame.addEventListener("pointermove",event => {
   const drag = resizeDrag;
   if (!drag || event.pointerId !== drag.pointer) return;
-  if (drag.mode === "rotate") {
+  if (drag.mode === "move") {
+    const dx = event.clientX - drag.x + workspace.scrollLeft - drag.scrollX;
+    const dy = event.clientY - drag.y + workspace.scrollTop - drag.scrollY;
+    if (!drag.changed && Math.hypot(dx,dy) < 4) return;
+    drag.dx = dx / drag.scale;
+    drag.dy = dy / drag.scale;
+    drag.object.style.translate = drag.dx+"px "+drag.dy+"px";
+    resizeFrame.classList.add("moving");
+  } else if (drag.mode === "rotate") {
     const angle = drag.angle + pointerAngle(event.clientX,event.clientY,drag.cx,drag.cy) - drag.pointerAngle;
     setObjectAngle(drag.object,event.shiftKey ? Math.round(angle / 15) * 15 : angle);
   } else {
@@ -653,7 +752,7 @@ resizeFrame.addEventListener("pointermove",event => {
 });
 for (const type of ["pointerup","pointercancel","lostpointercapture"]) {
   resizeFrame.addEventListener(type,event => {
-    if (resizeDrag?.pointer === event.pointerId) finishResize(type === "pointerup");
+    if (resizeDrag?.pointer === event.pointerId) finishResize(type === "pointerup",event);
   });
 }
 
@@ -1073,6 +1172,15 @@ editor.addEventListener("click",event => {
   const direct = event.target.closest(".shape,img");
   const behind = (!direct || event.altKey) && behindObjectAt(event);
   selectObject(behind || direct || null);
+});
+editor.addEventListener("pointerdown",event => {
+  if (!editor.isContentEditable || event.button !== 0 || resizeDrag) return;
+  const direct = event.target.closest(".shape,img");
+  const behind = (!direct || event.altKey) && behindObjectAt(event);
+  const object = behind || direct;
+  if (!object) return;
+  selectObject(object);
+  beginObjectDrag(event,"move");
 });
 editor.addEventListener("beforeinput",event => {
   if (["historyUndo","historyRedo"].includes(event.inputType)) {
