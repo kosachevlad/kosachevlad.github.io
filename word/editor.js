@@ -952,20 +952,25 @@ $$('[data-table-style]').forEach(button => button.addEventListener("click",() =>
 $("#design-fill").addEventListener("change",event => editTable(() => {
   for (const cell of tableTargets()) cell.style.backgroundColor = event.target.value;
 }));
-$$('[data-table-border]').forEach(button => button.addEventListener("click",() => editTable(() => {
-  const sides = button.dataset.tableBorder === "all" || button.dataset.tableBorder === "none"
-    ? ["top","bottom","left","right"] : [button.dataset.tableBorder];
-  const value = button.dataset.tableBorder === "none" ? "none" :
-    `${$("#border-width").value}px ${$("#border-style").value} ${$("#border-color").value}`;
-  for (const cell of tableTargets()) {
-    for (const side of sides) {
-      cell.style["border"+side[0].toUpperCase()+side.slice(1)] = value;
-      const row = cell.parentElement, index = cell.cellIndex, rows = [...row.closest("table").rows];
-      const neighbor = side === "left" ? row.cells[index-1] : side === "right" ? row.cells[index+1] :
-        side === "top" ? rows[row.rowIndex-1]?.cells[index] : rows[row.rowIndex+1]?.cells[index];
-      if (neighbor) {
-        const opposite = {top:"Bottom",bottom:"Top",left:"Right",right:"Left"}[side];
-        neighbor.style["border"+opposite] = value;
+$$('[data-table-border]').forEach(button => button.addEventListener("click",() => editTable(table => {
+  const command = button.dataset.tableBorder;
+  const line = `${$("#border-width").value}px ${$("#border-style").value} ${$("#border-color").value}`;
+  const rows = [...table.rows];
+  const columns = Math.max(1,...rows.map(row => [...row.cells].reduce((sum,cell) => sum+cell.colSpan,0)));
+  const replaceAll = ["none","all","outside","inside","insideH","insideV"].includes(command);
+  for (const [rowIndex,row] of rows.entries()) {
+    let column = 0;
+    for (const cell of row.cells) {
+      const start = column, end = column+cell.colSpan;
+      column = end;
+      const edge = {top:rowIndex===0,bottom:rowIndex===rows.length-1,left:start===0,right:end===columns};
+      for (const side of ["top","bottom","left","right"]) {
+        const outer = edge[side];
+        const horizontal = side === "top" || side === "bottom";
+        const apply = command === "all" || command === side && outer || command === "outside" && outer ||
+          command === "inside" && !outer || command === "insideH" && horizontal && !outer ||
+          command === "insideV" && !horizontal && !outer;
+        if (apply || replaceAll) cell.style["border"+side[0].toUpperCase()+side.slice(1)] = apply ? line : "none";
       }
     }
   }

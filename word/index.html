@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=table-design-1">
+<link rel="stylesheet" href="./style.css?v=table-borders-1">
 <script defer src="./docx.js?v=table-design-1"></script>
-<script defer src="./editor.js?v=table-design-1"></script>
+<script defer src="./editor.js?v=table-borders-1"></script>
 <script defer src="./sharing.js?v=2"></script>
 </head>
 <body>
@@ -135,11 +135,7 @@
         <label>Товщина <select id="border-width" aria-label="Товщина межі"><option value="1">1 пкс</option><option value="2">2 пкс</option><option value="3">3 пкс</option><option value="4">4 пкс</option></select></label>
         <label>Колір <input id="border-color" type="color" value="#434343" aria-label="Колір межі"></label>
       </div>
-      <div class="table-border-actions">
-        <button type="button" data-table-border="top">Верхня</button><button type="button" data-table-border="bottom">Нижня</button>
-        <button type="button" data-table-border="left">Ліва</button><button type="button" data-table-border="right">Права</button>
-        <button type="button" data-table-border="all">Усі межі</button><button type="button" data-table-border="none">Без меж</button>
-      </div>
+      <button type="button" class="border-menu-button" data-menu="border-menu" aria-label="Межі таблиці"><span aria-hidden="true">▦</span> Межі <span class="chevron"></span></button>
       <div class="group-name">Межі</div>
     </section>
   </div>
@@ -156,6 +152,18 @@
 <footer class="status"><span id="page-status">Сторінка 1 з 1</span><span id="word-status">Слів: 0</span><span class="language">Українська</span><span id="notice" role="status" aria-live="polite"></span><span class="zoom"><span class="desktop-zoom">100%</span><span class="phone-zoom">85%</span></span></footer>
 <div class="popup" id="color-menu" hidden></div>
 <div class="popup" id="highlight-menu" hidden></div>
+<div class="popup simple-menu border-popup" id="border-menu" hidden>
+  <button type="button" data-table-border="bottom">Нижня межа</button>
+  <button type="button" data-table-border="top">Верхня межа</button>
+  <button type="button" data-table-border="left">Ліва межа</button>
+  <button type="button" data-table-border="right">Права межа</button>
+  <button type="button" data-table-border="none">Без меж</button>
+  <button type="button" data-table-border="all">Усі межі</button>
+  <button type="button" data-table-border="outside">Зовнішні межі</button>
+  <button type="button" data-table-border="inside">Внутрішні межі</button>
+  <button type="button" data-table-border="insideH">Внутрішня горизонтальна межа</button>
+  <button type="button" data-table-border="insideV">Внутрішня вертикальна межа</button>
+</div>
 <div class="popup simple-menu" id="levels-menu" hidden>
   <button data-action="multilevel"><i data-icon="levels"></i> Почати багаторівневий список</button>
   <button data-action="indentList">Збільшити рівень <small>Tab</small></button>

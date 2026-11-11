@@ -131,12 +131,13 @@ i svg{width:100%;height:100%}
 .table-fill-control{display:flex;align-items:center;gap:7px;font-size:11px}
 .table-fill-control input,.table-border-settings input{width:32px;height:25px;padding:1px}
 .table-border-group{min-width:305px}
-.table-border-settings,.table-border-actions{display:flex;align-items:center;gap:5px}
+.table-border-settings{display:flex;align-items:center;gap:5px}
 .table-border-settings label{display:flex;align-items:center;gap:3px;font-size:11px;white-space:nowrap}
 .table-border-settings select{height:24px;max-width:86px}
-.table-border-actions{flex-wrap:wrap;max-width:315px;gap:2px}
-.table-border-actions button{font-size:11px;padding:2px 5px;border:1px solid #c9c9c9;background:#fff}
-.table-border-actions button:hover{background:#e4edfa}
+.border-menu-button{display:flex;align-items:center;gap:7px;min-height:45px;padding:3px 10px;border:1px solid #c9c9c9;background:#fff}
+.border-menu-button>span:first-child{font-size:28px;line-height:1;color:#43536b}
+.border-popup{min-width:250px;max-height:min(430px,75vh);overflow:auto}
+.border-popup button:nth-child(5),.border-popup button:nth-child(9){border-top:1px solid #ddd}
 .page img{display:inline-block;max-width:100%;height:auto;vertical-align:middle}
 .page .shape{display:inline-block;vertical-align:middle;cursor:pointer;max-width:100%}
 .page .shape svg{display:block;width:100%;height:100%}
