@@ -236,7 +236,7 @@ const Docx = (() => {
       const next = runStyle(node,style);
       return [...node.childNodes].map(child => runs(child,next)).join("");
     }
-    function paragraph(block,num=null) {
+    function paragraph(block,num=null,children=[...block.childNodes]) {
       const properties = [];
       if (num) properties.push("<w:numPr>"+tag("ilvl",num.level)+tag("numId",num.id)+"</w:numPr>");
       const spacing = block.style?.lineHeight;
@@ -250,8 +250,8 @@ const Docx = (() => {
       const base = block.style ? runStyle(block,{}) : {};
       let content;
       if (block.nodeType === 3 || block.matches?.("img,.shape,br")) content = runs(block,base);
-      else if (block.childNodes.length === 1 && block.firstChild.nodeName === "BR") content = "";
-      else content = [...block.childNodes].map(child => runs(child,base)).join("");
+      else if (children.length === 1 && children[0].nodeName === "BR") content = "";
+      else content = children.map(child => runs(child,base)).join("");
       return "<w:p>"+(properties.length?"<w:pPr>"+properties.join("")+"</w:pPr>":"")+content+"</w:p>";
     }
     function list(node) {
@@ -292,24 +292,30 @@ const Docx = (() => {
             (cell.colSpan>1?tag("gridSpan",cell.colSpan):"")+"</w:tcPr>"+(content||"<w:p/>")+(content.endsWith("</w:tbl>")?"<w:p/>":"")+"</w:tc>";
         }).join("")+"</w:tr>").join("")+"</w:tbl>";
     }
+    const blockSelector = "p,div,ol,ul,table,h1,h2,h3,h4,h5,h6,blockquote";
     function block(node) {
       if (node.nodeType === 1) {
         if (node.matches("ol,ul")) return list(node);
         if (node.tagName === "TABLE") return table(node);
+        // Editing commands can put a list inside a paragraph or div.
+        if ([...node.children].some(child => child.matches(blockSelector))) return blocks(node,true);
       }
       if (node.nodeType === 3 && !node.data.trim()) return "";
       return paragraph(node);
     }
-    function blocks(node) {
+    function blocks(node,formatted=false) {
       let output = "", inline = [];
       const flush = () => {
         if (!inline.length) return;
-        const content = inline.map(child => runs(child,{})).join("");
-        if (content) output += "<w:p>"+content+"</w:p>";
+        if (formatted) output += paragraph(node,null,inline);
+        else {
+          const content = inline.map(child => runs(child,{})).join("");
+          if (content) output += "<w:p>"+content+"</w:p>";
+        }
         inline = [];
       };
       for (const child of node.childNodes) {
-        if (child.nodeType === 1 && child.matches("p,div,ol,ul,table,h1,h2,h3,h4,h5,h6,blockquote")) {
+        if (child.nodeType === 1 && child.matches(blockSelector)) {
           flush();
           output += block(child);
         } else if (child.nodeType !== 3 || child.data.trim() || inline.length) inline.push(child);
