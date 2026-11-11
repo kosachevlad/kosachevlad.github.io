@@ -108,8 +108,9 @@ i svg{width:100%;height:100%}
 .page :is(p,h1,h2,h3,h4,h5,h6,li):has(:is(img,.shape):is([data-wrap=behind],[data-wrap=front])){position:relative;min-height:1lh}
 .page :is(img,.shape):is([data-wrap=behind],[data-wrap=front]){position:absolute;top:var(--object-y,0px);left:var(--object-x,0px)}
 .page > :is(img,.shape):is([data-wrap=behind],[data-wrap=front]){top:calc(var(--margin) + var(--object-y,0px));left:calc(var(--margin) + var(--object-x,0px))}
-.page :is(img,.shape)[data-wrap=behind]{z-index:-1}
-.page :is(img,.shape)[data-wrap=front]{z-index:1}
+.page :is(img,.shape):is([data-wrap=left],[data-wrap=right],[data-wrap=top-bottom]){position:relative}
+.page :is(img,.shape)[data-wrap]{z-index:calc(1 + var(--object-layer,0))}
+.page :is(img,.shape)[data-wrap=behind]{z-index:calc(-2147483647 + var(--object-layer,0))}
 .object-frame{position:absolute;z-index:2;border:1px solid #2676ff;pointer-events:none}
 #editor[contenteditable=true] :is(img,.shape){cursor:grab;touch-action:none}
 .resize-handle,.rotation-handle,.move-handle{position:absolute;display:grid;place-items:center;padding:0;border:1px solid #2676ff;background:#fff;color:#2265d4;pointer-events:auto;touch-action:none}

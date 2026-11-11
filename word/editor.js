@@ -360,8 +360,18 @@ objectTools.append(wrapSelect);
 wrapSelect.addEventListener("change",() => editObject(object => {
   // Umo's image node distinguishes inline and floating layout in its attributes.
   // Keep that choice on the document node, extended with Word's wrap modes.
-  if (wrapSelect.value === "inline") delete object.dataset.wrap;
-  else object.dataset.wrap = wrapSelect.value;
+  if (wrapSelect.value === "inline") {
+    delete object.dataset.wrap;
+    object.style.removeProperty("--object-layer");
+  } else {
+    const joinsLayer = !object.dataset.wrap || (object.dataset.wrap === "behind") !== (wrapSelect.value === "behind");
+    object.dataset.wrap = wrapSelect.value;
+    if (joinsLayer) {
+      const peers = layerPeers(object).filter(peer => peer !== object);
+      peers.forEach((peer,index) => peer.style.setProperty("--object-layer",index+1));
+      object.style.setProperty("--object-layer",peers.length+1);
+    }
+  }
   syncWrapBounds(object);
 }));
 const rotationHandle = document.createElement("button");
@@ -389,6 +399,8 @@ function objectIcon(name) {
     lock:"M8 11V7a4 4 0 0 1 8 0v4M6 11h12v9H6z",
     reset:"M5 5h14v14H5zM9 15l6-6m-4 0h4v4",
     move:"M12 2v20M2 12h20M9 5l3-3 3 3M9 19l3 3 3-3M5 9l-3 3 3 3m14-6 3 3-3 3",
+    forward:"M3 10h5v11h11v-5M8 8h13v9H8zM14 12V3m-3 3 3-3 3 3",
+    backward:"M3 10h5v11h11v-5M8 5h13v9H8zM14 9v10m-3-3 3 3 3-3",
     remove:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13m-8 3v7m4-7v7"
   };
   return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+paths[name]+'"/></svg>';
@@ -415,6 +427,8 @@ const alignTools = [
 objectTool("left","Повернути на 90° ліворуч",() => turnObject(-90));
 objectTool("right","Повернути на 90° праворуч",() => turnObject(90));
 objectTool("reset","Скинути поворот",() => editObject(object => setObjectAngle(object,0)));
+const forwardTool = objectTool("forward","Перемістити вперед",() => changeObjectLayer(1));
+const backwardTool = objectTool("backward","Перемістити назад",() => changeObjectLayer(-1));
 const deleteTool = objectTool("remove","Видалити об’єкт",removeObject);
 deleteTool.classList.add("object-delete");
 proportionButton.addEventListener("click",() => editObject(object => {
@@ -424,6 +438,24 @@ proportionButton.addEventListener("click",() => editObject(object => {
 
 function objectParagraph(object) {
   return object.closest("p,h1,h2,h3,h4,h5,h6,li");
+}
+function layerPeers(object) {
+  if (!object.dataset.wrap) return [];
+  const behind = object.dataset.wrap === "behind";
+  const layer = peer => Number(peer.style.getPropertyValue("--object-layer")) || 0;
+  return [...object.closest(".page").querySelectorAll(".shape[data-wrap],img[data-wrap]")]
+    .filter(peer => (peer.dataset.wrap === "behind") === behind)
+    .sort((a,b) => layer(a)-layer(b));
+}
+function changeObjectLayer(direction) {
+  editObject(object => {
+    const peers = layerPeers(object);
+    const index = peers.indexOf(object);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= peers.length) return;
+    [peers[index],peers[target]] = [peers[target],peers[index]];
+    peers.forEach((peer,position) => peer.style.setProperty("--object-layer",position+1));
+  });
 }
 function editObject(fn) {
   if (!editor.isContentEditable || !selectedObject?.isConnected || resizeDrag) return;
@@ -494,6 +526,10 @@ function positionFrame() {
   objectTools.style.top = Math.max(area.top + 4,Math.min(top,area.bottom - barHeight - 4)) + "px";
   proportionButton.setAttribute("aria-pressed",String(object.dataset.freeResize !== "true"));
   wrapSelect.value = wrapModes.some(([value]) => value === object.dataset.wrap) ? object.dataset.wrap : "inline";
+  const peers = layerPeers(object);
+  const layerIndex = peers.indexOf(object);
+  forwardTool.disabled = layerIndex < 0 || layerIndex === peers.length-1;
+  backwardTool.disabled = layerIndex <= 0;
   const paragraph = objectParagraph(object);
   const alignment = paragraph && getComputedStyle(paragraph).textAlign;
   for (const [button,value] of alignTools) {

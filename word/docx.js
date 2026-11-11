@@ -119,6 +119,10 @@ const Docx = (() => {
     plus:["Плюс",'<path d="M37 8h26v29h29v26H63v29H37V63H8V37h29Z"/>']
   };
   const shapeNames = Object.fromEntries(Object.entries(shapes).map(([key,[name]]) => [key,name]));
+  function stackedObjects(container) {
+    const layer = node => Number(node.style.getPropertyValue("--object-layer")) || 0;
+    return [...container.querySelectorAll(".shape[data-wrap],img[data-wrap]")].sort((a,b) => layer(a)-layer(b));
+  }
   function makeShape(type,color,width=100,height=100) {
     const shape = document.createElement("span");
     type = Object.hasOwn(shapes,type) ? type : "rect";
@@ -203,6 +207,7 @@ const Docx = (() => {
     const formats = new Set();
     const lists = [];
     let drawingId = 0;
+    const layers = new Map(stackedObjects(editor).map((node,index) => [node,index+1]));
     function drawing(uri,content,width,height,name,alt,layout) {
       const id = ++drawingId;
       const wrap = layout.dataset.wrap;
@@ -222,7 +227,7 @@ const Docx = (() => {
         vertical ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
       return textRun('<w:drawing><wp:anchor distT="'+(vertical ? 57150 : 0)+'" distB="'+(square || vertical ? 57150 : 0)+
         '" distL="'+(wrap === "right" ? 95250 : 0)+'" distR="'+(wrap === "left" ? 95250 : 0)+
-        '" simplePos="0" relativeHeight="'+id+'" behindDoc="'+(wrap === "behind" ? 1 : 0)+
+        '" simplePos="0" relativeHeight="'+(layers.get(layout) ?? id)+'" behindDoc="'+(wrap === "behind" ? 1 : 0)+
         '" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'+
         '<wp:positionH relativeFrom="column">'+horizontal+'</wp:positionH>'+
         '<wp:positionV relativeFrom="paragraph"><wp:posOffset>'+(square || vertical ? 0 : offset("y"))+'</wp:posOffset></wp:positionV>'+
@@ -484,7 +489,11 @@ const Docx = (() => {
       else if (child(anchor,"wrapNone")) wrap = /^(1|true)$/.test(anchor.getAttribute("behindDoc")) ? "behind" : "front";
       const styleObject = node => {
         if (Number.isFinite(rotation) && rotation) node.style.rotate = rotation + "deg";
-        if (wrap) node.dataset.wrap = wrap;
+        if (wrap) {
+          node.dataset.wrap = wrap;
+          const height = Number(anchor.getAttribute("relativeHeight"));
+          if (Number.isSafeInteger(height) && height > 0) node.style.setProperty("--object-layer",height);
+        }
         if (wrap === "behind" || wrap === "front") {
           for (const [axis,tag,relativeFrom] of [["x","positionH","column"],["y","positionV","paragraph"]]) {
             const position = child(anchor,tag);
@@ -672,6 +681,9 @@ const Docx = (() => {
       return page;
     };
     await fillBlocks(next(),children(body),next);
+    for (const page of pages) {
+      stackedObjects(page).forEach((node,index) => node.style.setProperty("--object-layer",index+1));
+    }
     return pages;
   }
   return {read,write,makeShape,shapeNames,listMarkerSize};
