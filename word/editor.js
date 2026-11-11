@@ -118,6 +118,10 @@ function beforeEdit() {
 }
 function record(type = "") {
   tidy();
+  const markers = [...editor.querySelectorAll("li")].map(item => [item,Docx.listMarkerSize(item) + "px"]);
+  for (const [item,size] of markers) {
+    if (item.style.getPropertyValue("--list-marker-size") !== size) item.style.setProperty("--list-marker-size",size);
+  }
   const snapshot = {html:html(),mark:bookmark()};
   if (history[index]?.html === snapshot.html) return update();
   const now = Date.now();
@@ -653,8 +657,8 @@ function loadDocument(pages,filename) {
   tab("home-tab");
   restore();
   $("#workspace").scrollTop = 0;
-  savedHtml = html();
   record();
+  savedHtml = html();
 }
 function paste(text,rich) {
   if (rich && !rich.querySelector(".page")) {

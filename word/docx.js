@@ -179,6 +179,20 @@ const Docx = (() => {
     }).join("");
   }
 
+  function listMarkerSize(item) {
+    let placeholder;
+    const walker = document.createTreeWalker(item,NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_TEXT,node => {
+      if (node.nodeType === 1) {
+        return node.matches("ol,ul,table") ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_SKIP;
+      }
+      if (node.data.replace(/\u200b/g,"").trim()) return NodeFilter.FILTER_ACCEPT;
+      if (!placeholder && node.data.includes("\u200b")) placeholder = node.parentElement;
+      return NodeFilter.FILTER_SKIP;
+    });
+    const first = walker.nextNode();
+    return parseFloat(getComputedStyle(first?.parentElement || placeholder || item).fontSize);
+  }
+
   function write(editor) {
     const files = new Map();
     const media = new Map();
@@ -247,6 +261,7 @@ const Docx = (() => {
       }
       const alignment = ({"left":"left","center":"center","right":"right","justify":"both","-webkit-center":"center"})[block.style?.textAlign || block.getAttribute?.("align")];
       if (alignment) properties.push(tag("jc",alignment));
+      if (num) properties.push("<w:rPr>"+tag("sz",num.markerSize)+tag("szCs",num.markerSize)+"</w:rPr>");
       const base = block.style ? runStyle(block,{}) : {};
       let content;
       if (block.nodeType === 3 || block.matches?.("img,.shape,br")) content = runs(block,base);
@@ -269,7 +284,8 @@ const Docx = (() => {
           }
           if (item.tagName !== "LI") continue;
           const direct = [...item.children].find(child => child.matches("p,div"));
-          output += paragraph(direct || item,{id,level});
+          const markerSize = Math.round(listMarkerSize(item)*1.5);
+          output += paragraph(direct || item,{id,level,markerSize});
           for (const child of item.children) {
             if (child.matches("ol,ul")) output += flatten(child,depth+1);
             else if (direct && child !== direct && child.matches("p,div,table")) output += block(child);
@@ -614,5 +630,5 @@ const Docx = (() => {
     await fillBlocks(next(),children(body),next);
     return pages;
   }
-  return {read,write,makeShape,shapeNames};
+  return {read,write,makeShape,shapeNames,listMarkerSize};
 })();

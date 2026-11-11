@@ -69,9 +69,11 @@ i svg{width:100%;height:100%}
 .page p:empty:after{content:"\200b"}
 .page ul,.page ol{padding-left:25pt;margin:0 0 8pt}
 .page li>ul,.page li>ol{margin-bottom:0}
+.page li{--list-marker-size:1em}
+.page li::marker{font-size:var(--list-marker-size)}
 .page ol[data-multilevel]{list-style:none;counter-reset:item}
 .page ol[data-multilevel]>li{counter-increment:item;position:relative}
-.page ol[data-multilevel]>li::before{content:counters(item,".") ".";position:absolute;right:calc(100% + 5px);white-space:nowrap}
+.page ol[data-multilevel]>li::before{content:counters(item,".") ".";position:absolute;right:calc(100% + 5px);white-space:nowrap;font-size:var(--list-marker-size)}
 .page table{width:100%;table-layout:fixed;border-collapse:collapse;margin:5pt 0 8pt}
 .page td,.page th{border:1px solid #434343;min-width:20px;padding:5px 6px;vertical-align:top;height:28px}
 .page img{display:inline-block;max-width:100%;height:auto;vertical-align:middle}
