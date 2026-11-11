@@ -330,20 +330,132 @@ const resizeFrame = document.createElement("div");
 resizeFrame.className = "object-frame";
 resizeFrame.hidden = true;
 workspace.append(resizeFrame);
-let resizeDrag;
 
+const objectTools = document.createElement("div");
+objectTools.className = "object-tools";
+objectTools.setAttribute("role","group");
+objectTools.setAttribute("aria-label","Дії з вибраним об’єктом");
+objectTools.hidden = true;
+workspace.append(objectTools);
+objectTools.addEventListener("pointerdown",event => {
+  if (event.target.closest("button")) event.preventDefault();
+});
+let resizeDrag;
+const proportionButton = objectTool("lock","Зберігати пропорції");
+proportionButton.setAttribute("aria-pressed","true");
+const rotationHandle = document.createElement("button");
+rotationHandle.type = "button";
+rotationHandle.className = "rotation-handle";
+rotationHandle.innerHTML = objectIcon("right");
+rotationHandle.setAttribute("aria-label","Повернути перетягуванням або стрілками");
+rotationHandle.title = "Повернути. Shift — крок 15°";
+resizeFrame.append(rotationHandle);
+
+function objectIcon(name) {
+  const paths = {
+    left:"M8 4H3v5M3.4 8a8 8 0 1 1 .5 9",
+    right:"M16 4h5v5m-.4-1a8 8 0 1 0-.5 9",
+    start:"M4 5h16M4 10h10M4 15h16M4 20h10",
+    center:"M4 5h16M7 10h10M4 15h16M7 20h10",
+    end:"M4 5h16M10 10h10M4 15h16M10 20h10",
+    lock:"M8 11V7a4 4 0 0 1 8 0v4M6 11h12v9H6z",
+    reset:"M5 5h14v14H5zM9 15l6-6m-4 0h4v4",
+    remove:"M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13m-8 3v7m4-7v7"
+  };
+  return '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="'+paths[name]+'"/></svg>';
+}
+function objectTool(icon,label,action) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.innerHTML = objectIcon(icon);
+  button.setAttribute("aria-label",label);
+  button.title = label;
+  if (action) button.addEventListener("click",action);
+  objectTools.append(button);
+  return button;
+}
+const alignTools = [
+  ["start","ліворуч","left"],["center","по центру","center"],["end","праворуч","right"]
+].map(([icon,label,value]) => {
+  const button = objectTool(icon,"Вирівняти абзац "+label,() => editObject(object => {
+    const paragraph = objectParagraph(object);
+    if (paragraph) paragraph.style.textAlign = value;
+  }));
+  return [button,value];
+});
+objectTool("left","Повернути на 90° ліворуч",() => turnObject(-90));
+objectTool("right","Повернути на 90° праворуч",() => turnObject(90));
+objectTool("reset","Скинути поворот",() => editObject(object => setObjectAngle(object,0)));
+const deleteTool = objectTool("remove","Видалити об’єкт",removeObject);
+deleteTool.classList.add("object-delete");
+proportionButton.addEventListener("click",() => editObject(object => {
+  if (object.dataset.freeResize === "true") delete object.dataset.freeResize;
+  else object.dataset.freeResize = "true";
+}));
+
+function objectParagraph(object) {
+  return object.closest("p,h1,h2,h3,h4,h5,h6,li");
+}
+function editObject(fn) {
+  if (!editor.isContentEditable || !selectedObject?.isConnected || resizeDrag) return;
+  beforeEdit();
+  fn(selectedObject);
+  record();
+  positionFrame();
+}
+function removeObject() {
+  if (!selectedObject || resizeDrag) return;
+  const object = selectedObject;
+  selectObject(null);
+  change(() => object.remove());
+}
+function objectAngle(object) {
+  return parseFloat(object.style.rotate) || 0;
+}
+function setObjectAngle(object,angle) {
+  const normalized = ((Math.round(angle * 10) % 3600 + 3600) % 3600) / 10;
+  object.style.rotate = normalized ? normalized + "deg" : "";
+}
+function turnObject(delta) {
+  editObject(object => setObjectAngle(object,objectAngle(object) + delta));
+}
 function positionFrame() {
-  if (!selectedObject?.isConnected || !editor.contains(selectedObject)) {
+  if (!editor.isContentEditable || !selectedObject?.isConnected || !editor.contains(selectedObject)) {
     resizeFrame.hidden = true;
+    objectTools.hidden = true;
     return;
   }
-  const box = selectedObject.getBoundingClientRect();
+  const object = selectedObject;
+  const box = object.getBoundingClientRect();
   const area = workspace.getBoundingClientRect();
-  resizeFrame.style.left = box.left - area.left + workspace.scrollLeft - workspace.clientLeft + "px";
-  resizeFrame.style.top = box.top - area.top + workspace.scrollTop - workspace.clientTop + "px";
-  resizeFrame.style.width = box.width + "px";
-  resizeFrame.style.height = box.height + "px";
+  const {width,height,scale} = resizeGeometry(object);
+  const centerX = (box.left + box.right) / 2;
+  const centerY = (box.top + box.bottom) / 2;
+  resizeFrame.style.left = centerX - width * scale / 2 - area.left + workspace.scrollLeft - workspace.clientLeft + "px";
+  resizeFrame.style.top = centerY - height * scale / 2 - area.top + workspace.scrollTop - workspace.clientTop + "px";
+  resizeFrame.style.width = width * scale + "px";
+  resizeFrame.style.height = height * scale + "px";
+  resizeFrame.style.rotate = objectAngle(object) + "deg";
   resizeFrame.hidden = false;
+  const left = area.left + workspace.clientLeft;
+  const right = left + workspace.clientWidth;
+  objectTools.hidden = !!resizeDrag || box.bottom <= area.top || box.top >= area.bottom ||
+    box.right <= left || box.left >= right;
+  if (objectTools.hidden) return;
+  objectTools.style.maxWidth = Math.max(0,workspace.clientWidth - 12) + "px";
+  const barWidth = objectTools.offsetWidth;
+  const barHeight = objectTools.offsetHeight;
+  const above = box.top - barHeight - 42;
+  const top = above >= area.top + 4 ? above : box.bottom + 8;
+  objectTools.style.left = Math.max(left + 6,Math.min(centerX - barWidth / 2,right - barWidth - 6)) + "px";
+  objectTools.style.top = Math.max(area.top + 4,Math.min(top,area.bottom - barHeight - 4)) + "px";
+  proportionButton.setAttribute("aria-pressed",String(object.dataset.freeResize !== "true"));
+  const paragraph = objectParagraph(object);
+  const alignment = paragraph && getComputedStyle(paragraph).textAlign;
+  for (const [button,value] of alignTools) {
+    button.disabled = !paragraph;
+    button.setAttribute("aria-pressed",String(alignment === value || (value === "left" && alignment === "start")));
+  }
 }
 
 const frameObserver = new ResizeObserver(() => {
@@ -352,6 +464,7 @@ const frameObserver = new ResizeObserver(() => {
 });
 frameObserver.observe(editor);
 frameObserver.observe(workspace);
+workspace.addEventListener("scroll",positionFrame,{passive:true});
 workspace.addEventListener("click",event => {
   if (event.target === workspace) selectObject(null);
 });
@@ -359,8 +472,8 @@ workspace.addEventListener("click",event => {
 function selectObject(object) {
   if (resizeDrag) finishResize(false);
   if (selectedObject) frameObserver.unobserve(selectedObject);
-  selectedObject = object;
-  if (object) {
+  selectedObject = editor.isContentEditable ? object : null;
+  if (selectedObject) {
     frameObserver.observe(object);
     const range = document.createRange();
     range.setStartAfter(object);
@@ -386,22 +499,27 @@ function sizeObject(object,width,height) {
 }
 
 function resizeGeometry(object) {
-  const {width,height} = object.getBoundingClientRect();
   const scale = parseFloat(getComputedStyle(object.closest(".page")).zoom) || 1;
-  return {width:width / scale,height:height / scale,scale};
+  return {width:object.offsetWidth,height:object.offsetHeight,scale};
 }
 
+// The image node in Umo Editor caps width to the container and scales the
+// height by the same ratio. Adapted from umodoc/editor, MIT (see LICENSE-UMODOC).
 function resizeDimensions(object,width,height,dx,dy,proportional) {
   const container = object.closest("td,th,.page");
   const style = getComputedStyle(container);
   const maxWidth = Math.max(1,Math.floor(container.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight)));
-  const minWidth = Math.min(width,16,maxWidth);
-  const minHeight = Math.min(height,16);
+  const minWidth = Math.min(width,14,maxWidth);
+  const minHeight = Math.min(height,14);
   if (proportional) {
     const horizontal = dx / width, vertical = dy / height;
     const factor = 1 + (Math.abs(horizontal) > Math.abs(vertical) ? horizontal : vertical);
-    const scale = Math.min(maxWidth / width,2000 / height,Math.max(minWidth / width,minHeight / height,factor));
-    return [Math.max(1,Math.round(width * scale)),Math.max(1,Math.round(height * scale))];
+    const scale = Math.min(2000 / height,Math.max(minWidth / width,minHeight / height,factor));
+    const currentWidth = width * scale, currentHeight = height * scale;
+    const nextWidth = Math.min(currentWidth,maxWidth);
+    const ratio = currentWidth / currentHeight;
+    const nextHeight = nextWidth !== currentWidth && ratio > 0 ? nextWidth / ratio : currentHeight;
+    return [Math.max(1,Math.round(nextWidth)),Math.max(1,Math.round(nextHeight))];
   }
   return [
     Math.max(1,Math.round(Math.min(maxWidth,Math.max(minWidth,width + dx)))),
@@ -414,9 +532,8 @@ function finishResize(commit) {
   if (!drag) return;
   resizeDrag = null;
   if (resizeFrame.hasPointerCapture(drag.pointer)) resizeFrame.releasePointerCapture(drag.pointer);
-  if (commit && drag.changed) {
-    record();
-  } else if (drag.changed) {
+  if (commit && drag.changed) record();
+  else if (drag.changed) {
     for (const [attribute,value] of drag.attributes) {
       if (value === null) drag.object.removeAttribute(attribute);
       else drag.object.setAttribute(attribute,value);
@@ -425,51 +542,75 @@ function finishResize(commit) {
   positionFrame();
 }
 
+function pointerAngle(x,y,cx,cy) {
+  return Math.atan2(y-cy,x-cx) * 180 / Math.PI;
+}
+function beginObjectDrag(event,mode,horizontal=0,vertical=0) {
+  if (!editor.isContentEditable || !selectedObject || event.button !== 0 || resizeDrag) return;
+  event.preventDefault();
+  const object = selectedObject;
+  const {width,height,scale} = resizeGeometry(object);
+  if (width <= 0 || height <= 0) return;
+  const box = object.getBoundingClientRect();
+  const cx = (box.left + box.right) / 2, cy = (box.top + box.bottom) / 2;
+  beforeEdit();
+  resizeDrag = {
+    mode,object,width,height,scale,horizontal,vertical,cx,cy,
+    angle:objectAngle(object),pointerAngle:pointerAngle(event.clientX,event.clientY,cx,cy),
+    x:event.clientX,y:event.clientY,pointer:event.pointerId,
+    attributes:["width","height","style"].map(key => [key,object.getAttribute(key)])
+  };
+  resizeFrame.setPointerCapture(event.pointerId);
+  positionFrame();
+}
+rotationHandle.addEventListener("pointerdown",event => beginObjectDrag(event,"rotate"));
+rotationHandle.addEventListener("keydown",event => {
+  const direction = {ArrowLeft:-1,ArrowDown:-1,ArrowRight:1,ArrowUp:1}[event.key];
+  if (!direction || event.ctrlKey || event.metaKey || event.altKey) return;
+  event.preventDefault();
+  turnObject(direction * (event.shiftKey ? 15 : 1));
+});
 for (const [corner,label,horizontal,vertical] of [
-  ["nw","Верхній лівий",-1,-1],["ne","Верхній правий",1,-1],
-  ["sw","Нижній лівий",-1,1],["se","Нижній правий",1,1]
+  ["nw","Верхній лівий кут",-1,-1],["n","Верхня сторона",0,-1],["ne","Верхній правий кут",1,-1],
+  ["w","Ліва сторона",-1,0],["e","Права сторона",1,0],
+  ["sw","Нижній лівий кут",-1,1],["s","Нижня сторона",0,1],["se","Нижній правий кут",1,1]
 ]) {
   const handle = document.createElement("button");
   handle.type = "button";
   handle.className = "resize-handle " + corner;
-  handle.setAttribute("aria-label",label + " кут — змінити розмір");
-  handle.title = "Перетягніть для зміни розміру. Shift зберігає пропорції.";
+  handle.setAttribute("aria-label",label + " — змінити розмір");
+  handle.title = "Змінити розмір";
   resizeFrame.append(handle);
-  handle.addEventListener("pointerdown",event => {
-    if (!selectedObject || event.button !== 0 || resizeDrag) return;
-    event.preventDefault();
-    const object = selectedObject;
-    const {width,height,scale} = resizeGeometry(object);
-    if (width <= 0 || height <= 0) return;
-    beforeEdit();
-    resizeDrag = {
-      object,width,height,scale,horizontal,vertical,x:event.clientX,y:event.clientY,pointer:event.pointerId,
-      attributes:["width","height","style"].map(key => [key,object.getAttribute(key)])
-    };
-    resizeFrame.setPointerCapture(event.pointerId);
-  });
+  handle.addEventListener("pointerdown",event => beginObjectDrag(event,"resize",horizontal,vertical));
   handle.addEventListener("keydown",event => {
     const direction = {ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[event.key];
-    if (!selectedObject || !direction || event.ctrlKey || event.metaKey || event.altKey) return;
+    if (!direction || event.ctrlKey || event.metaKey || event.altKey) return;
     event.preventDefault();
-    const object = selectedObject;
-    const {width,height} = resizeGeometry(object);
-    if (width <= 0 || height <= 0) return;
-    const [nextWidth,nextHeight] = resizeDimensions(object,width,height,direction[0] * horizontal * 4,direction[1] * vertical * 4,event.shiftKey);
-    beforeEdit();
-    sizeObject(object,nextWidth,nextHeight);
-    record();
-    positionFrame();
+    editObject(object => {
+      const {width,height} = resizeGeometry(object);
+      if (width <= 0 || height <= 0) return;
+      sizeObject(object,...resizeDimensions(object,width,height,direction[0] * horizontal * 4,
+        direction[1] * vertical * 4,object.dataset.freeResize !== "true" || event.shiftKey));
+    });
   });
 }
 
 resizeFrame.addEventListener("pointermove",event => {
   const drag = resizeDrag;
   if (!drag || event.pointerId !== drag.pointer) return;
-  const dx = (event.clientX - drag.x) * drag.horizontal / drag.scale;
-  const dy = (event.clientY - drag.y) * drag.vertical / drag.scale;
-  if (!dx && !dy && !drag.changed) return;
-  sizeObject(drag.object,...resizeDimensions(drag.object,drag.width,drag.height,dx,dy,event.shiftKey));
+  if (drag.mode === "rotate") {
+    const angle = drag.angle + pointerAngle(event.clientX,event.clientY,drag.cx,drag.cy) - drag.pointerAngle;
+    setObjectAngle(drag.object,event.shiftKey ? Math.round(angle / 15) * 15 : angle);
+  } else {
+    const x = (event.clientX - drag.x) / drag.scale;
+    const y = (event.clientY - drag.y) / drag.scale;
+    const rad = drag.angle * Math.PI / 180;
+    const dx = (x * Math.cos(rad) + y * Math.sin(rad)) * drag.horizontal;
+    const dy = (y * Math.cos(rad) - x * Math.sin(rad)) * drag.vertical;
+    if (!dx && !dy && !drag.changed) return;
+    sizeObject(drag.object,...resizeDimensions(drag.object,drag.width,drag.height,dx,dy,
+      drag.object.dataset.freeResize !== "true" || event.shiftKey));
+  }
   drag.changed = true;
   positionFrame();
 });
@@ -907,6 +1048,9 @@ for (const type of ["cut","copy"]) editor.addEventListener(type,event => {
   event.preventDefault();
   if (type === "cut") change(() => selection().deleteFromDocument());
 });
+editor.addEventListener("dragstart",event => {
+  if (editor.isContentEditable && event.target.closest(".shape,img")) event.preventDefault();
+});
 editor.addEventListener("drop",event => event.preventDefault());
 document.addEventListener("keydown",event => {
   if (!editor.isContentEditable) return;
@@ -935,11 +1079,9 @@ document.addEventListener("keydown",event => {
       }
     }
   }
-  if ((editing || resizeFrame.contains(event.target)) && selectedObject && ["Backspace","Delete"].includes(event.key)) {
+  if ((editing || resizeFrame.contains(event.target) || objectTools.contains(event.target)) && selectedObject && ["Backspace","Delete"].includes(event.key)) {
     event.preventDefault();
-    const object = selectedObject;
-    selectObject(null);
-    change(() => object.remove());
+    removeObject();
   }
   if (!(event.ctrlKey || event.metaKey) || event.altKey) return;
   const command = ({z:event.shiftKey?"redo":"undo",y:"redo",s:"saveDoc",enter:"pageBreak"})[event.key.toLowerCase()];

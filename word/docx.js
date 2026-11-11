@@ -210,11 +210,13 @@ const Docx = (() => {
         '<wp:docPr id="'+id+'" name="'+escape(name)+'" descr="'+escape(alt)+'"/><a:graphic><a:graphicData uri="'+uri+'">'+content(cx,cy,id)+'</a:graphicData></a:graphic></wp:inline></w:drawing>');
     }
     function object(node) {
+      const angle = parseFloat(node.style.rotate) || 0;
+      const rotation = angle ? ' rot="'+((Math.round(angle * 60000) % 21600000 + 21600000) % 21600000)+'"' : "";
       if (node.classList.contains("shape")) {
         const shape = node.dataset.shape, color = hex(node.dataset.color) || "5B9BD5";
         const fill = shape === "arc" ? "<a:noFill/>" : '<a:solidFill><a:srgbClr val="'+color+'"/></a:solidFill>';
         return drawing(WPS,(cx,cy) =>
-          '<wps:wsp><wps:cNvSpPr/><wps:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm>'+
+          '<wps:wsp><wps:cNvSpPr/><wps:spPr><a:xfrm'+rotation+'><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm>'+
           '<a:prstGeom prst="'+escape(Object.hasOwn(shapes,shape) ? shape : "rect")+'"><a:avLst/></a:prstGeom>'+fill+
           '<a:ln w="'+(shape === "arc" ? 45000 : 12700)+'"><a:solidFill><a:srgbClr val="'+(shape === "arc" ? color : "355579")+'"/></a:solidFill></a:ln></wps:spPr><wps:bodyPr/></wps:wsp>',
           parseFloat(node.style.width)||100,parseFloat(node.style.height)||100,shapeNames[shape]||"Фігура"
@@ -237,7 +239,7 @@ const Docx = (() => {
       return drawing(PIC,(cx,cy,id) =>
         '<pic:pic><pic:nvPicPr><pic:cNvPr id="'+id+'" name="'+escape(label)+'"/><pic:cNvPicPr/></pic:nvPicPr>'+
         '<pic:blipFill><a:blip r:embed="'+reference+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
-        '<pic:spPr><a:xfrm><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>',
+        '<pic:spPr><a:xfrm'+rotation+'><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>',
         Number(node.getAttribute("width"))||node.naturalWidth||200,Number(node.getAttribute("height"))||node.naturalHeight||150,label,label
       );
     }
@@ -451,9 +453,14 @@ const Docx = (() => {
       const height = Math.min(2000,Math.max(1,Math.round((Number(frame?.getAttribute("cy"))||952500)/9525)));
       const preset = descendants(drawing,"prstGeom")[0]?.getAttribute("prst");
       const isShape = descendants(drawing,"wsp").length;
+      const rotation = Number(descendants(drawing,"xfrm")[0]?.getAttribute("rot")) / 60000;
+      const rotate = node => {
+        if (Number.isFinite(rotation) && rotation) node.style.rotate = rotation + "deg";
+        return node;
+      };
       if (isShape && Object.hasOwn(shapes,preset)) {
         const paint = descendants(descendants(drawing,"spPr")[0],"srgbClr")[0]?.getAttribute("val");
-        return makeShape(preset,rgb(paint||""),width,height);
+        return rotate(makeShape(preset,rgb(paint||""),width,height));
       }
       const link = descendants(drawing,"blip")[0];
       const id = link?.getAttributeNS(R,"embed") || link?.getAttribute("r:embed") || descendants(drawing,"imagedata")[0]?.getAttribute("r:id");
@@ -472,7 +479,7 @@ const Docx = (() => {
       node.alt = descendants(drawing,"docPr")[0]?.getAttribute("descr") || "Зображення";
       node.width = width;
       node.height = height;
-      return node;
+      return rotate(node);
     }
     const BREAK = Symbol("page");
     async function inlines(node,result) {
