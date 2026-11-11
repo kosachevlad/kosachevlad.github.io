@@ -620,7 +620,7 @@ const Docx = (() => {
             for (const tc of children(tr).filter(item => item.localName === "tc")) {
               const shaded = value(child(tc,"tcPr"),"shd");
               const cell = shaded === "E8EEF8" ? document.createElement("th") : document.createElement("td");
-              if (cell.tagName === "TH") row.append(cell);
+              row.append(cell);
               cell.colSpan = Math.min(64,+value(child(tc,"tcPr"),"gridSpan")||1);
               await fillBlocks(cell,children(tc));
               if (!cell.firstChild) cell.append(document.createElement("br"));
