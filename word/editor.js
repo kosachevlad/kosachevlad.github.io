@@ -819,6 +819,7 @@ tableTools.hidden = true;
 workspace.append(tableTools);
 let activeCell = null;
 let selectedCells = [];
+let tableToolsDismissed = false;
 let selectingCells = false;
 function tableButton(label,handler) {
   const button = document.createElement("button");
@@ -831,6 +832,7 @@ function tableButton(label,handler) {
   return button;
 }
 function tableFocus(cell,keepSelection=false) {
+  tableToolsDismissed = false;
   selectedCells.forEach(item => item.classList.remove("table-selected"));
   selectedCells = keepSelection ? selectedCells : [cell];
   selectedCells.forEach(item => item.classList.add("table-selected"));
@@ -843,7 +845,7 @@ const selectCellsButton = tableButton("Вибрати комірки",() => {
 });
 selectCellsButton.setAttribute("aria-pressed","false");
 function positionTableTools() {
-  if (!editor.isContentEditable || !activeCell?.isConnected) {
+  if (tableToolsDismissed || !editor.isContentEditable || !activeCell?.isConnected) {
     tableTools.hidden = true;
     return;
   }
@@ -856,6 +858,13 @@ function positionTableTools() {
   const above = box.top-tableTools.offsetHeight-8;
   tableTools.style.top = Math.max(area.top+4,Math.min(above >= area.top ? above : box.bottom+8,area.bottom-tableTools.offsetHeight-4))+"px";
 }
+const closeTableToolsButton = tableButton("Закрити панель таблиці",() => {
+  tableToolsDismissed = true;
+  tableTools.hidden = true;
+});
+closeTableToolsButton.classList.add("table-tools-close");
+closeTableToolsButton.textContent = "×";
+closeTableToolsButton.setAttribute("aria-label","Закрити панель таблиці");
 function editTable(operation) {
   if (!activeCell?.isConnected) return;
   beforeEdit();
@@ -951,6 +960,7 @@ tableButton("Видалити таблицю",() => editTable(table => table.rem
 editor.addEventListener("click",event => {
   const cell = event.target.closest("td,th");
   if (!cell || !editor.isContentEditable) return;
+  tableToolsDismissed = false;
   if (activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement && activeCell !== cell) {
     const cells = [...cell.parentElement.cells];
     const left = Math.min(cells.indexOf(activeCell),cells.indexOf(cell));
