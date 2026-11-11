@@ -855,8 +855,8 @@ function positionTableTools() {
   if (tableTools.hidden) return;
   tableTools.style.maxWidth = Math.max(0,workspace.clientWidth-12)+"px";
   tableTools.style.left = Math.max(area.left+6,Math.min(box.left,area.right-tableTools.offsetWidth-6))+"px";
-  const above = box.top-tableTools.offsetHeight-8;
-  tableTools.style.top = Math.max(area.top+4,Math.min(above >= area.top ? above : box.bottom+8,area.bottom-tableTools.offsetHeight-4))+"px";
+  tableTools.style.top = box.bottom+6+"px";
+  tableTools.style.maxHeight = Math.max(48,Math.min(window.innerHeight*0.45,area.bottom-box.bottom-10))+"px";
 }
 const closeTableToolsButton = tableButton("Закрити панель таблиці",() => {
   tableToolsDismissed = true;
