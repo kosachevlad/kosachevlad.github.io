@@ -53,15 +53,17 @@ const draftStorageKey = "word-editor-draft-v1";
 let draftSaveTimer, draftStorageWarning = false;
 function saveDraft() {
   clearTimeout(draftSaveTimer);
-  if (!editor.isContentEditable || new URLSearchParams(location.hash.slice(1)).has("doc")) return;
+  if (!editor.isContentEditable || new URLSearchParams(location.hash.slice(1)).has("doc")) return true;
   try {
     const copy = editor.cloneNode(true);
     copy.querySelectorAll(".table-selected").forEach(cell => cell.classList.remove("table-selected"));
     localStorage.setItem(draftStorageKey,JSON.stringify({version:1,name,html:copy.innerHTML,saved:html() === savedHtml}));
     draftStorageWarning = false;
+    return true;
   } catch {
     if (!draftStorageWarning) flash("Не вдалося зберегти чернетку в браузері. Можливо, документ завеликий.");
     draftStorageWarning = true;
+    return false;
   }
 }
 function scheduleDraftSave() {
@@ -1513,11 +1515,11 @@ document.querySelector(".titlebar").addEventListener("touchmove",event => {
   pullCue.textContent = pullStart.ready ? "Відпустіть, щоб оновити" : "Потягніть, щоб оновити";
   pullCue.hidden = false;
 },{passive:false});
-document.querySelector(".titlebar").addEventListener("touchend",async () => {
+document.querySelector(".titlebar").addEventListener("touchend",() => {
   const ready = pullStart?.ready;
   clearPullRefresh();
   if (!ready) return;
-  if (html() !== savedHtml && !await ask({title:"Оновити сторінку?",info:"У поточному документі є незбережені зміни.",ok:"Оновити"})) return;
+  if (!saveDraft()) return;
   window.location.reload();
 });
 document.querySelector(".titlebar").addEventListener("touchcancel",clearPullRefresh);
