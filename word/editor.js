@@ -299,8 +299,12 @@ let rulerScrollLeft = 0;
 function positionVerticalRuler() {
   const page = editor.firstElementChild;
   if (!page || !rulerCorner.getClientRects().length) return;
-  const edge = workspace.getBoundingClientRect().left + workspace.clientLeft;
-  const left = Math.max(edge,rulerCorner.getBoundingClientRect().left);
+  // Keep the page centered without reserving a scrollbar gutter over the ruler.
+  const gutter = workspace.offsetWidth - workspace.clientWidth + "px";
+  if (workspace.style.getPropertyValue("--ruler-gutter") !== gutter) {
+    workspace.style.setProperty("--ruler-gutter",gutter);
+  }
+  const left = rulerCorner.getBoundingClientRect().left;
   const offset = left - page.getBoundingClientRect().left - page.clientLeft + "px";
   if (editor.style.getPropertyValue("--vertical-ruler-left") !== offset) {
     editor.style.setProperty("--vertical-ruler-left",offset);

@@ -160,6 +160,9 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
   0%,100%{background:transparent}
   18%,78%{background:#4c3779}
 }
+@media(min-width:851px){
+  .workspace{scrollbar-gutter:stable;padding-inline-start:var(--ruler-gutter,0px)}
+}
 @media(max-width:850px){:root{--paper-width:calc(100vw - 32px);--margin:clamp(22px,9vw,94px);--paper-height:calc((100vw - 32px) * 1.414)}.page::before,.page::after,.tab-stop{display:none}.ruler{width:calc(100% - 34px)}}
 @media(max-width:475px){.title-spacer,.quick{width:82px}.quick{padding-left:6px}.status{gap:9px;padding:0 6px}.language{display:none}}
 @media (max-width:767px) and (pointer:coarse), (max-width:960px) and (max-height:600px) and (pointer:coarse){
