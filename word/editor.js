@@ -914,8 +914,10 @@ tableButton("Об’єднати",() => editTable((_table,cell) => {
   selectingCells = false;
   selectCellsButton.setAttribute("aria-pressed","false");
 }));
-tableButton("Розділити",() => editTable((_table,cell) => {
-  if (cell.colSpan < 2) return;
+tableButton("Розділити",() => editTable((table,cell) => {
+  if (cell.colSpan === 1) {
+    for (const row of table.rows) for (const item of row.cells) item.colSpan *= 2;
+  }
   const span = cell.colSpan;
   cell.colSpan = 1;
   for (let i=1;i<span;i++) cell.parentElement.insertCell(cell.cellIndex+i).append(blank());
