@@ -343,6 +343,27 @@ objectTools.addEventListener("pointerdown",event => {
 let resizeDrag;
 const proportionButton = objectTool("lock","Зберігати пропорції");
 proportionButton.setAttribute("aria-pressed","true");
+const wrapSelect = document.createElement("select");
+wrapSelect.className = "object-wrap";
+wrapSelect.setAttribute("aria-label","Обтікання текстом");
+wrapSelect.title = "Обтікання текстом";
+const wrapModes = [
+  ["inline","У тексті"],
+  ["left","Навколо — об’єкт ліворуч"],
+  ["right","Навколо — об’єкт праворуч"],
+  ["top-bottom","Згори й знизу"],
+  ["behind","За текстом"],
+  ["front","Перед текстом"]
+];
+for (const [value,label] of wrapModes) wrapSelect.add(new Option(label,value));
+objectTools.append(wrapSelect);
+wrapSelect.addEventListener("change",() => editObject(object => {
+  // Umo's image node distinguishes inline and floating layout in its attributes.
+  // Keep that choice on the document node, extended with Word's wrap modes.
+  if (wrapSelect.value === "inline") delete object.dataset.wrap;
+  else object.dataset.wrap = wrapSelect.value;
+  syncWrapBounds(object);
+}));
 const rotationHandle = document.createElement("button");
 rotationHandle.type = "button";
 rotationHandle.className = "rotation-handle";
@@ -415,6 +436,20 @@ function objectAngle(object) {
 function setObjectAngle(object,angle) {
   const normalized = ((Math.round(angle * 10) % 3600 + 3600) % 3600) / 10;
   object.style.rotate = normalized ? normalized + "deg" : "";
+  syncWrapBounds(object);
+}
+function syncWrapBounds(object) {
+  const angle = objectAngle(object);
+  if (!angle || !["left","right","top-bottom"].includes(object.dataset.wrap)) {
+    object.style.removeProperty("--wrap-x");
+    object.style.removeProperty("--wrap-y");
+    return;
+  }
+  const {offsetWidth:w,offsetHeight:h} = object;
+  const radians = angle * Math.PI / 180;
+  const cos = Math.abs(Math.cos(radians)), sin = Math.abs(Math.sin(radians));
+  object.style.setProperty("--wrap-x",Math.ceil(Math.max(0,w * cos + h * sin - w) / 2) + "px");
+  object.style.setProperty("--wrap-y",Math.ceil(Math.max(0,h * cos + w * sin - h) / 2) + "px");
 }
 function turnObject(delta) {
   editObject(object => setObjectAngle(object,objectAngle(object) + delta));
@@ -450,6 +485,7 @@ function positionFrame() {
   objectTools.style.left = Math.max(left + 6,Math.min(centerX - barWidth / 2,right - barWidth - 6)) + "px";
   objectTools.style.top = Math.max(area.top + 4,Math.min(top,area.bottom - barHeight - 4)) + "px";
   proportionButton.setAttribute("aria-pressed",String(object.dataset.freeResize !== "true"));
+  wrapSelect.value = wrapModes.some(([value]) => value === object.dataset.wrap) ? object.dataset.wrap : "inline";
   const paragraph = objectParagraph(object);
   const alignment = paragraph && getComputedStyle(paragraph).textAlign;
   for (const [button,value] of alignTools) {
@@ -496,6 +532,7 @@ function sizeObject(object,width,height) {
     object.style.width = width + "px";
     object.style.height = height + "px";
   }
+  syncWrapBounds(object);
 }
 
 function resizeGeometry(object) {
@@ -822,6 +859,7 @@ function loadDocument(pages,filename) {
   editor.querySelectorAll("img[width][height]").forEach(image => {
     sizeObject(image,Number(image.getAttribute("width")),Number(image.getAttribute("height")));
   });
+  editor.querySelectorAll(".shape[data-wrap]").forEach(syncWrapBounds);
   name = filename;
   savedRange = null;
   history = [];
@@ -1012,8 +1050,29 @@ sizeInput.addEventListener("keydown",event => {
   }
 });
 document.addEventListener("selectionchange",() => { if (capture()) update(); });
+function behindObjectAt(event) {
+  const {clientX:x,clientY:y} = event;
+  const behind = document.elementsFromPoint(x,y).map(node => node.closest(".shape[data-wrap=behind],img[data-wrap=behind]"))
+    .find(node => node && editor.contains(node));
+  if (!behind || event.altKey) return behind;
+  const caret = document.caretPositionFromPoint?.(x,y) || document.caretRangeFromPoint?.(x,y);
+  const text = caret?.offsetNode || caret?.startContainer;
+  const offset = caret?.offset ?? caret?.startOffset;
+  if (text?.nodeType !== Node.TEXT_NODE) return behind;
+  const range = document.createRange();
+  for (const start of [offset-1,offset]) {
+    if (start < 0 || start >= text.length) continue;
+    range.setStart(text,start);
+    range.setEnd(text,start+1);
+    if ([...range.getClientRects()].some(rect => x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom)) return null;
+  }
+  return behind;
+}
 editor.addEventListener("click",event => {
-  if (editor.isContentEditable) selectObject(event.target.closest(".shape,img"));
+  if (!editor.isContentEditable) return;
+  const direct = event.target.closest(".shape,img");
+  const behind = (!direct || event.altKey) && behindObjectAt(event);
+  selectObject(behind || direct || null);
 });
 editor.addEventListener("beforeinput",event => {
   if (["historyUndo","historyRedo"].includes(event.inputType)) {

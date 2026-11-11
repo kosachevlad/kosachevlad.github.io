@@ -203,11 +203,26 @@ const Docx = (() => {
     const formats = new Set();
     const lists = [];
     let drawingId = 0;
-    function drawing(uri,content,width,height,name,alt="") {
+    function drawing(uri,content,width,height,name,alt="",wrap="") {
       const id = ++drawingId;
       const cx = Math.round(Math.max(1,width)*9525), cy = Math.round(Math.max(1,height)*9525);
-      return textRun('<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="'+cx+'" cy="'+cy+'"/>'+
-        '<wp:docPr id="'+id+'" name="'+escape(name)+'" descr="'+escape(alt)+'"/><a:graphic><a:graphicData uri="'+uri+'">'+content(cx,cy,id)+'</a:graphicData></a:graphic></wp:inline></w:drawing>');
+      const extent = '<wp:extent cx="'+cx+'" cy="'+cy+'"/>';
+      const graphic = '<wp:docPr id="'+id+'" name="'+escape(name)+'" descr="'+escape(alt)+'"/><a:graphic><a:graphicData uri="'+uri+'">'+content(cx,cy,id)+'</a:graphicData></a:graphic>';
+      const square = wrap === "left" || wrap === "right";
+      const vertical = wrap === "top-bottom";
+      if (!square && !vertical && wrap !== "behind" && wrap !== "front") {
+        return textRun('<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'+extent+graphic+'</wp:inline></w:drawing>');
+      }
+      const alignment = vertical ? "center" : wrap === "right" ? "right" : "left";
+      const mode = square ? '<wp:wrapSquare wrapText="'+(wrap === "left" ? "right" : "left")+'"/>' :
+        vertical ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
+      return textRun('<w:drawing><wp:anchor distT="'+(vertical ? 57150 : 0)+'" distB="'+(square || vertical ? 57150 : 0)+
+        '" distL="'+(wrap === "right" ? 95250 : 0)+'" distR="'+(wrap === "left" ? 95250 : 0)+
+        '" simplePos="0" relativeHeight="'+id+'" behindDoc="'+(wrap === "behind" ? 1 : 0)+
+        '" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'+
+        '<wp:positionH relativeFrom="column"><wp:align>'+alignment+'</wp:align></wp:positionH>'+
+        '<wp:positionV relativeFrom="paragraph"><wp:posOffset>0</wp:posOffset></wp:positionV>'+
+        extent+mode+graphic+'</wp:anchor></w:drawing>');
     }
     function object(node) {
       const angle = parseFloat(node.style.rotate) || 0;
@@ -219,7 +234,7 @@ const Docx = (() => {
           '<wps:wsp><wps:cNvSpPr/><wps:spPr><a:xfrm'+rotation+'><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm>'+
           '<a:prstGeom prst="'+escape(Object.hasOwn(shapes,shape) ? shape : "rect")+'"><a:avLst/></a:prstGeom>'+fill+
           '<a:ln w="'+(shape === "arc" ? 45000 : 12700)+'"><a:solidFill><a:srgbClr val="'+(shape === "arc" ? color : "355579")+'"/></a:solidFill></a:ln></wps:spPr><wps:bodyPr/></wps:wsp>',
-          parseFloat(node.style.width)||100,parseFloat(node.style.height)||100,shapeNames[shape]||"Фігура"
+          parseFloat(node.style.width)||100,parseFloat(node.style.height)||100,shapeNames[shape]||"Фігура","",node.dataset.wrap
         );
       }
       const match = node.getAttribute("src")?.match(/^data:(image\/(?:png|jpeg|gif|bmp|webp));base64,(.*)$/s);
@@ -240,7 +255,7 @@ const Docx = (() => {
         '<pic:pic><pic:nvPicPr><pic:cNvPr id="'+id+'" name="'+escape(label)+'"/><pic:cNvPicPr/></pic:nvPicPr>'+
         '<pic:blipFill><a:blip r:embed="'+reference+'"/><a:stretch><a:fillRect/></a:stretch></pic:blipFill>'+
         '<pic:spPr><a:xfrm'+rotation+'><a:off x="0" y="0"/><a:ext cx="'+cx+'" cy="'+cy+'"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic>',
-        Number(node.getAttribute("width"))||node.naturalWidth||200,Number(node.getAttribute("height"))||node.naturalHeight||150,label,label
+        Number(node.getAttribute("width"))||node.naturalWidth||200,Number(node.getAttribute("height"))||node.naturalHeight||150,label,label,node.dataset.wrap
       );
     }
     function runs(node,style) {
@@ -454,13 +469,23 @@ const Docx = (() => {
       const preset = descendants(drawing,"prstGeom")[0]?.getAttribute("prst");
       const isShape = descendants(drawing,"wsp").length;
       const rotation = Number(descendants(drawing,"xfrm")[0]?.getAttribute("rot")) / 60000;
-      const rotate = node => {
+      const anchor = descendants(drawing,"anchor")[0];
+      const square = child(anchor,"wrapSquare") || child(anchor,"wrapTight") || child(anchor,"wrapThrough");
+      let wrap;
+      if (square) {
+        const text = square.getAttribute("wrapText");
+        const align = child(child(anchor,"positionH"),"align")?.textContent;
+        wrap = text === "left" || (text !== "right" && align === "right") ? "right" : "left";
+      } else if (child(anchor,"wrapTopAndBottom")) wrap = "top-bottom";
+      else if (child(anchor,"wrapNone")) wrap = /^(1|true)$/.test(anchor.getAttribute("behindDoc")) ? "behind" : "front";
+      const styleObject = node => {
         if (Number.isFinite(rotation) && rotation) node.style.rotate = rotation + "deg";
+        if (wrap) node.dataset.wrap = wrap;
         return node;
       };
       if (isShape && Object.hasOwn(shapes,preset)) {
         const paint = descendants(descendants(drawing,"spPr")[0],"srgbClr")[0]?.getAttribute("val");
-        return rotate(makeShape(preset,rgb(paint||""),width,height));
+        return styleObject(makeShape(preset,rgb(paint||""),width,height));
       }
       const link = descendants(drawing,"blip")[0];
       const id = link?.getAttributeNS(R,"embed") || link?.getAttribute("r:embed") || descendants(drawing,"imagedata")[0]?.getAttribute("r:id");
@@ -479,7 +504,7 @@ const Docx = (() => {
       node.alt = descendants(drawing,"docPr")[0]?.getAttribute("descr") || "Зображення";
       node.width = width;
       node.height = height;
-      return rotate(node);
+      return styleObject(node);
     }
     const BREAK = Symbol("page");
     async function inlines(node,result) {
