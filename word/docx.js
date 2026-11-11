@@ -328,10 +328,13 @@ const Docx = (() => {
       const borders = ["top","left","bottom","right","insideH","insideV"].map(side => '<w:'+side+' w:val="single" w:sz="4" w:color="404040"/>').join("");
       const grid = '<w:tblGrid>' + ('<w:gridCol w:w="'+columnWidth+'"/>').repeat(columns) + "</w:tblGrid>";
       return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>'+borders+'</w:tblBorders></w:tblPr>'+grid+
-        rows.map(row => "<w:tr>"+[...row.cells].map(cell => {
+        rows.map(row => '<w:tr>'+(row.cells[0]?.tagName === "TH" ? '<w:trPr><w:tblHeader w:val="true"/></w:trPr>' : "")+[...row.cells].map(cell => {
           const content = blocks(cell);
+          const background = hex(cell.style.backgroundColor);
+          const alignment = {top:"top",middle:"center",bottom:"bottom"}[cell.style.verticalAlign];
           return '<w:tc><w:tcPr><w:tcW w:w="'+columnWidth*cell.colSpan+'" w:type="dxa"/>'+
-            (cell.tagName === "TH" ? '<w:shd w:fill="E8EEF8"/>' : "")+
+            (background ? '<w:shd w:fill="'+background+'"/>' : "")+
+            (alignment ? tag("vAlign",alignment) : "")+
             (cell.colSpan>1?tag("gridSpan",cell.colSpan):"")+"</w:tcPr>"+(content||"<w:p/>")+(content.endsWith("</w:tbl>")?"<w:p/>":"")+"</w:tc>";
         }).join("")+"</w:tr>").join("")+"</w:tbl>";
     }
@@ -617,10 +620,15 @@ const Docx = (() => {
           const table = document.createElement("table");
           for (const tr of children(node).filter(item => item.localName === "tr")) {
             const row = table.insertRow();
+            const isHeader = !!child(child(tr,"trPr"),"tblHeader");
             for (const tc of children(tr).filter(item => item.localName === "tc")) {
-              const shaded = value(child(tc,"tcPr"),"shd");
-              const cell = shaded === "E8EEF8" ? document.createElement("th") : document.createElement("td");
+              const properties = child(tc,"tcPr");
+              const cell = document.createElement(isHeader ? "th" : "td");
               row.append(cell);
+              const shade = attr(child(properties,"shd"),"fill");
+              if (/^[0-9a-f]{6}$/i.test(shade)) cell.style.backgroundColor = "#"+shade;
+              const alignment = value(properties,"vAlign");
+              if ({top:1,center:1,bottom:1}[alignment]) cell.style.verticalAlign = alignment === "center" ? "middle" : alignment;
               cell.colSpan = Math.min(64,+value(child(tc,"tcPr"),"gridSpan")||1);
               await fillBlocks(cell,children(tc));
               if (!cell.firstChild) cell.append(document.createElement("br"));

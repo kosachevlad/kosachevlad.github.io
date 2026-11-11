@@ -916,6 +916,22 @@ tableButton("Заголовок",() => editTable((table,_cell) => {
     cell.replaceWith(replacement);
   }
 }));
+const cellColor = document.createElement("input");
+cellColor.type = "color";
+cellColor.value = "#fff2cc";
+cellColor.setAttribute("aria-label","Колір комірки");
+cellColor.title = "Колір комірки";
+cellColor.addEventListener("input",() => editTable((_table,cell) => {
+  for (const item of selectedCells.length ? selectedCells : [cell]) item.style.backgroundColor = cellColor.value;
+}));
+tableTools.append(cellColor);
+const cellVertical = document.createElement("select");
+cellVertical.setAttribute("aria-label","Вирівнювання в комірці");
+for (const [value,label] of [["top","Згори"],["middle","Посередині"],["bottom","Знизу"]]) cellVertical.add(new Option(label,value));
+cellVertical.addEventListener("change",() => editTable((_table,cell) => {
+  for (const item of selectedCells.length ? selectedCells : [cell]) item.style.verticalAlign = cellVertical.value;
+}));
+tableTools.append(cellVertical);
 tableButton("Видалити таблицю",() => editTable(table => table.remove()));
 editor.addEventListener("click",event => {
   const cell = event.target.closest("td,th");
