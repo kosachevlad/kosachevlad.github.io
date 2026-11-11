@@ -898,6 +898,11 @@ tableButton("Видалити стовпець",() => editTable((table,cell) => 
 tableButton("Об’єднати",() => editTable((_table,cell) => {
   const row = cell.parentElement;
   const cells = selectedCells.filter(item => item.parentElement === row).sort((a,b) => a.cellIndex-b.cellIndex);
+  if (cells.length === 1 && row.cells.length > 1) {
+    const neighbor = row.cells[cell.cellIndex+1] || row.cells[cell.cellIndex-1];
+    cells.push(neighbor);
+    cells.sort((a,b) => a.cellIndex-b.cellIndex);
+  }
   if (cells.length < 2 || cells.some((item,index) => item.cellIndex !== cells[0].cellIndex+index)) return;
   const first = cells[0];
   for (const item of cells.slice(1)) {
@@ -944,7 +949,7 @@ tableButton("Видалити таблицю",() => editTable(table => table.rem
 editor.addEventListener("click",event => {
   const cell = event.target.closest("td,th");
   if (!cell || !editor.isContentEditable) return;
-  if ((event.shiftKey || selectingCells) && activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement) {
+  if (activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement && activeCell !== cell) {
     const cells = [...cell.parentElement.cells];
     const left = Math.min(cells.indexOf(activeCell),cells.indexOf(cell));
     const right = Math.max(cells.indexOf(activeCell),cells.indexOf(cell));
