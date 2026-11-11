@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=pull-refresh-2">
-<script defer src="./docx.js?v=table-tools-2"></script>
-<script defer src="./editor.js?v=pull-refresh-2"></script>
+<link rel="stylesheet" href="./style.css?v=table-design-1">
+<script defer src="./docx.js?v=table-design-1"></script>
+<script defer src="./editor.js?v=table-design-1"></script>
 <script defer src="./sharing.js?v=2"></script>
 </head>
 <body>
@@ -25,6 +25,7 @@
     <button id="file-tab" class="file-tab" role="tab" aria-controls="file-panel" aria-selected="false">Файл</button>
     <button id="home-tab" role="tab" aria-controls="home-panel" aria-selected="true">Основне</button>
     <button id="insert-tab" role="tab" aria-controls="insert-panel" aria-selected="false">Вставлення</button>
+    <button id="table-design-tab" role="tab" aria-controls="table-design-panel" aria-selected="false" hidden>Конструктор таблиць</button>
   </nav>
   <div class="ribbon" id="home-panel" role="tabpanel" aria-labelledby="home-tab">
     <section class="group clipboard" aria-label="Буфер обміну">
@@ -105,6 +106,42 @@
     <button class="large" data-action="openDoc"><i data-icon="open"></i>Відкрити</button>
     <button class="large" data-action="saveDoc"><i data-icon="save"></i>Зберегти як</button>
     <button class="large" data-action="saveAndShare"><i data-icon="share"></i>Зберегти й<br>поділитися</button>
+  </div>
+  <div class="ribbon table-design-ribbon" id="table-design-panel" role="tabpanel" aria-labelledby="table-design-tab" hidden>
+    <section class="group table-options" aria-label="Параметри стилів таблиць">
+      <div class="table-option-grid">
+        <label><input type="checkbox" data-table-option="headerRow"> Рядок заголовка</label>
+        <label><input type="checkbox" data-table-option="firstColumn"> Перший стовпець</label>
+        <label><input type="checkbox" data-table-option="totalRow"> Рядок підсумків</label>
+        <label><input type="checkbox" data-table-option="lastColumn"> Останній стовпець</label>
+        <label><input type="checkbox" data-table-option="bandedRows"> Смугасті рядки</label>
+        <label><input type="checkbox" data-table-option="bandedColumns"> Смугасті стовпці</label>
+      </div>
+      <div class="group-name">Параметри стилів таблиць</div>
+    </section>
+    <section class="group table-style-group" aria-label="Стилі таблиць">
+      <div class="table-style-gallery">
+        <button type="button" data-table-style="plain" aria-label="Проста таблиця" title="Проста таблиця"><span class="table-style-preview preview-plain"></span></button>
+        <button type="button" data-table-style="blue" aria-label="Синя таблиця" title="Синя таблиця"><span class="table-style-preview preview-blue"></span></button>
+        <button type="button" data-table-style="green" aria-label="Зелена таблиця" title="Зелена таблиця"><span class="table-style-preview preview-green"></span></button>
+        <button type="button" data-table-style="dark" aria-label="Темна таблиця" title="Темна таблиця"><span class="table-style-preview preview-dark"></span></button>
+      </div>
+      <div class="table-fill-control"><label for="design-fill">Заливка комірки</label><input id="design-fill" type="color" value="#fff2cc" aria-label="Колір заливки комірки"></div>
+      <div class="group-name">Стилі таблиць</div>
+    </section>
+    <section class="group table-border-group" aria-label="Межі">
+      <div class="table-border-settings">
+        <label>Стиль <select id="border-style" aria-label="Стиль межі"><option value="solid">Одинарна</option><option value="dashed">Пунктир</option><option value="double">Подвійна</option></select></label>
+        <label>Товщина <select id="border-width" aria-label="Товщина межі"><option value="1">1 пкс</option><option value="2">2 пкс</option><option value="3">3 пкс</option><option value="4">4 пкс</option></select></label>
+        <label>Колір <input id="border-color" type="color" value="#434343" aria-label="Колір межі"></label>
+      </div>
+      <div class="table-border-actions">
+        <button type="button" data-table-border="top">Верхня</button><button type="button" data-table-border="bottom">Нижня</button>
+        <button type="button" data-table-border="left">Ліва</button><button type="button" data-table-border="right">Права</button>
+        <button type="button" data-table-border="all">Усі межі</button><button type="button" data-table-border="none">Без меж</button>
+      </div>
+      <div class="group-name">Межі</div>
+    </section>
   </div>
 </header>
 <header id="shared-header" class="shared-header" hidden>

@@ -288,7 +288,10 @@ const Docx = (() => {
       const alignment = ({"left":"left","center":"center","right":"right","justify":"both","-webkit-center":"center"})[block.style?.textAlign || block.getAttribute?.("align")];
       if (alignment) properties.push(tag("jc",alignment));
       if (num) properties.push("<w:rPr>"+tag("sz",num.markerSize)+tag("szCs",num.markerSize)+"</w:rPr>");
-      const base = block.style ? runStyle(block,{}) : {};
+      const cell = block.nodeType === 1 ? block.closest("td,th") : block.parentElement?.closest("td,th");
+      const computedCell = cell && getComputedStyle(cell);
+      const inherited = computedCell ? {bold:parseInt(computedCell.fontWeight,10) >= 600,color:hex(computedCell.color)} : {};
+      const base = block.style ? runStyle(block,inherited) : inherited;
       let content;
       if (block.nodeType === 3 || block.matches?.("img,.shape,br")) content = runs(block,base);
       else if (children.length === 1 && children[0].nodeName === "BR") content = "";
@@ -328,12 +331,22 @@ const Docx = (() => {
       const borders = ["top","left","bottom","right","insideH","insideV"].map(side => '<w:'+side+' w:val="single" w:sz="4" w:color="404040"/>').join("");
       const grid = '<w:tblGrid>' + ('<w:gridCol w:w="'+columnWidth+'"/>').repeat(columns) + "</w:tblGrid>";
       return '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/><w:tblBorders>'+borders+'</w:tblBorders></w:tblPr>'+grid+
-        rows.map(row => '<w:tr>'+(row.cells[0]?.tagName === "TH" ? '<w:trPr><w:tblHeader w:val="true"/></w:trPr>' : "")+[...row.cells].map(cell => {
+        rows.map((row,rowIndex) => '<w:tr>'+(rowIndex === 0 && (node.dataset.headerRow === "true" || !node.hasAttribute("data-header-row") && row.cells[0]?.tagName === "TH") ? '<w:trPr><w:tblHeader w:val="true"/></w:trPr>' : "")+[...row.cells].map(cell => {
           const content = blocks(cell);
-          const background = hex(cell.style.backgroundColor);
+          const computed = getComputedStyle(cell);
+          const background = hex(computed.backgroundColor);
           const alignment = {top:"top",middle:"center",bottom:"bottom"}[cell.style.verticalAlign];
+          const cellBorders = ["top","bottom","left","right"].map(side => {
+            const suffix = side[0].toUpperCase()+side.slice(1);
+            const line = computed["border"+suffix+"Style"];
+            if (line === "none" || line === "hidden") return '<w:'+side+' w:val="nil"/>';
+            const style = {solid:"single",dashed:"dashed",double:"double",dotted:"dotted"}[line] || "single";
+            const size = Math.max(2,Math.min(96,Math.round(parseFloat(computed["border"+suffix+"Width"])*6)||4));
+            return '<w:'+side+' w:val="'+style+'" w:sz="'+size+'" w:color="'+(hex(computed["border"+suffix+"Color"])||"434343")+'"/>';
+          }).join("");
           return '<w:tc><w:tcPr><w:tcW w:w="'+columnWidth*cell.colSpan+'" w:type="dxa"/>'+
             (background ? '<w:shd w:fill="'+background+'"/>' : "")+
+            '<w:tcBorders>'+cellBorders+'</w:tcBorders>'+
             (alignment ? tag("vAlign",alignment) : "")+
             (cell.colSpan>1?tag("gridSpan",cell.colSpan):"")+"</w:tcPr>"+(content||"<w:p/>")+(content.endsWith("</w:tbl>")?"<w:p/>":"")+"</w:tc>";
         }).join("")+"</w:tr>").join("")+"</w:tbl>";
@@ -627,6 +640,20 @@ const Docx = (() => {
               row.append(cell);
               const shade = attr(child(properties,"shd"),"fill");
               if (/^[0-9a-f]{6}$/i.test(shade)) cell.style.backgroundColor = "#"+shade;
+              const cellBorders = child(properties,"tcBorders");
+              for (const side of ["top","bottom","left","right"]) {
+                const edge = child(cellBorders,side);
+                if (!edge) continue;
+                const kind = attr(edge,"val");
+                const suffix = side[0].toUpperCase()+side.slice(1);
+                if (kind === "nil" || kind === "none") cell.style["border"+suffix] = "none";
+                else {
+                  const line = {single:"solid",dashed:"dashed",double:"double",dotted:"dotted"}[kind] || "solid";
+                  const width = Math.max(1,Math.round((+attr(edge,"sz")||4)/6));
+                  const color = attr(edge,"color");
+                  cell.style["border"+suffix] = width+"px "+line+" #"+(/^[0-9a-f]{6}$/i.test(color)?color:"434343");
+                }
+              }
               const alignment = value(properties,"vAlign");
               if ({top:1,center:1,bottom:1}[alignment]) cell.style.verticalAlign = alignment === "center" ? "middle" : alignment;
               cell.colSpan = Math.min(64,+value(child(tc,"tcPr"),"gridSpan")||1);

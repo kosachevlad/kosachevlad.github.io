@@ -191,6 +191,12 @@ function step(delta) {
   index += delta;
   previousType = "";
   editor.innerHTML = snapshot.html;
+  if (activeCell && !activeCell.isConnected) {
+    activeCell = null;
+    selectedCells = [];
+    $("#table-design-tab").hidden = true;
+    if ($("#table-design-tab").getAttribute("aria-selected") === "true") tab("home-tab");
+  }
   savedRange = fromBookmark(snapshot.mark);
   restore();
   update();
@@ -833,6 +839,9 @@ function table(columns,rows) {
     const range = selection().getRangeAt(0);
     range.deleteContents();
     const table = document.createElement("table");
+    table.dataset.tableStyle = "plain";
+    table.dataset.headerRow = "true";
+    table.dataset.bandedRows = "true";
     for (let y = 0; y < rows; y++) {
       const row = table.insertRow();
       for (let x = 0; x < columns; x++) row.insertCell().append(blank());
@@ -844,6 +853,7 @@ function table(columns,rows) {
     else page.append(table);
     if (!table.nextElementSibling) table.after(blank());
     caret(table.rows[0].cells[0].firstElementChild);
+    tableFocus(table.rows[0].cells[0]);
   });
 }
 
@@ -873,7 +883,20 @@ function tableFocus(cell,keepSelection=false) {
   selectedCells = keepSelection ? selectedCells : [cell];
   selectedCells.forEach(item => item.classList.add("table-selected"));
   activeCell = cell;
+  $("#table-design-tab").hidden = false;
+  tab("table-design-tab");
+  syncTableDesign();
   positionTableTools();
+}
+function syncTableDesign() {
+  const table = activeCell?.closest("table");
+  if (!table) return;
+  for (const input of $$("[data-table-option]")) {
+    const key = input.dataset.tableOption;
+    input.checked = key === "headerRow" && !table.hasAttribute("data-header-row")
+      ? table.rows[0]?.cells[0]?.tagName === "TH" : table.dataset[key] === "true";
+  }
+  $$("[data-table-style]").forEach(button => button.setAttribute("aria-pressed",String(button.dataset.tableStyle === (table.dataset.tableStyle || "plain"))));
 }
 const selectCellsButton = tableButton("Вибрати комірки",() => {
   selectingCells = !selectingCells;
@@ -909,10 +932,44 @@ function editTable(operation) {
     selectedCells.forEach(item => item.classList.remove("table-selected"));
     selectedCells = [];
     activeCell = null;
+    $("#table-design-tab").hidden = true;
+    if ($("#table-design-tab").getAttribute("aria-selected") === "true") tab("home-tab");
   }
   record();
+  syncTableDesign();
   positionTableTools();
 }
+function tableTargets() {
+  return selectedCells.filter(cell => cell.isConnected && cell.closest("table") === activeCell?.closest("table")).length
+    ? selectedCells.filter(cell => cell.isConnected && cell.closest("table") === activeCell?.closest("table")) : activeCell ? [activeCell] : [];
+}
+$$('[data-table-option]').forEach(input => input.addEventListener("change",() => editTable(table => {
+  table.dataset[input.dataset.tableOption] = String(input.checked);
+})));
+$$('[data-table-style]').forEach(button => button.addEventListener("click",() => editTable(table => {
+  table.dataset.tableStyle = button.dataset.tableStyle;
+})));
+$("#design-fill").addEventListener("change",event => editTable(() => {
+  for (const cell of tableTargets()) cell.style.backgroundColor = event.target.value;
+}));
+$$('[data-table-border]').forEach(button => button.addEventListener("click",() => editTable(() => {
+  const sides = button.dataset.tableBorder === "all" || button.dataset.tableBorder === "none"
+    ? ["top","bottom","left","right"] : [button.dataset.tableBorder];
+  const value = button.dataset.tableBorder === "none" ? "none" :
+    `${$("#border-width").value}px ${$("#border-style").value} ${$("#border-color").value}`;
+  for (const cell of tableTargets()) {
+    for (const side of sides) {
+      cell.style["border"+side[0].toUpperCase()+side.slice(1)] = value;
+      const row = cell.parentElement, index = cell.cellIndex, rows = [...row.closest("table").rows];
+      const neighbor = side === "left" ? row.cells[index-1] : side === "right" ? row.cells[index+1] :
+        side === "top" ? rows[row.rowIndex-1]?.cells[index] : rows[row.rowIndex+1]?.cells[index];
+      if (neighbor) {
+        const opposite = {top:"Bottom",bottom:"Top",left:"Right",right:"Left"}[side];
+        neighbor.style["border"+opposite] = value;
+      }
+    }
+  }
+})));
 const newTableCell = row => row.insertCell().append(blank());
 tableButton("Рядок вище",() => editTable((table,cell) => {
   const row = table.insertRow(cell.parentElement.rowIndex);
@@ -995,7 +1052,16 @@ tableTools.append(cellVertical);
 tableButton("Видалити таблицю",() => editTable(table => table.remove()));
 editor.addEventListener("click",event => {
   const cell = event.target.closest("td,th");
-  if (!cell || !editor.isContentEditable) return;
+  if (!editor.isContentEditable) return;
+  if (!cell) {
+    $("#table-design-tab").hidden = true;
+    if ($("#table-design-tab").getAttribute("aria-selected") === "true") tab("home-tab");
+    tableTools.hidden = true;
+    activeCell = null;
+    selectedCells.forEach(item => item.classList.remove("table-selected"));
+    selectedCells = [];
+    return;
+  }
   tableToolsDismissed = false;
   if (activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement && activeCell !== cell) {
     const cells = [...cell.parentElement.cells];
@@ -1004,6 +1070,9 @@ editor.addEventListener("click",event => {
     selectedCells.forEach(item => item.classList.remove("table-selected"));
     selectedCells = cells.slice(left,right+1);
     selectedCells.forEach(item => item.classList.add("table-selected"));
+    $("#table-design-tab").hidden = false;
+    tab("table-design-tab");
+    syncTableDesign();
     positionTableTools();
   } else tableFocus(cell);
 });
@@ -1188,6 +1257,10 @@ async function confirmReplace() {
 }
 function loadDocument(pages,filename) {
   selectObject(null);
+  activeCell = null;
+  selectedCells = [];
+  tableTools.hidden = true;
+  $("#table-design-tab").hidden = true;
   editor.replaceChildren(...pages);
   tidy();
   editor.querySelectorAll("img[width][height]").forEach(image => {
