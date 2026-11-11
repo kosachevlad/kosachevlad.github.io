@@ -1456,4 +1456,33 @@ document.addEventListener("keydown",event => {
     void action(command);
   }
 });
+let pullStart = null;
+const pullCue = $("#pull-refresh-cue");
+function clearPullRefresh() {
+  pullStart = null;
+  pullCue.hidden = true;
+}
+document.querySelector(".titlebar").addEventListener("touchstart",event => {
+  if (event.touches.length !== 1 || $("#dialog").open || shareDialog.open) return;
+  pullStart = {x:event.touches[0].clientX,y:event.touches[0].clientY,ready:false};
+},{passive:true});
+document.querySelector(".titlebar").addEventListener("touchmove",event => {
+  if (!pullStart || event.touches.length !== 1) return;
+  const dx = event.touches[0].clientX-pullStart.x;
+  const dy = event.touches[0].clientY-pullStart.y;
+  if (Math.abs(dx)>Math.max(20,Math.abs(dy))) return clearPullRefresh();
+  if (dy<=8) return;
+  event.preventDefault();
+  pullStart.ready = dy>=75;
+  pullCue.textContent = pullStart.ready ? "Відпустіть, щоб оновити" : "Потягніть, щоб оновити";
+  pullCue.hidden = false;
+},{passive:false});
+document.querySelector(".titlebar").addEventListener("touchend",async () => {
+  const ready = pullStart?.ready;
+  clearPullRefresh();
+  if (!ready) return;
+  if (html() !== savedHtml && !await ask({title:"Оновити сторінку?",info:"У поточному документі є незбережені зміни.",ok:"Оновити"})) return;
+  window.location.reload();
+});
+document.querySelector(".titlebar").addEventListener("touchcancel",clearPullRefresh);
 loadDocument([...editor.children],name);
