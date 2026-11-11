@@ -1502,26 +1502,31 @@ function clearPullRefresh() {
 }
 document.querySelector(".titlebar").addEventListener("touchstart",event => {
   if (event.touches.length !== 1 || $("#dialog").open || shareDialog.open) return;
-  pullStart = {x:event.touches[0].clientX,y:event.touches[0].clientY,ready:false};
+  pullStart = {id:event.touches[0].identifier,x:event.touches[0].clientX,y:event.touches[0].clientY,ready:false};
 },{passive:true});
-document.querySelector(".titlebar").addEventListener("touchmove",event => {
-  if (!pullStart || event.touches.length !== 1) return;
-  const dx = event.touches[0].clientX-pullStart.x;
-  const dy = event.touches[0].clientY-pullStart.y;
+document.addEventListener("touchmove",event => {
+  if (!pullStart) return;
+  const touch = [...event.touches].find(item => item.identifier === pullStart.id);
+  if (!touch) return;
+  const dx = touch.clientX-pullStart.x;
+  const dy = touch.clientY-pullStart.y;
   if (Math.abs(dx)>Math.max(20,Math.abs(dy))) return clearPullRefresh();
   if (dy<=8) return;
   event.preventDefault();
+  if (document.activeElement === editor) editor.blur();
   pullStart.ready = dy>=75;
   pullCue.textContent = pullStart.ready ? "Відпустіть, щоб оновити" : "Потягніть, щоб оновити";
   pullCue.hidden = false;
 },{passive:false});
-document.querySelector(".titlebar").addEventListener("touchend",() => {
+document.addEventListener("touchend",event => {
+  if (!pullStart || ![...event.changedTouches].some(item => item.identifier === pullStart.id)) return;
   const ready = pullStart?.ready;
   clearPullRefresh();
   if (!ready) return;
+  event.preventDefault();
   if (!saveDraft()) return;
   window.location.reload();
-});
-document.querySelector(".titlebar").addEventListener("touchcancel",clearPullRefresh);
+},{passive:false});
+document.addEventListener("touchcancel",clearPullRefresh);
 window.addEventListener("pagehide",saveDraft);
 if (new URLSearchParams(location.hash.slice(1)).has("doc") || !restoreDraft()) loadDocument([...editor.children],name);
