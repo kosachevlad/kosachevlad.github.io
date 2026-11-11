@@ -293,8 +293,27 @@ function inline(node) {
 
 const workspace = $("#workspace");
 const rulerBar = $("#ruler").parentElement;
+const rulerCorner = rulerBar.querySelector(".tab-stop");
+let rulerScrollLeft = 0;
+
+function positionVerticalRuler() {
+  const page = editor.firstElementChild;
+  if (!page || !rulerCorner.getClientRects().length) return;
+  const edge = workspace.getBoundingClientRect().left + workspace.clientLeft;
+  const left = Math.max(edge,rulerCorner.getBoundingClientRect().left);
+  const offset = left - page.getBoundingClientRect().left - page.clientLeft + "px";
+  if (editor.style.getPropertyValue("--vertical-ruler-left") !== offset) {
+    editor.style.setProperty("--vertical-ruler-left",offset);
+  }
+}
+
 workspace.addEventListener("scroll",() => {
-  if (rulerBar.scrollLeft !== workspace.scrollLeft) rulerBar.scrollLeft = workspace.scrollLeft;
+  const left = workspace.scrollLeft;
+  if (rulerBar.scrollLeft !== left) rulerBar.scrollLeft = left;
+  if (rulerScrollLeft !== left) {
+    rulerScrollLeft = left;
+    positionVerticalRuler();
+  }
 },{passive:true});
 const resizeFrame = document.createElement("div");
 resizeFrame.className = "object-frame";
@@ -316,8 +335,12 @@ function positionFrame() {
   resizeFrame.hidden = false;
 }
 
-const frameObserver = new ResizeObserver(positionFrame);
+const frameObserver = new ResizeObserver(() => {
+  positionFrame();
+  positionVerticalRuler();
+});
 frameObserver.observe(editor);
+frameObserver.observe(workspace);
 workspace.addEventListener("click",event => {
   if (event.target === workspace) selectObject(null);
 });

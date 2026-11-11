@@ -61,7 +61,7 @@ i svg{width:100%;height:100%}
 .workspace{overflow:auto;flex:1;min-height:0;scrollbar-color:#bababa #ededed;scrollbar-gutter:stable both-edges;padding:14px 0 29px;background:#e6e6e6;position:relative}
 #editor{width:max-content;min-width:100%;outline:none;caret-color:#171717;cursor:text}
 .page{position:relative;width:var(--paper-width);min-height:var(--paper-height);background:#fff;margin:0 auto 19px;padding:var(--margin);border:1px solid #ccc;box-shadow:0 1px 2px #00000014;font-family:Calibri,"Segoe UI",Arial,sans-serif;font-size:11pt;line-height:1.15;overflow-wrap:anywhere}
-.page::before,.page::after{position:absolute;pointer-events:none;left:-27px;width:19px}
+.page::before,.page::after{position:absolute;pointer-events:none;left:var(--vertical-ruler-left,-27px);width:19px}
 .page::before{
   content:"";
   top:0;
