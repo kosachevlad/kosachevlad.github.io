@@ -143,7 +143,7 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
 .dialog-actions .primary{background:#2b579a;color:white;border-color:#234779}
 .dialog-actions .primary:hover{background:#20467f}
 .share-actions{flex-wrap:wrap}
-#share-filename{overflow-wrap:anywhere;unicode-bidi:isolate}
+#viber-filename{overflow-wrap:anywhere;unicode-bidi:isolate}
 .viber-steps{list-style:none;margin:0 0 13px;padding:5px;border-radius:8px;background:#201a2b;color:#fff}
 .viber-steps li{display:grid;grid-template-columns:34px minmax(0,1fr);align-items:center;gap:10px;min-height:48px;padding:6px 8px;border-radius:5px;line-height:1.4}
 .viber-icon{width:32px;height:32px;display:grid;place-items:center;border-radius:50%;color:#fff}
@@ -151,11 +151,27 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
 .viber-plus{background:#6b49ce;font-size:24px;line-height:1}
 .viber-file{background:#007fa7}
 .viber-folder{background:#516079}
-.share-windows{font-size:12px;color:#4d4d4d}
+#save-viber-help{margin-top:12px}
+#save-viber-help summary{cursor:pointer;color:#234b82}
+#save-viber-help p{margin:10px 0 8px}
+#dialog{max-height:calc(100dvh - 24px);overflow:auto}
+#share-status{color:#315c90}
+.share-links{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.share-links button{padding:5px 8px;border-color:#234779;background:#2b579a;color:white}
+.share-links a{color:#234b82}
+.shared-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--blue);color:white}
+.shared-header div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.shared-header span{font-size:11px;color:#e2ebfa}
+.shared-header a,.shared-header button{color:white;border:1px solid #ffffff66;padding:5px 8px;text-decoration:none}
+.shared-header a:hover,.shared-header button:hover{background:#ffffff24}
+#shared-name{overflow-wrap:anywhere}
+.shared-message{background:#fff;margin:16px auto;padding:18px;width:min(490px,calc(100% - 28px));color:#234b82}
+.shared-view .office,.shared-view .ruler-bar{display:none}
+.shared-view #editor{cursor:default}
 @media (prefers-reduced-motion:no-preference){
-  #share-dialog[open] .viber-steps li{animation:viber-step 1.4s ease}
-  #share-dialog[open] .viber-steps li:nth-child(2){animation-delay:1.4s}
-  #share-dialog[open] .viber-steps li:nth-child(3){animation-delay:2.8s}
+  #save-viber-help[open] .viber-steps li{animation:viber-step 1.4s ease}
+  #save-viber-help[open] .viber-steps li:nth-child(2){animation-delay:1.4s}
+  #save-viber-help[open] .viber-steps li:nth-child(3){animation-delay:2.8s}
 }
 @keyframes viber-step{
   0%,100%{background:transparent}

@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=ruler-ticks-1">
+<link rel="stylesheet" href="./style.css?v=cloud-share-1">
 <script defer src="./docx.js?v=list-marker-size-1"></script>
-<script defer src="./editor.js?v=ruler-ticks-1"></script>
+<script defer src="./editor.js?v=cloud-share-1"></script>
+<script defer src="./sharing.js?v=1"></script>
 </head>
 <body>
 <header class="office">
@@ -105,8 +106,13 @@
     <button class="large" data-action="saveAndShare"><i data-icon="share"></i>Зберегти й<br>поділитися</button>
   </div>
 </header>
+<header id="shared-header" class="shared-header" hidden>
+  <div><strong id="shared-name">Спільний документ</strong><span>Лише перегляд</span></div>
+  <div><button type="button" id="shared-edit-copy" hidden>Копіювати</button><a href="./">До редактора</a></div>
+</header>
 <div class="ruler-bar"><span class="tab-stop" aria-hidden="true">∟</span><div class="ruler" aria-hidden="true" id="ruler"></div></div>
 <main class="workspace" id="workspace" aria-label="Робоча область">
+  <p id="shared-message" class="shared-message" role="status" hidden></p>
   <div id="editor" contenteditable="true" role="textbox" aria-label="Документ" aria-multiline="true" spellcheck="true"><section class="page"><p><br></p></section></div>
 </main>
 <footer class="status"><span id="page-status">Сторінка 1 з 1</span><span id="word-status">Слів: 0</span><span class="language">Українська</span><span id="notice" role="status" aria-live="polite"></span><span class="zoom"><span class="desktop-zoom">100%</span><span class="phone-zoom">85%</span></span></footer>
@@ -123,10 +129,10 @@
 <div class="popup" id="shapes-menu" hidden><div class="popup-title">Фігури</div><div class="shape-grid" id="shape-grid"></div><div class="shape-fill"><span>Заливка</span><div id="shape-colors" class="swatches"></div></div></div>
 <input id="file-input" type="file" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden>
 <input id="image-input" type="file" accept="image/*" hidden>
-<dialog id="dialog"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-info"></p><label id="dialog-field"><span id="dialog-label"></span><input id="dialog-input" required></label><div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
-<dialog id="share-dialog" aria-labelledby="share-title" aria-describedby="share-hint">
-  <h2 id="share-title">Як надіслати файл учителю у Viber</h2>
-  <p id="share-hint">Відкрийте чат з учителем у Viber.</p>
+<dialog id="dialog"><form id="dialog-form"><h2 id="dialog-title"></h2><p id="dialog-info"></p><label id="dialog-field"><span id="dialog-label"></span><input id="dialog-input" required></label>
+<details id="save-viber-help" hidden>
+  <summary>Як поділитися збереженим файлом у Viber</summary>
+  <p>Відкрийте чат з учителем у Viber.</p>
   <ol class="viber-steps" role="list">
     <li>
       <span class="viber-icon viber-plus" aria-hidden="true">+</span>
@@ -138,11 +144,24 @@
     </li>
     <li>
       <span class="viber-icon viber-folder" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h7l2 2h9v11H3z"/></svg></span>
-      <span>У папці <strong>«Завантаження»</strong> знайдіть файл <strong id="share-filename" dir="auto"></strong> і надішліть його.</span>
+      <span>У папці <strong>«Завантаження»</strong> знайдіть файл <strong id="viber-filename" dir="auto"></strong> і надішліть його.</span>
     </li>
   </ol>
-  <p class="share-windows">У Провіднику Windows також можна клацнути файл правою кнопкою й вибрати «Поділитися».</p>
+</details>
+<div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
+<dialog id="share-dialog" aria-labelledby="share-title">
+  <h2 id="share-title">Зберегти й поділитися</h2>
+  <p>Кожен, хто отримає посилання, зможе переглядати копію протягом 90 днів.</p>
+  <p id="share-status" role="status"></p>
+  <div id="share-result" hidden>
+    <label>Посилання для перегляду<input id="share-url" readonly></label>
+    <div class="share-links">
+      <button class="primary" type="button" id="share-copy">Копіювати посилання</button>
+      <a id="share-open" target="_blank" rel="noopener noreferrer">Відкрити</a>
+    </div>
+  </div>
   <form method="dialog" class="dialog-actions share-actions">
+    <button type="button" id="share-retry" hidden>Спробувати ще раз</button>
     <button type="submit" autofocus>Закрити</button>
   </form>
 </dialog>

@@ -625,7 +625,7 @@ for (let y = 1; y <= 8; y++) {
     $("#table-grid").append(button);
   }
 }
-function ask({title,info="",label="",value="",ok="OK",type="text"}) {
+function ask({title,info="",label="",value="",ok="OK",type="text",viber=false}) {
   $("#dialog-title").textContent = title;
   $("#dialog-info").textContent = info;
   $("#dialog-info").hidden = !info;
@@ -635,6 +635,10 @@ function ask({title,info="",label="",value="",ok="OK",type="text"}) {
   $("#dialog-input").type = type;
   $("#dialog-input").value = value;
   $("#dialog-ok").textContent = ok;
+  const help = $("#save-viber-help");
+  help.open = false;
+  help.hidden = !viber;
+  if (viber) $("#viber-filename").textContent = docxFilename(value);
   $("#dialog").showModal();
   if (label) {
     $("#dialog-input").focus();
@@ -657,21 +661,15 @@ $("#dialog").addEventListener("cancel",event => {
   finishDialog(null);
 });
 const shareDialog = $("#share-dialog");
+$("#dialog-input").addEventListener("input",event => {
+  if (!$("#save-viber-help").hidden) $("#viber-filename").textContent = docxFilename(event.target.value);
+});
 shareDialog.addEventListener("close",() => {
   if (!shareDialog.open) restore();
 });
-async function shareSavedFile(file) {
-  const data = {files:[file]};
-  try {
-    if (typeof navigator.share === "function" && navigator.canShare?.(data)) {
-      await navigator.share(data);
-      return;
-    }
-  } catch (error) {
-    if (error.name === "AbortError") return;
-  }
-  $("#share-filename").textContent = file.name;
-  shareDialog.showModal();
+function docxFilename(value) {
+  const base = value.trim().replace(/\.docx$/i,"").replace(/[<>:"/\\|?*\x00-\x1f]/g,"_").trim();
+  return (base || "Документ") + ".docx";
 }
 async function confirmReplace() {
   return html() === savedHtml || await ask({title:"Замінити документ?",info:"У поточному документі є незбережені зміни.",ok:"Продовжити"});
@@ -723,7 +721,7 @@ async function clipboard(type) {
   if (document.execCommand(type)) return;
   localClipboard = {text:selection().toString(),rich:savedRange.cloneContents()};
   if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(localClipboard.text).catch(() => {});
-  if (type === "cut") change(() => selection().deleteFromDocument());
+  if (type === "cut" && editor.isContentEditable) change(() => selection().deleteFromDocument());
 }
 function dataUrl(blob) {
   return new Promise((resolve,reject) => {
@@ -772,26 +770,24 @@ async function action(type) {
         if (await confirmReplace()) loadDocument([newPage()],"Документ 1");
         break;
       }
-      case "saveDoc":
-      case "saveAndShare": {
-        const share = type === "saveAndShare";
-        const input = await ask({title:share ? "Зберегти й поділитися" : "Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти"});
+      case "saveAndShare": openShareDialog(); break;
+      case "saveDoc": {
+        const input = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти",viber:true});
         if (!input) break;
-        const filename = input.trim().replace(/\.docx$/i,"").replace(/[<>:"/\\|?*\x00-\x1f]/g,"_").trim() || "Документ";
+        const filename = docxFilename(input);
         const snapshot = html();
         const blob = Docx.write(editor);
-        const file = new File([blob],filename + ".docx",{type:blob.type});
+        const file = new File([blob],filename,{type:blob.type});
         const link = document.createElement("a");
         link.href = URL.createObjectURL(file);
         link.download = file.name;
         link.click();
         setTimeout(() => URL.revokeObjectURL(link.href),30000);
-        name = filename;
+        name = filename.slice(0,-5);
         savedHtml = snapshot;
         update();
         flash("Збережено " + link.download);
-        if (share) await shareSavedFile(file);
-        if (!shareDialog.open) restore();
+        restore();
         break;
       }
       case "imageWeb": {
@@ -875,7 +871,9 @@ sizeInput.addEventListener("keydown",event => {
   }
 });
 document.addEventListener("selectionchange",() => { if (capture()) update(); });
-editor.addEventListener("click",event => selectObject(event.target.closest(".shape,img")));
+editor.addEventListener("click",event => {
+  if (editor.isContentEditable) selectObject(event.target.closest(".shape,img"));
+});
 editor.addEventListener("beforeinput",event => {
   if (["historyUndo","historyRedo"].includes(event.inputType)) {
     event.preventDefault();
@@ -890,6 +888,7 @@ editor.addEventListener("input",event => {
   record(groups.includes(event.inputType) ? event.inputType : "");
 });
 editor.addEventListener("paste",event => {
+  if (!editor.isContentEditable) return;
   event.preventDefault();
   const image = [...event.clipboardData.files].find(file => file.type.startsWith("image/"));
   if (image) return addImage(image,image.name).catch(error => flash(error.message));
@@ -910,6 +909,7 @@ for (const type of ["cut","copy"]) editor.addEventListener(type,event => {
 });
 editor.addEventListener("drop",event => event.preventDefault());
 document.addEventListener("keydown",event => {
+  if (!editor.isContentEditable) return;
   if (event.key === "Escape") {
     if (resizeDrag) finishResize(false);
     else if (activeMenu) closeMenu();
