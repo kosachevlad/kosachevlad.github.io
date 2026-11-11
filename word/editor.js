@@ -30,11 +30,18 @@ const icons = {
 $$("i[data-icon]").forEach(icon => {
   icon.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="' + icons[icon.dataset.icon] + '"/></svg>';
 });
-for (let tick = -8; tick <= 46; tick++) {
+for (let quarter = -12; quarter <= 84; quarter++) {
   const mark = document.createElement("span");
-  mark.className = "tick" + (tick % 2 ? " minor" : "");
-  mark.style.left = "calc(var(--margin) + " + tick * 1.89 + "%)";
-  if (tick % 2 === 0 && tick) mark.innerHTML = "<span>" + Math.abs(tick / 2) + "</span>";
+  mark.className = "tick";
+  if (quarter % 4) {
+    mark.classList.add("minor");
+    if (quarter % 2 === 0) mark.classList.add("half");
+  } else if (quarter) {
+    const label = document.createElement("span");
+    label.textContent = Math.abs(quarter / 4);
+    mark.append(label);
+  }
+  mark.style.left = "calc(" + quarter / 4 + "cm + var(--margin))";
   $("#ruler").append(mark);
 }
 
