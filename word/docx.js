@@ -331,6 +331,7 @@ const Docx = (() => {
         rows.map(row => "<w:tr>"+[...row.cells].map(cell => {
           const content = blocks(cell);
           return '<w:tc><w:tcPr><w:tcW w:w="'+columnWidth*cell.colSpan+'" w:type="dxa"/>'+
+            (cell.tagName === "TH" ? '<w:shd w:fill="E8EEF8"/>' : "")+
             (cell.colSpan>1?tag("gridSpan",cell.colSpan):"")+"</w:tcPr>"+(content||"<w:p/>")+(content.endsWith("</w:tbl>")?"<w:p/>":"")+"</w:tc>";
         }).join("")+"</w:tr>").join("")+"</w:tbl>";
     }
@@ -617,7 +618,9 @@ const Docx = (() => {
           for (const tr of children(node).filter(item => item.localName === "tr")) {
             const row = table.insertRow();
             for (const tc of children(tr).filter(item => item.localName === "tc")) {
-              const cell = row.insertCell();
+              const shaded = value(child(tc,"tcPr"),"shd");
+              const cell = shaded === "E8EEF8" ? document.createElement("th") : document.createElement("td");
+              if (cell.tagName === "TH") row.append(cell);
               cell.colSpan = Math.min(64,+value(child(tc,"tcPr"),"gridSpan")||1);
               await fillBlocks(cell,children(tc));
               if (!cell.firstChild) cell.append(document.createElement("br"));

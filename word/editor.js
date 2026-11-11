@@ -811,6 +811,127 @@ function table(columns,rows) {
   });
 }
 
+const tableTools = document.createElement("div");
+tableTools.className = "table-tools object-tools";
+tableTools.setAttribute("role","group");
+tableTools.setAttribute("aria-label","Дії з таблицею");
+tableTools.hidden = true;
+workspace.append(tableTools);
+let activeCell = null;
+let selectedCells = [];
+function tableButton(label,handler) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.textContent = label;
+  button.title = label;
+  button.addEventListener("pointerdown",event => event.preventDefault());
+  button.addEventListener("click",handler);
+  tableTools.append(button);
+  return button;
+}
+function tableFocus(cell,keepSelection=false) {
+  selectedCells.forEach(item => item.classList.remove("table-selected"));
+  selectedCells = keepSelection ? selectedCells : [cell];
+  selectedCells.forEach(item => item.classList.add("table-selected"));
+  activeCell = cell;
+  positionTableTools();
+}
+function positionTableTools() {
+  if (!editor.isContentEditable || !activeCell?.isConnected) {
+    tableTools.hidden = true;
+    return;
+  }
+  const table = activeCell.closest("table"), box = table.getBoundingClientRect();
+  const area = workspace.getBoundingClientRect();
+  tableTools.hidden = box.bottom < area.top || box.top > area.bottom;
+  if (tableTools.hidden) return;
+  tableTools.style.maxWidth = Math.max(0,workspace.clientWidth-12)+"px";
+  tableTools.style.left = Math.max(area.left+6,Math.min(box.left,area.right-tableTools.offsetWidth-6))+"px";
+  const above = box.top-tableTools.offsetHeight-8;
+  tableTools.style.top = Math.max(area.top+4,Math.min(above >= area.top ? above : box.bottom+8,area.bottom-tableTools.offsetHeight-4))+"px";
+}
+function editTable(operation) {
+  if (!activeCell?.isConnected) return;
+  beforeEdit();
+  operation(activeCell.closest("table"),activeCell);
+  if (!activeCell?.isConnected) {
+    selectedCells.forEach(item => item.classList.remove("table-selected"));
+    selectedCells = [];
+    activeCell = null;
+  }
+  record();
+  positionTableTools();
+}
+const newTableCell = row => row.insertCell().append(blank());
+tableButton("Рядок вище",() => editTable((table,cell) => {
+  const row = table.insertRow(cell.parentElement.rowIndex);
+  for (let i=0;i<table.rows[cell.parentElement.rowIndex+1].cells.length;i++) newTableCell(row);
+}));
+tableButton("Рядок нижче",() => editTable((table,cell) => {
+  const row = table.insertRow(cell.parentElement.rowIndex+1);
+  for (let i=0;i<table.rows[cell.parentElement.rowIndex].cells.length;i++) newTableCell(row);
+}));
+tableButton("Стовпець ліворуч",() => editTable((table,cell) => {
+  const column = cell.cellIndex;
+  for (const row of table.rows) row.insertCell(Math.min(column,row.cells.length)).append(blank());
+}));
+tableButton("Стовпець праворуч",() => editTable((table,cell) => {
+  const column = cell.cellIndex+1;
+  for (const row of table.rows) row.insertCell(Math.min(column,row.cells.length)).append(blank());
+}));
+tableButton("Видалити рядок",() => editTable((table,cell) => {
+  const row = cell.parentElement;
+  if (table.rows.length === 1) table.remove();
+  else row.remove();
+}));
+tableButton("Видалити стовпець",() => editTable((table,cell) => {
+  const column = cell.cellIndex;
+  if (table.rows[0].cells.length === 1) table.remove();
+  else for (const row of table.rows) row.cells[column]?.remove();
+}));
+tableButton("Об’єднати",() => editTable((_table,cell) => {
+  const row = cell.parentElement;
+  const cells = selectedCells.filter(item => item.parentElement === row).sort((a,b) => a.cellIndex-b.cellIndex);
+  if (cells.length < 2 || cells.some((item,index) => item.cellIndex !== cells[0].cellIndex+index)) return;
+  const first = cells[0];
+  for (const item of cells.slice(1)) {
+    for (const child of [...item.childNodes]) first.append(child);
+    first.colSpan += item.colSpan;
+    item.remove();
+  }
+  tableFocus(first);
+}));
+tableButton("Розділити",() => editTable((_table,cell) => {
+  if (cell.colSpan < 2) return;
+  const span = cell.colSpan;
+  cell.colSpan = 1;
+  for (let i=1;i<span;i++) cell.parentElement.insertCell(cell.cellIndex+i).append(blank());
+}));
+tableButton("Заголовок",() => editTable((table,_cell) => {
+  for (const cell of table.rows[0].cells) {
+    const tag = cell.tagName === "TH" ? "td" : "th";
+    const replacement = document.createElement(tag);
+    replacement.colSpan = cell.colSpan;
+    replacement.replaceChildren(...cell.childNodes);
+    cell.replaceWith(replacement);
+  }
+}));
+tableButton("Видалити таблицю",() => editTable(table => table.remove()));
+editor.addEventListener("click",event => {
+  const cell = event.target.closest("td,th");
+  if (!cell || !editor.isContentEditable) return;
+  if (event.shiftKey && activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement) {
+    const cells = [...cell.parentElement.cells];
+    const left = Math.min(cells.indexOf(activeCell),cells.indexOf(cell));
+    const right = Math.max(cells.indexOf(activeCell),cells.indexOf(cell));
+    selectedCells.forEach(item => item.classList.remove("table-selected"));
+    selectedCells = cells.slice(left,right+1);
+    selectedCells.forEach(item => item.classList.add("table-selected"));
+    positionTableTools();
+  } else tableFocus(cell);
+});
+workspace.addEventListener("scroll",positionTableTools,{passive:true});
+
 function closeMenu() {
   if (!activeMenu) return;
   activeMenu.hidden = true;
