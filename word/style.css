@@ -158,7 +158,8 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
 #share-status{color:#315c90}
 .share-links{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:10px}
 .share-links button{padding:5px 8px;border-color:#234779;background:#2b579a;color:white}
-.share-links a{color:#234b82}
+.share-links #share-send{min-width:86px;border-color:#a5a5a5;background:#fff;color:#234b82}
+.share-links #share-send:hover{background:#eaf1fb}
 .shared-header{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 16px;background:var(--blue);color:white}
 .shared-header div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
 .shared-header span{font-size:11px;color:#e2ebfa}

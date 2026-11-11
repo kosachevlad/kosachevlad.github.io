@@ -52,7 +52,6 @@ async function requestShare(url,options = {}) {
 }
 function showShareLink(url) {
   shareUrl.value = url;
-  $("#share-open").href = url;
   shareResult.hidden = false;
   shareStatus.textContent = "Посилання готове.";
 }
@@ -103,6 +102,21 @@ $("#share-copy").addEventListener("click",async () => {
     shareUrl.select();
     shareStatus.textContent = "Скопіюйте виділене посилання вручну.";
   }
+});
+
+$("#share-send").addEventListener("click",async () => {
+  if (!sharedSnapshot || shareResult.hidden) return;
+  if (typeof navigator.share === "function") {
+    try {
+      await navigator.share({title:sharedSnapshot.title,text:"Документ для перегляду",url:sharedSnapshot.url});
+      return;
+    } catch (error) {
+      if (error.name === "AbortError") return;
+    }
+  }
+  shareUrl.focus();
+  shareUrl.select();
+  shareStatus.textContent = "Скопіюйте посилання та надішліть його вручну.";
 });
 
 async function loadSharedDocument(code) {
