@@ -819,6 +819,7 @@ tableTools.hidden = true;
 workspace.append(tableTools);
 let activeCell = null;
 let selectedCells = [];
+let selectingCells = false;
 function tableButton(label,handler) {
   const button = document.createElement("button");
   button.type = "button";
@@ -836,6 +837,11 @@ function tableFocus(cell,keepSelection=false) {
   activeCell = cell;
   positionTableTools();
 }
+const selectCellsButton = tableButton("Вибрати комірки",() => {
+  selectingCells = !selectingCells;
+  selectCellsButton.setAttribute("aria-pressed",String(selectingCells));
+});
+selectCellsButton.setAttribute("aria-pressed","false");
 function positionTableTools() {
   if (!editor.isContentEditable || !activeCell?.isConnected) {
     tableTools.hidden = true;
@@ -900,6 +906,8 @@ tableButton("Об’єднати",() => editTable((_table,cell) => {
     item.remove();
   }
   tableFocus(first);
+  selectingCells = false;
+  selectCellsButton.setAttribute("aria-pressed","false");
 }));
 tableButton("Розділити",() => editTable((_table,cell) => {
   if (cell.colSpan < 2) return;
@@ -936,7 +944,7 @@ tableButton("Видалити таблицю",() => editTable(table => table.rem
 editor.addEventListener("click",event => {
   const cell = event.target.closest("td,th");
   if (!cell || !editor.isContentEditable) return;
-  if (event.shiftKey && activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement) {
+  if ((event.shiftKey || selectingCells) && activeCell?.closest("table") === cell.closest("table") && activeCell.parentElement === cell.parentElement) {
     const cells = [...cell.parentElement.cells];
     const left = Math.min(cells.indexOf(activeCell),cells.indexOf(cell));
     const right = Math.max(cells.indexOf(activeCell),cells.indexOf(cell));
