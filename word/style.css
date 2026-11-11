@@ -58,12 +58,29 @@ i svg{width:100%;height:100%}
 .tick{position:absolute;top:1px;height:14px;width:1px;background:linear-gradient(#8a8a8a 0 3px,transparent 3px 11px,#8a8a8a 11px 14px)}
 .tick.minor{height:4px;top:auto;bottom:1px;background:#a7a7a7}
 .tick span{position:absolute;left:3px;top:0;font-size:9px;line-height:13px}
-.left-indent,.right-indent{position:absolute;z-index:1;background:#fafafa;color:#666;font-size:11px;line-height:13px;left:calc(var(--margin) - 4px)}
-.right-indent{left:auto;right:calc(var(--margin) - 4px);bottom:0}
 .workspace{overflow:auto;flex:1;min-height:0;scrollbar-color:#bababa #ededed;scrollbar-gutter:stable both-edges;padding:14px 0 29px;background:#e6e6e6;position:relative}
 #editor{width:max-content;min-width:100%;outline:none;caret-color:#171717;cursor:text}
 .page{position:relative;width:var(--paper-width);min-height:var(--paper-height);background:#fff;margin:0 auto 19px;padding:var(--margin);border:1px solid #ccc;box-shadow:0 1px 2px #00000014;font-family:Calibri,"Segoe UI",Arial,sans-serif;font-size:11pt;line-height:1.15;overflow-wrap:anywhere}
-.page::before{content:"";position:absolute;pointer-events:none;top:0;left:-26px;width:9px;height:100%;background:repeating-linear-gradient(#b3b3b3 0 1px,transparent 1px 9.45px) right center / 6px 100% no-repeat,#f4f4f4;border:1px solid #ccc}
+.page::before,.page::after{position:absolute;pointer-events:none;left:-27px;width:19px}
+.page::before{
+  content:"";
+  top:0;
+  bottom:0;
+  border:1px solid #c8c8c8;
+  background:
+    repeating-linear-gradient(#8a8a8a 0 1px,transparent 1px 1cm) right top var(--margin) / 6px calc(100% - var(--margin)) no-repeat,
+    repeating-linear-gradient(#b3b3b3 0 1px,transparent 1px .25cm) right top var(--margin) / 3px calc(100% - var(--margin)) no-repeat,
+    linear-gradient(#d3d3d3 var(--margin),#fafafa var(--margin),#fafafa calc(100% - var(--margin)),#d3d3d3 calc(100% - var(--margin)));
+}
+.page::after{
+  content:"1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26";
+  top:calc(var(--margin) + .5cm);
+  color:#505050;
+  font:9px/1cm "Segoe UI",Arial,sans-serif;
+  text-align:center;
+  padding-right:4px;
+  white-space:pre;
+}
 .page p,.page div{margin:0 0 8pt}
 .page td p,.page th p{margin:0}
 .page p:empty:after{content:"\200b"}
@@ -141,7 +158,7 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
   0%,100%{background:transparent}
   18%,78%{background:#4c3779}
 }
-@media(max-width:850px){:root{--paper-width:calc(100vw - 32px);--margin:clamp(22px,9vw,94px);--paper-height:calc((100vw - 32px) * 1.414)}.page::before,.tab-stop{display:none}.ruler{width:calc(100% - 34px)}}
+@media(max-width:850px){:root{--paper-width:calc(100vw - 32px);--margin:clamp(22px,9vw,94px);--paper-height:calc((100vw - 32px) * 1.414)}.page::before,.page::after,.tab-stop{display:none}.ruler{width:calc(100% - 34px)}}
 @media(max-width:475px){.title-spacer,.quick{width:82px}.quick{padding-left:6px}.status{gap:9px;padding:0 6px}.language{display:none}}
 @media (max-width:767px) and (pointer:coarse), (max-width:960px) and (max-height:600px) and (pointer:coarse){
   :root{--paper-width:794px;--margin:94px;--paper-height:1123px;--phone-zoom:.85}
@@ -149,7 +166,7 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
   .ruler-bar{overflow:hidden;padding-inline:12px}
   .ruler,.page{width:var(--paper-width);zoom:var(--phone-zoom)}
   .page{-webkit-text-size-adjust:100%;text-size-adjust:100%}
-  .page::before,.tab-stop{display:none}
+  .page::before,.page::after,.tab-stop{display:none}
   .desktop-zoom{display:none}
   .phone-zoom{display:inline}
 }
