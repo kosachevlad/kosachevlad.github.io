@@ -49,6 +49,38 @@ let savedRange, selectedObject, activeMenu, noticeTimer, resolveDialog, localCli
 let name = "Документ 1";
 let savedHtml;
 let history = [], index = -1, previousType = "", lastChange = 0;
+const draftStorageKey = "word-editor-draft-v1";
+let draftSaveTimer, draftStorageWarning = false;
+function saveDraft() {
+  clearTimeout(draftSaveTimer);
+  if (!editor.isContentEditable || new URLSearchParams(location.hash.slice(1)).has("doc")) return;
+  try {
+    const copy = editor.cloneNode(true);
+    copy.querySelectorAll(".table-selected").forEach(cell => cell.classList.remove("table-selected"));
+    localStorage.setItem(draftStorageKey,JSON.stringify({version:1,name,html:copy.innerHTML,saved:html() === savedHtml}));
+    draftStorageWarning = false;
+  } catch {
+    if (!draftStorageWarning) flash("Не вдалося зберегти чернетку в браузері. Можливо, документ завеликий.");
+    draftStorageWarning = true;
+  }
+}
+function scheduleDraftSave() {
+  clearTimeout(draftSaveTimer);
+  draftSaveTimer = setTimeout(saveDraft,250);
+}
+function restoreDraft() {
+  try {
+    const draft = JSON.parse(localStorage.getItem(draftStorageKey));
+    if (draft?.version !== 1 || typeof draft.name !== "string" || typeof draft.html !== "string") return false;
+    const template = document.createElement("template");
+    template.innerHTML = draft.html;
+    const pages = [...template.content.children].filter(node => node.matches("section.page"));
+    if (!pages.length) return false;
+    loadDocument(pages,draft.name);
+    if (!draft.saved) savedHtml = "";
+    return true;
+  } catch { return false; }
+}
 const selection = () => getSelection();
 const element = node => node?.nodeType === 1 ? node : node?.parentElement;
 const pageAt = () => element(savedRange?.startContainer)?.closest(".page") || editor.firstElementChild;
@@ -141,6 +173,7 @@ function record(type = "") {
   previousType = type;
   lastChange = now;
   update();
+  scheduleDraftSave();
 }
 function change(fn) {
   restore();
@@ -159,6 +192,7 @@ function step(delta) {
   savedRange = fromBookmark(snapshot.mark);
   restore();
   update();
+  scheduleDraftSave();
 }
 function update() {
   const words = editor.innerText.match(/[\p{L}\p{N}]+(?:['’ʼ-][\p{L}\p{N}]+)*/gu) || [];
@@ -1168,6 +1202,7 @@ function loadDocument(pages,filename) {
   $("#workspace").scrollTop = 0;
   record();
   savedHtml = html();
+  scheduleDraftSave();
 }
 function paste(text,rich) {
   if (rich && !rich.querySelector(".page")) {
@@ -1263,6 +1298,7 @@ async function action(type) {
         name = filename.slice(0,-5);
         savedHtml = snapshot;
         update();
+        scheduleDraftSave();
         flash("Збережено " + link.download);
         restore();
         break;
@@ -1485,4 +1521,5 @@ document.querySelector(".titlebar").addEventListener("touchend",async () => {
   window.location.reload();
 });
 document.querySelector(".titlebar").addEventListener("touchcancel",clearPullRefresh);
-loadDocument([...editor.children],name);
+window.addEventListener("pagehide",saveDraft);
+if (new URLSearchParams(location.hash.slice(1)).has("doc") || !restoreDraft()) loadDocument([...editor.children],name);
