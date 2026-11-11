@@ -972,6 +972,7 @@ editor.addEventListener("click",event => {
   } else tableFocus(cell);
 });
 workspace.addEventListener("scroll",positionTableTools,{passive:true});
+window.addEventListener("resize",positionTableTools);
 
 function closeMenu() {
   if (!activeMenu) return;
