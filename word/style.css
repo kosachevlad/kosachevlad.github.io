@@ -68,13 +68,15 @@ i svg{width:100%;height:100%}
   bottom:0;
   border:1px solid #c8c8c8;
   background:
+    repeating-linear-gradient(to top,#8a8a8a 0 1px,transparent 1px 1cm) right top / 6px var(--margin) no-repeat,
+    repeating-linear-gradient(to top,#a7a7a7 0 1px,transparent 1px .25cm) right top / 3px var(--margin) no-repeat,
     repeating-linear-gradient(#8a8a8a 0 1px,transparent 1px 1cm) right top var(--margin) / 6px calc(100% - var(--margin)) no-repeat,
     repeating-linear-gradient(#b3b3b3 0 1px,transparent 1px .25cm) right top var(--margin) / 3px calc(100% - var(--margin)) no-repeat,
     linear-gradient(#d3d3d3 var(--margin),#fafafa var(--margin),#fafafa calc(100% - var(--margin)),#d3d3d3 calc(100% - var(--margin)));
 }
 .page::after{
-  content:"1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26";
-  top:calc(var(--margin) + .5cm);
+  content:"2\A 1\A \A 1\A 2\A 3\A 4\A 5\A 6\A 7\A 8\A 9\A 10\A 11\A 12\A 13\A 14\A 15\A 16\A 17\A 18\A 19\A 20\A 21\A 22\A 23\A 24\A 25\A 26";
+  top:calc(var(--margin) - 2.5cm);
   color:#505050;
   font:9px/1cm "Segoe UI",Arial,sans-serif;
   text-align:center;
