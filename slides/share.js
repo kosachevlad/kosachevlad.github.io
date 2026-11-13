@@ -75,15 +75,29 @@ $('#sendShare').onclick = async () => {
 };
 
 let viewerIndex = 0;
+function updateViewerNext() {
+  $('#viewerNext').disabled = viewerIndex === deck.slides.length - 1 && !hasPendingAnimation($('#sharedCanvas'));
+}
 function renderSharedSlide() {
-  fillCanvas($('#sharedCanvas'),deck.slides[viewerIndex],'show');
-  const transition = deck.slides[viewerIndex].transition;
-  const c = $('#sharedCanvas'); c.classList.remove(...animationClasses); void c.offsetWidth;
-  if (animationClasses.includes(transition)) c.classList.add(transition);
+  renderPlaybackSlide($('#sharedCanvas'), deck.slides[viewerIndex]);
   $('#viewerCount').textContent = `${viewerIndex+1} / ${deck.slides.length}`;
   $('#viewerPrev').disabled = viewerIndex === 0;
-  $('#viewerNext').disabled = viewerIndex === deck.slides.length-1;
+  updateViewerNext();
   active = viewerIndex;
+}
+function navigateViewer(direction) {
+  const nextIndex = viewerIndex + direction;
+  if (nextIndex < 0 || nextIndex >= deck.slides.length) return;
+  viewerIndex = nextIndex;
+  renderSharedSlide();
+}
+function playViewerAnimation() {
+  if (!playPendingAnimation($('#sharedCanvas'))) return false;
+  updateViewerNext();
+  return true;
+}
+function advanceViewer() {
+  if (!playViewerAnimation()) navigateViewer(1);
 }
 async function loadSharedPresentation(id) {
   isSharedView = true;
@@ -101,11 +115,14 @@ async function loadSharedPresentation(id) {
     $('#viewerBody').innerHTML = `<div class="viewer-title"><div><p>СПІЛЬНА ПРЕЗЕНТАЦІЯ</p><h1 id="sharedTitle"></h1></div><button id="viewerPlay" class="primary">▷ Показ слайдів</button></div><div id="sharedCanvas" class="slide-canvas"></div><div class="viewer-navigation"><button id="viewerPrev" class="field" aria-label="Попередній слайд">← Назад</button><span id="viewerCount"></span><button id="viewerNext" class="field" aria-label="Наступний слайд">Далі →</button></div><div class="viewer-bottom"><span>Збережена копія · лише перегляд</span></div>`;
     $('#sharedTitle').textContent = deck.title;
     $('#viewerPlay').onclick = startShow;
-    $('#viewerPrev').onclick = () => { viewerIndex--; renderSharedSlide(); };
-    $('#viewerNext').onclick = () => { viewerIndex++; renderSharedSlide(); };
-    let startX=0; $('#sharedCanvas').ontouchstart = e => startX=e.changedTouches[0].clientX;
-    $('#sharedCanvas').ontouchend = e => {const dx=e.changedTouches[0].clientX-startX;if(Math.abs(dx)<40)return;viewerIndex=Math.max(0,Math.min(deck.slides.length-1,viewerIndex+(dx<0?1:-1)));renderSharedSlide();};
-    document.addEventListener('keydown',e=>{if(!$('#player').hidden||['INPUT','TEXTAREA'].includes(document.activeElement.tagName))return;if(e.key==='ArrowRight'&&viewerIndex<deck.slides.length-1){viewerIndex++;renderSharedSlide()}if(e.key==='ArrowLeft'&&viewerIndex>0){viewerIndex--;renderSharedSlide()}});
+    $('#viewerPrev').onclick = () => navigateViewer(-1);
+    $('#viewerNext').onclick = advanceViewer;
+    bindSlideGestures($('#sharedCanvas'), playViewerAnimation, navigateViewer);
+    document.addEventListener('keydown', event => {
+      if (!$('#player').hidden || ['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) return;
+      if (event.key === 'ArrowRight' && !event.repeat) advanceViewer();
+      if (event.key === 'ArrowLeft') navigateViewer(-1);
+    });
     renderSharedSlide();
   } catch(error) {
     showSharedError(error.message==='expired' ? 'Строк зберігання презентації (90 днів) минув. Попросіть автора створити нове посилання.' : error.message==='not_found' ? 'Презентацію не знайдено або строк зберігання (90 днів) минув. Попросіть автора надіслати нове посилання.' : 'Не вдалося завантажити презентацію. Перевірте інтернет і спробуйте ще раз.');
