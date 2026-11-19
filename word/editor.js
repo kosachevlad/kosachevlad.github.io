@@ -12,6 +12,8 @@ const icons = {
   bullets:"M8 5h13M8 12h13M8 19h13M3 5h1m-1 7h1m-1 7h1",
   numbers:"M9 5h12M9 12h12M9 19h12M3 3h1v4m-2 4h3v1l-3 2h3m-3 3h3v4H2m1-2h2",
   levels:"M7 5h14M10 12h11M13 19h8M3 4v3m2 4h2v1l-2 2h2m1 4h2v3H8",
+  outdent:"M10 5h11M10 9h11M10 13h11M10 17h11M3 11l4-3v6z",
+  indent:"M10 5h11M10 9h11M10 13h11M10 17h11M7 11 3 8v6z",
   left:"M3 5h18M3 9h11M3 13h18M3 17h11M3 21h18",
   center:"M3 5h18M7 9h10M3 13h18M7 17h10M3 21h18",
   right:"M3 5h18M10 9h11M3 13h18M10 17h11M3 21h18",
@@ -314,6 +316,11 @@ function paragraphIndent(out) {
       paragraph.style.marginLeft = next ? next + "pt" : "";
     }
   });
+}
+function adjustIndent(out) {
+  const range = capture() || savedRange;
+  if (element(range?.startContainer)?.closest("li")) listLevel(out);
+  else paragraphIndent(out);
 }
 function multilevel() {
   change(() => {
@@ -1364,8 +1371,8 @@ async function action(type) {
       case "redo": step(1); break;
       case "cut": case "copy": case "paste": await clipboard(type); break;
       case "multilevel": multilevel(); break;
-      case "indentList": listLevel(false); break;
-      case "outdentList": listLevel(true); break;
+      case "indent": adjustIndent(false); break;
+      case "outdent": adjustIndent(true); break;
       case "pageBreak": splitPage(); break;
       case "imageLocal": $("#image-input").click(); break;
       case "openDoc": $("#file-input").click(); break;
@@ -1559,9 +1566,7 @@ document.addEventListener("keydown",event => {
   const editing = event.target === editor || editor.contains(event.target);
   if (editing && event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey) {
     event.preventDefault();
-    const range = capture() || savedRange;
-    if (element(range?.startContainer)?.closest("li")) listLevel(event.shiftKey);
-    else paragraphIndent(event.shiftKey);
+    adjustIndent(event.shiftKey);
     return;
   }
   if ((editing || resizeFrame.contains(event.target) || objectTools.contains(event.target)) && selectedObject && ["Backspace","Delete"].includes(event.key)) {
