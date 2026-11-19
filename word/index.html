@@ -6,7 +6,7 @@
 <title>Документ — вебредактор</title>
 <link rel="stylesheet" href="./style.css?v=table-borders-1">
 <script defer src="./docx.js?v=paragraph-tab-1"></script>
-<script defer src="./editor.js?v=paragraph-tab-1"></script>
+<script defer src="./editor.js?v=indent-buttons-1"></script>
 <script defer src="./sharing.js?v=2"></script>
 </head>
 <body>
@@ -69,7 +69,10 @@
         <div class="row">
           <button data-command="insertUnorderedList" title="Маркери" aria-label="Маркери"><i data-icon="bullets"></i></button>
           <button data-command="insertOrderedList" title="Нумерація" aria-label="Нумерація"><i data-icon="numbers"></i></button>
-          <button data-menu="levels-menu" title="Багаторівневий список" aria-label="Багаторівневий список"><i data-icon="levels"></i><span class="chevron"></span></button>
+          <button data-action="multilevel" title="Почати багаторівневий список" aria-label="Багаторівневий список"><i data-icon="levels"></i></button>
+          <span class="separator"></span>
+          <button data-action="outdent" title="Зменшити відступ (Shift+Tab)" aria-label="Зменшити відступ"><i data-icon="outdent"></i></button>
+          <button data-action="indent" title="Збільшити відступ (Tab)" aria-label="Збільшити відступ"><i data-icon="indent"></i></button>
         </div>
         <div class="row">
           <button data-command="justifyLeft" title="Ліворуч" aria-label="Вирівняти ліворуч"><i data-icon="left"></i></button>
@@ -163,11 +166,6 @@
   <button type="button" data-table-border="inside">Внутрішні межі</button>
   <button type="button" data-table-border="insideH">Внутрішня горизонтальна межа</button>
   <button type="button" data-table-border="insideV">Внутрішня вертикальна межа</button>
-</div>
-<div class="popup simple-menu" id="levels-menu" hidden>
-  <button data-action="multilevel"><i data-icon="levels"></i> Почати багаторівневий список</button>
-  <button data-action="indentList">Збільшити рівень <small>Tab</small></button>
-  <button data-action="outdentList">Зменшити рівень <small>Shift+Tab</small></button>
 </div>
 <div class="popup simple-menu" id="spacing-menu" hidden></div>
 <div class="popup size-menu" id="size-menu" role="listbox" aria-label="Розміри шрифту в пунктах" hidden></div>
