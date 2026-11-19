@@ -309,7 +309,7 @@ const Docx = (() => {
       lists.push({id,levels});
       function flatten(group,depth) {
         const level = Math.min(depth,8);
-        levels[level] ||= {bullet:group.tagName === "UL",multi:group.hasAttribute("data-multilevel"),start:Math.max(1,group.start||1)};
+        levels[level] ||= {bullet:group.tagName === "UL",multi:group.hasAttribute("data-multilevel"),start:Math.max(1,group.start||1),marker:group.dataset.marker,numberStyle:group.dataset.numberStyle,multiStyle:group.dataset.multilevelStyle};
         let output = "";
         for (const item of group.children) {
           if (item.matches("ul,ol")) {
@@ -391,10 +391,29 @@ const Docx = (() => {
     const sections = '<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1440" w:right="1440" w:bottom="1440" w:left="1440" w:header="720" w:footer="720" w:gutter="0"/></w:sectPr>';
     files.set("word/document.xml",xmlHead+'<w:document'+ns+'><w:body>'+content+sections+"</w:body></w:document>");
     const definitions = lists.map(({id,levels}) => '<w:abstractNum w:abstractNumId="'+id+'">'+tag("multiLevelType","multilevel")+
+      tag("name","WebEditor:"+(levels[0].multi ? "multi:"+(levels[0].multiStyle||"decimal") : levels[0].bullet ? "bullet:"+(levels[0].marker||"disc") : "number:"+(levels[0].numberStyle||"decimal")))+
       Array.from({length:levels.length},(_,level) => {
-        const {bullet,multi,start} = levels[level] || levels[0];
-        const label = bullet ? "•" : multi ? Array.from({length:level+1},(_,n) => "%"+(n+1)+".").join("") : "%"+(level+1)+".";
-        return '<w:lvl w:ilvl="'+level+'">'+tag("start",start)+tag("numFmt",bullet?"bullet":"decimal")+tag("lvlText",label)+tag("lvlJc","left")+
+        const {bullet,multi,start,marker,numberStyle,multiStyle} = levels[level] || levels[0];
+        const bulletGlyph = {disc:"●",circle:"○",square:"■",plus:"✚",diamond:"❖",arrow:"➢",check:"✓"};
+        const numberFormats = {decimal:["decimal","."],paren:["decimal",")"],roman:["upperRoman","."],upper:["upperLetter","."],lowerParen:["lowerLetter",")"],lower:["lowerLetter","."],lowerRoman:["lowerRoman","."]};
+        let format = bullet ? "bullet" : "decimal";
+        let label = bullet ? bulletGlyph[marker] || "•" : "%"+(level+1)+".";
+        if (!bullet && multi) {
+          if (multiStyle === "mixed") {
+            format = "bullet";
+            label = ["❖","➢","▪"][Math.min(level,2)];
+          } else if (multiStyle === "paren") {
+            format = ["decimal","lowerLetter","lowerRoman"][Math.min(level,2)];
+            label = "%"+(level+1)+")";
+          } else if (multiStyle === "outline") {
+            format = ["upperRoman","upperLetter","decimal"][Math.min(level,2)];
+            label = "%"+(level+1)+".";
+          } else label = Array.from({length:level+1},(_,n) => "%"+(n+1)+".").join("");
+        } else if (!bullet) {
+          [format] = numberFormats[numberStyle] || numberFormats.decimal;
+          label = "%"+(level+1)+(numberFormats[numberStyle] || numberFormats.decimal)[1];
+        }
+        return '<w:lvl w:ilvl="'+level+'">'+tag("start",start)+tag("numFmt",format)+tag("lvlText",label)+tag("lvlJc","left")+
           '<w:pPr><w:tabs><w:tab w:val="num" w:pos="'+(level+1)*400+'"/></w:tabs><w:ind w:left="'+(level+1)*400+'" w:hanging="360"/></w:pPr></w:lvl>';
       }).join("")+"</w:abstractNum>").join("");
     files.set("word/numbering.xml",xmlHead+'<w:numbering xmlns:w="'+W+'">'+definitions+
@@ -624,10 +643,18 @@ const Docx = (() => {
       const override = children(instance).find(item => item.localName === "lvlOverride" && +attr(item,"ilvl") === level);
       const spec = child(override,"lvl") || children(group).find(item => item.localName === "lvl" && +attr(item,"ilvl") === level);
       const format = value(spec,"numFmt");
+      const label = value(spec,"lvlText");
+      const savedStyle = value(group,"name");
       const formatType = ({lowerLetter:"a",upperLetter:"A",lowerRoman:"i",upperRoman:"I"})[format];
-      const multi = children(group).some(item => (value(item,"lvlText").match(/%[1-9]/g)||[]).length > 1);
+      const multi = savedStyle.startsWith("WebEditor:multi:") || children(group).some(item => (value(item,"lvlText").match(/%[1-9]/g)||[]).length > 1);
+      const glyphs = {"●":"disc","•":"disc","○":"circle","■":"square","✚":"plus","❖":"diamond","➢":"arrow","✓":"check"};
+      const marker = savedStyle.startsWith("WebEditor:bullet:") ? savedStyle.slice(17) : glyphs[label];
+      const suffix = label.endsWith(")") ? ")" : ".";
+      const numberStyle = savedStyle.startsWith("WebEditor:number:") ? savedStyle.slice(17) :
+        ({decimal:suffix === ")" ? "paren" : "decimal",upperRoman:"roman",upperLetter:"upper",lowerLetter:suffix === ")" ? "lowerParen" : "lower",lowerRoman:"lowerRoman"})[format];
+      const multiStyle = savedStyle.startsWith("WebEditor:multi:") ? savedStyle.slice(16) : "decimal";
       const start = +(value(override,"startOverride") || value(spec,"start")) || 1;
-      return {type:format === "bullet" ? "ul" : "ol",formatType,multi,start};
+      return {type:format === "bullet" && multiStyle !== "mixed" ? "ul" : "ol",formatType,multi,start,marker,numberStyle,multiStyle};
     }
     async function fillBlocks(parent,nodes,breakPage=null) {
       let stack = [], currentId;
@@ -688,8 +715,12 @@ const Docx = (() => {
               if (spec.type === "ol") {
                 if (spec.start!==1) list.start = spec.start;
                 if (spec.formatType) list.type = spec.formatType;
-                if (spec.multi) list.dataset.multilevel = "";
+                if (spec.multi) {
+                  list.dataset.multilevel = "";
+                  list.dataset.multilevelStyle = spec.multiStyle;
+                } else if (spec.numberStyle) list.dataset.numberStyle = spec.numberStyle;
               }
+              if (spec.type === "ul" && spec.marker) list.dataset.marker = spec.marker;
               const host = depth ? stack[depth-1].lastElementChild : parent;
               host.append(list);
               stack.push(list);
