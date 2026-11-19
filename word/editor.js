@@ -323,12 +323,72 @@ function adjustIndent(out) {
   else paragraphIndent(out);
 }
 function multilevel() {
+  setListStyle("multilevel","decimal");
+}
+function currentList() {
+  let list = element((capture() || savedRange)?.startContainer)?.closest("ol,ul");
+  while (list?.parentElement?.closest("ol,ul")) list = list.parentElement.closest("ol,ul");
+  return list;
+}
+function convertList(list,tag) {
+  if (list.tagName.toLowerCase() === tag) return list;
+  const replacement = document.createElement(tag);
+  for (const attribute of list.attributes) if (attribute.name !== "type" && attribute.name !== "start") replacement.setAttribute(attribute.name,attribute.value);
+  while (list.firstChild) replacement.append(list.firstChild);
+  list.replaceWith(replacement);
+  return replacement;
+}
+function removeList(list) {
+  const fragment = document.createDocumentFragment();
+  let first = null;
+  function flatten(group) {
+    for (const item of [...group.children]) {
+      if (item.tagName !== "LI") continue;
+      const paragraph = document.createElement("p");
+      for (const child of [...item.childNodes]) {
+        if (child.nodeType === 1 && child.matches("ol,ul")) continue;
+        if (child.nodeType === 1 && child.matches("p,div")) while (child.firstChild) paragraph.append(child.firstChild);
+        else paragraph.append(child);
+      }
+      if (!paragraph.firstChild) paragraph.append(document.createElement("br"));
+      fragment.append(paragraph);
+      first ||= paragraph;
+      for (const nested of [...item.children].filter(child => child.matches("ol,ul"))) flatten(nested);
+    }
+  }
+  flatten(list);
+  list.replaceWith(fragment);
+  if (first) caret(first);
+}
+function setListStyle(kind,style) {
   change(() => {
-    if (!element(savedRange.startContainer)?.closest("ol")) document.execCommand("insertOrderedList");
-    let list = element(capture()?.startContainer)?.closest("ol");
-    if (!list) return;
-    while (list.parentElement.closest("ol")) list = list.parentElement.closest("ol");
-    [list,...list.querySelectorAll("ol")].forEach(level => level.dataset.multilevel = "");
+    let root = currentList();
+    if (style === "none") {
+      if (root) removeList(root);
+      return;
+    }
+    if (!root) {
+      document.execCommand(kind === "bullet" ? "insertUnorderedList" : "insertOrderedList");
+      root = currentList();
+    }
+    if (!root) return;
+    const selected = element(savedRange?.startContainer)?.closest("li");
+    const tag = kind === "bullet" ? "ul" : "ol";
+    root = convertList(root,tag);
+    for (const nested of [...root.querySelectorAll("ol,ul")]) convertList(nested,tag);
+    for (const group of [root,...root.querySelectorAll("ol,ul")]) {
+      delete group.dataset.marker;
+      delete group.dataset.numberStyle;
+      delete group.dataset.multilevel;
+      delete group.dataset.multilevelStyle;
+      if (kind === "bullet") group.dataset.marker = style;
+      else if (kind === "number") group.dataset.numberStyle = style;
+      else {
+        group.dataset.multilevel = "";
+        group.dataset.multilevelStyle = style;
+      }
+    }
+    if (selected?.isConnected) caret(selected);
   });
 }
 function splitPage() {
@@ -1119,6 +1179,12 @@ function showMenu(button,keyboard = false) {
   const rect = (button.closest(".size-control") || button).getBoundingClientRect();
   popup.style.left = Math.max(4,Math.min(rect.left,innerWidth-popup.offsetWidth-4)) + "px";
   popup.style.top = Math.max(4,Math.min(rect.bottom+2,innerHeight-popup.offsetHeight-4)) + "px";
+  if (["bullet-menu","number-menu","multilevel-menu"].includes(popup.id)) {
+    const list = currentList();
+    const attribute = popup.id === "bullet-menu" ? "bulletStyle" : popup.id === "number-menu" ? "numberStyle" : "multilevelStyle";
+    const current = popup.id === "bullet-menu" ? list?.dataset.marker : popup.id === "number-menu" ? list?.dataset.numberStyle : list?.dataset.multilevelStyle;
+    popup.querySelectorAll("button").forEach(option => option.setAttribute("aria-pressed",String(option.dataset[attribute] === current)));
+  }
   if (popup === sizeMenu) {
     const size = Number(sizeInput.value.replace(",","."));
     const current = sizeOptions.find(option => Number(option.dataset.size) === size);
@@ -1463,6 +1529,9 @@ document.addEventListener("click",event => {
   closeMenu();
   if (data.command) exec(data.command);
   else if (data.action) void action(data.action);
+  else if (data.bulletStyle) setListStyle("bullet",data.bulletStyle);
+  else if (data.numberStyle) setListStyle("number",data.numberStyle);
+  else if (data.multilevelStyle) setListStyle("multilevel",data.multilevelStyle);
   else if (data.size) fontSize(data.size);
   else if (data.spacing) change(() => blocks().forEach(block => block.style.lineHeight = data.spacing));
   else if (data.columns) table(+data.columns,+data.rows);
