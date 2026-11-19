@@ -287,6 +287,11 @@ const Docx = (() => {
       }
       const alignment = ({"left":"left","center":"center","right":"right","justify":"both","-webkit-center":"center"})[block.style?.textAlign || block.getAttribute?.("align")];
       if (alignment) properties.push(tag("jc",alignment));
+      const margin = block.style?.marginLeft;
+      if (margin) {
+        const points = parseFloat(margin) * (margin.endsWith("px") ? .75 : 1);
+        if (points > 0) properties.push('<w:ind w:left="'+Math.round(points*20)+'"/>');
+      }
       if (num) properties.push("<w:rPr>"+tag("sz",num.markerSize)+tag("szCs",num.markerSize)+"</w:rPr>");
       const cell = block.nodeType === 1 ? block.closest("td,th") : block.parentElement?.closest("td,th");
       const computedCell = cell && getComputedStyle(cell);
@@ -449,6 +454,8 @@ const Docx = (() => {
     if (!node) return;
     const align = ({left:"left",right:"right",center:"center",both:"justify",start:"left",end:"right",distribute:"justify"})[value(node,"jc")];
     if (align) target.style.textAlign = align;
+    const indent = +attr(child(node,"ind"),"left");
+    if (indent > 0) target.style.marginLeft = indent/20+"pt";
     const spacing = child(node,"spacing");
     const line = +attr(spacing,"line");
     if (line>0) target.style.lineHeight = attr(spacing,"lineRule") && attr(spacing,"lineRule") !== "auto" ? line/20+"pt" : String(line/240);
