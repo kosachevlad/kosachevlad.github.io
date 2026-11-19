@@ -304,6 +304,17 @@ function listLevel(out) {
     caret(item);
   });
 }
+function paragraphIndent(out) {
+  change(() => {
+    for (const block of blocks()) {
+      const paragraph = block.matches("td,th") ? block.querySelector("p,div") : block;
+      if (!paragraph || paragraph.matches("li")) continue;
+      const current = parseFloat(getComputedStyle(paragraph).marginLeft) * .75 || 0;
+      const next = Math.max(0,Math.min(360,Math.round(current + (out ? -36 : 36))));
+      paragraph.style.marginLeft = next ? next + "pt" : "";
+    }
+  });
+}
 function multilevel() {
   change(() => {
     if (!element(savedRange.startContainer)?.closest("ol")) document.execCommand("insertOrderedList");
@@ -1546,20 +1557,12 @@ document.addEventListener("keydown",event => {
   }
   if ($("#dialog").open || shareDialog.open || event.target.matches?.("input,select")) return;
   const editing = event.target === editor || editor.contains(event.target);
-  if (editing && event.key === "Tab") {
-    const parent = element(savedRange?.startContainer);
-    if (parent?.closest("li")) {
-      event.preventDefault();
-      listLevel(event.shiftKey);
-    } else if (parent?.closest("td,th")) {
-      const cell = parent.closest("td,th");
-      const cells = [...cell.closest("table").querySelectorAll("td,th")];
-      const next = cells[cells.indexOf(cell)+(event.shiftKey ? -1 : 1)];
-      if (next) {
-        event.preventDefault();
-        caret(next.querySelector("p") || next);
-      }
-    }
+  if (editing && event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey) {
+    event.preventDefault();
+    const range = capture() || savedRange;
+    if (element(range?.startContainer)?.closest("li")) listLevel(event.shiftKey);
+    else paragraphIndent(event.shiftKey);
+    return;
   }
   if ((editing || resizeFrame.contains(event.target) || objectTools.contains(event.target)) && selectedObject && ["Backspace","Delete"].includes(event.key)) {
     event.preventDefault();
