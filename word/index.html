@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=table-borders-1">
-<script defer src="./docx.js?v=paragraph-tab-1"></script>
-<script defer src="./editor.js?v=indent-buttons-1"></script>
+<link rel="stylesheet" href="./style.css?v=list-galleries-1">
+<script defer src="./docx.js?v=list-galleries-1"></script>
+<script defer src="./editor.js?v=list-galleries-1"></script>
 <script defer src="./sharing.js?v=2"></script>
 </head>
 <body>
@@ -67,9 +67,9 @@
     <section class="group paragraph" aria-label="Абзац">
       <div class="tools rows">
         <div class="row">
-          <button data-command="insertUnorderedList" title="Маркери" aria-label="Маркери"><i data-icon="bullets"></i></button>
-          <button data-command="insertOrderedList" title="Нумерація" aria-label="Нумерація"><i data-icon="numbers"></i></button>
-          <button data-action="multilevel" title="Почати багаторівневий список" aria-label="Багаторівневий список"><i data-icon="levels"></i></button>
+          <span class="list-control"><button data-command="insertUnorderedList" title="Маркери" aria-label="Маркери"><i data-icon="bullets"></i></button><button data-menu="bullet-menu" title="Вибрати маркер" aria-label="Вибрати маркер"><span class="chevron"></span></button></span>
+          <span class="list-control"><button data-command="insertOrderedList" title="Нумерація" aria-label="Нумерація"><i data-icon="numbers"></i></button><button data-menu="number-menu" title="Вибрати нумерацію" aria-label="Вибрати нумерацію"><span class="chevron"></span></button></span>
+          <span class="list-control"><button data-action="multilevel" title="Почати багаторівневий список" aria-label="Багаторівневий список"><i data-icon="levels"></i></button><button data-menu="multilevel-menu" title="Вибрати багаторівневий список" aria-label="Вибрати багаторівневий список"><span class="chevron"></span></button></span>
           <span class="separator"></span>
           <button data-action="outdent" title="Зменшити відступ (Shift+Tab)" aria-label="Зменшити відступ"><i data-icon="outdent"></i></button>
           <button data-action="indent" title="Збільшити відступ (Tab)" aria-label="Збільшити відступ"><i data-icon="indent"></i></button>
@@ -155,6 +155,33 @@
 <footer class="status"><span id="page-status">Сторінка 1 з 1</span><span id="word-status">Слів: 0</span><span class="language">Українська</span><span id="notice" role="status" aria-live="polite"></span><span class="zoom"><span class="desktop-zoom">100%</span><span class="phone-zoom">85%</span></span></footer>
 <div class="popup" id="color-menu" hidden></div>
 <div class="popup" id="highlight-menu" hidden></div>
+<div class="popup list-gallery" id="bullet-menu" hidden><div class="popup-title">Бібліотека маркерів</div><div class="list-gallery-grid bullet-gallery">
+  <button data-bullet-style="none" aria-label="Без маркерів"><span>Немає</span></button>
+  <button data-bullet-style="disc" aria-label="Круглий маркер"><strong>●</strong></button>
+  <button data-bullet-style="circle" aria-label="Порожнє коло"><strong>○</strong></button>
+  <button data-bullet-style="square" aria-label="Квадрат"><strong>■</strong></button>
+  <button data-bullet-style="plus" aria-label="Хрестик"><strong>✚</strong></button>
+  <button data-bullet-style="diamond" aria-label="Ромби"><strong>❖</strong></button>
+  <button data-bullet-style="arrow" aria-label="Стрілка"><strong>➢</strong></button>
+  <button data-bullet-style="check" aria-label="Галочка"><strong>✓</strong></button>
+</div></div>
+<div class="popup list-gallery" id="number-menu" hidden><div class="popup-title">Бібліотека нумерованих списків</div><div class="list-gallery-grid number-gallery">
+  <button data-number-style="none" aria-label="Без нумерації">Немає</button>
+  <button data-number-style="decimal" aria-label="1. 2. 3.">1.<br>2.<br>3.</button>
+  <button data-number-style="paren" aria-label="1) 2) 3)">1)<br>2)<br>3)</button>
+  <button data-number-style="roman" aria-label="I. II. III.">I.<br>II.<br>III.</button>
+  <button data-number-style="upper" aria-label="A. B. C.">A.<br>B.<br>C.</button>
+  <button data-number-style="lowerParen" aria-label="a) b) c)">a)<br>b)<br>c)</button>
+  <button data-number-style="lower" aria-label="a. b. c.">a.<br>b.<br>c.</button>
+  <button data-number-style="lowerRoman" aria-label="i. ii. iii.">i.<br>ii.<br>iii.</button>
+</div></div>
+<div class="popup list-gallery" id="multilevel-menu" hidden><div class="popup-title">Бібліотека багаторівневих списків</div><div class="list-gallery-grid multilevel-gallery">
+  <button data-multilevel-style="none" aria-label="Без списку">Немає</button>
+  <button data-multilevel-style="decimal" aria-label="1. 1.1. 1.1.1.">1.<br>1.1.<br>1.1.1.</button>
+  <button data-multilevel-style="paren" aria-label="1) a) i)">1)<br>a)<br>i)</button>
+  <button data-multilevel-style="outline" aria-label="I. A. 1.">I.<br>A.<br>1.</button>
+  <button data-multilevel-style="mixed" aria-label="Ромб, стрілка, квадрат">❖<br>➢<br>▪</button>
+</div></div>
 <div class="popup simple-menu border-popup" id="border-menu" hidden>
   <button type="button" data-table-border="bottom">Нижня межа</button>
   <button type="button" data-table-border="top">Верхня межа</button>
