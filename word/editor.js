@@ -338,6 +338,14 @@ function convertList(list,tag) {
   list.replaceWith(replacement);
   return replacement;
 }
+function unwrapListContainer(list) {
+  const parent = list.parentElement;
+  if (parent?.matches("p,div") && parent.parentElement?.classList.contains("page") &&
+      [...parent.childNodes].every(node => node === list || node.nodeType === Node.TEXT_NODE && !node.textContent.trim())) {
+    parent.replaceWith(list);
+  }
+  return list;
+}
 function removeList(list) {
   const fragment = document.createDocumentFragment();
   let first = null;
@@ -357,7 +365,10 @@ function removeList(list) {
     }
   }
   flatten(list);
-  list.replaceWith(fragment);
+  const parent = list.parentElement;
+  if (parent?.matches("p,div") && parent.parentElement?.classList.contains("page") &&
+      [...parent.childNodes].every(node => node === list || node.nodeType === Node.TEXT_NODE && !node.textContent.trim())) parent.replaceWith(fragment);
+  else list.replaceWith(fragment);
   if (first) caret(first);
 }
 function setListStyle(kind,style) {
@@ -372,6 +383,7 @@ function setListStyle(kind,style) {
       root = currentList();
     }
     if (!root) return;
+    root = unwrapListContainer(root);
     const selected = element(savedRange?.startContainer)?.closest("li");
     const tag = kind === "bullet" ? "ul" : "ol";
     root = convertList(root,tag);
