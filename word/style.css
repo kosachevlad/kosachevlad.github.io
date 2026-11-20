@@ -1,7 +1,7 @@
 :root{font-family:"Segoe UI",Arial,sans-serif;font-size:13px;color:#202020;--blue:#2b579a;--paper-width:794px;--margin:94px;--paper-height:1123px;--ribbon:#f3f3f3}
 *{box-sizing:border-box}
 [hidden]{display:none!important}
-body{margin:0;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:#e6e6e6}
+body{margin:0;height:100vh;height:var(--app-height,100dvh);display:flex;flex-direction:column;overflow:hidden;background:#e6e6e6}
 button,input,select{font:inherit;color:inherit}
 button{border:1px solid transparent;background:transparent;cursor:pointer;white-space:nowrap}
 button:hover{background:#dedede}
@@ -64,6 +64,9 @@ i svg{width:100%;height:100%}
 .tick.minor.half{height:6px}
 .tick span{position:absolute;left:50%;top:0;transform:translateX(-50%);font-size:9px;line-height:14px}
 .workspace{overflow:auto;flex:1;min-height:0;scrollbar-color:#bababa #ededed;scrollbar-gutter:stable both-edges;padding:14px 0 29px;background:#e6e6e6;position:relative}
+body.keyboard-compact .office .tabs,body.keyboard-compact .office .ribbon,body.keyboard-compact .ruler-bar,body.keyboard-compact .status{display:none}
+body.keyboard-compact .titlebar{height:30px}
+body.keyboard-compact .workspace{padding-block:6px}
 #editor{width:max-content;min-width:100%;outline:none;caret-color:#171717;cursor:text}
 .page{position:relative;width:var(--paper-width);min-height:var(--paper-height);background:#fff;margin:0 auto 19px;padding:var(--margin);border:1px solid #ccc;box-shadow:0 1px 2px #00000014;font-family:Calibri,"Segoe UI",Arial,sans-serif;font-size:11pt;line-height:1.15;overflow-wrap:anywhere}
 .page::before,.page::after{position:absolute;pointer-events:none;left:var(--vertical-ruler-left,-27px);width:17px}
