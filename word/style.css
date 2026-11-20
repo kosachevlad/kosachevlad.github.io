@@ -11,6 +11,9 @@ i[data-icon]{display:inline-flex;width:17px;height:17px;flex-shrink:0;align-item
 i svg{width:100%;height:100%}
 .office{z-index:3;background:var(--blue);flex:none}
 .titlebar{height:34px;color:#fff;display:flex;align-items:center;justify-content:space-between;font-size:12px;user-select:none;touch-action:none}
+.rotate-hint{display:none;align-items:center;justify-content:center;gap:8px;width:100%;font-size:12px;line-height:1.2;text-align:center}
+.rotate-hint svg{width:52px;height:28px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+.rotate-hint circle{fill:currentColor;stroke:none}
 .pull-refresh-cue{position:fixed;z-index:10;top:36px;left:50%;transform:translateX(-50%);padding:6px 12px;border-radius:16px;background:#2b579a;color:#fff;box-shadow:0 2px 8px #0003;pointer-events:none;white-space:nowrap}
 .quick,.title-spacer{width:112px}.quick{display:flex;align-items:center;gap:4px;padding-left:11px}
 .app-icon{background:#fff;color:#245495;width:17px;height:17px;text-align:center;font-size:12px;font-weight:700;line-height:17px;margin-right:5px;border-radius:1px}
@@ -65,7 +68,9 @@ i svg{width:100%;height:100%}
 .tick span{position:absolute;left:50%;top:0;transform:translateX(-50%);font-size:9px;line-height:14px}
 .workspace{overflow:auto;flex:1;min-height:0;scrollbar-color:#bababa #ededed;scrollbar-gutter:stable both-edges;padding:14px 0 29px;background:#e6e6e6;position:relative}
 body.keyboard-compact .office .tabs,body.keyboard-compact .office .ribbon,body.keyboard-compact .ruler-bar,body.keyboard-compact .status{display:none}
-body.keyboard-compact .titlebar{height:30px}
+body.keyboard-compact .titlebar{height:36px;padding:2px 8px}
+body.keyboard-compact .titlebar .quick,body.keyboard-compact .titlebar #title,body.keyboard-compact .titlebar .title-spacer{display:none}
+body.keyboard-compact .rotate-hint{display:flex}
 body.keyboard-compact .workspace{padding-block:6px}
 #editor{width:max-content;min-width:100%;outline:none;caret-color:#171717;cursor:text}
 .page{position:relative;width:var(--paper-width);min-height:var(--paper-height);background:#fff;margin:0 auto 19px;padding:var(--margin);border:1px solid #ccc;box-shadow:0 1px 2px #00000014;font-family:Calibri,"Segoe UI",Arial,sans-serif;font-size:11pt;line-height:1.15;overflow-wrap:anywhere}
