@@ -1661,6 +1661,42 @@ document.addEventListener("keydown",event => {
     void action(command);
   }
 });
+const visibleViewportHeight = () => Math.min(window.innerHeight,window.visualViewport?.height || window.innerHeight);
+let keyboardBaselineHeight = visibleViewportHeight();
+let keyboardBaselineWidth = window.innerWidth;
+let keyboardBaselineLandscape = window.innerWidth > window.innerHeight;
+function keepCaretVisible() {
+  if (!document.body.classList.contains("keyboard-compact")) return;
+  const range = getSelection()?.rangeCount ? getSelection().getRangeAt(0) : null;
+  if (!range?.collapsed || !editor.contains(range.startContainer)) return;
+  const caretBox = range.getBoundingClientRect();
+  const area = workspace.getBoundingClientRect();
+  if (caretBox.bottom > area.bottom-12) workspace.scrollTop += caretBox.bottom-area.bottom+20;
+  else if (caretBox.top < area.top+8) workspace.scrollTop -= area.top-caretBox.top+16;
+}
+function syncKeyboardLayout() {
+  const height = visibleViewportHeight();
+  const focused = document.activeElement === editor || editor.contains(document.activeElement);
+  if (!focused) {
+    keyboardBaselineHeight = height;
+    keyboardBaselineWidth = window.innerWidth;
+    keyboardBaselineLandscape = window.innerWidth > window.innerHeight;
+  } else if (Math.abs(window.innerWidth-keyboardBaselineWidth) > 150) {
+    keyboardBaselineWidth = window.innerWidth;
+    keyboardBaselineLandscape = window.innerWidth > window.innerHeight;
+  }
+  const compact = focused && keyboardBaselineLandscape && window.innerWidth >= 600 &&
+    keyboardBaselineHeight-height > 140;
+  document.body.classList.toggle("keyboard-compact",compact);
+  if (compact) document.body.style.setProperty("--app-height",Math.round(height)+"px");
+  else document.body.style.removeProperty("--app-height");
+  if (compact) requestAnimationFrame(keepCaretVisible);
+}
+window.visualViewport?.addEventListener("resize",syncKeyboardLayout);
+window.addEventListener("resize",syncKeyboardLayout);
+document.addEventListener("focusin",syncKeyboardLayout);
+document.addEventListener("focusout",() => setTimeout(syncKeyboardLayout,0));
+syncKeyboardLayout();
 let pullStart = null;
 const pullCue = $("#pull-refresh-cue");
 function clearPullRefresh() {
