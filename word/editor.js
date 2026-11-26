@@ -618,6 +618,7 @@ wrapSelect.setAttribute("aria-label","Обтікання текстом");
 wrapSelect.title = "Обтікання текстом";
 const wrapModes = [
   ["inline","У тексті"],
+  ["square","Навколо рамки"],
   ["left","Навколо — об’єкт ліворуч"],
   ["right","Навколо — об’єкт праворуч"],
   ["top-bottom","Згори й знизу"],
@@ -631,9 +632,12 @@ wrapSelect.addEventListener("change",() => editObject(object => {
   // Keep that choice on the document node, extended with Word's wrap modes.
   if (wrapSelect.value === "inline") {
     delete object.dataset.wrap;
+    delete object.dataset.wrapSide;
     object.style.removeProperty("--object-layer");
   } else {
     const joinsLayer = !object.dataset.wrap || (object.dataset.wrap === "behind") !== (wrapSelect.value === "behind");
+    if (wrapSelect.value === "square") object.dataset.wrapSide = object.dataset.wrap === "right" ? "right" : object.dataset.wrapSide || "left";
+    else delete object.dataset.wrapSide;
     object.dataset.wrap = wrapSelect.value;
     if (joinsLayer) {
       const peers = layerPeers(object).filter(peer => peer !== object);
@@ -749,7 +753,7 @@ function setObjectAngle(object,angle) {
 }
 function syncWrapBounds(object) {
   const angle = objectAngle(object);
-  if (!angle || !["left","right","top-bottom"].includes(object.dataset.wrap)) {
+  if (!angle || !["left","right","square","top-bottom"].includes(object.dataset.wrap)) {
     object.style.removeProperty("--wrap-x");
     object.style.removeProperty("--wrap-y");
     return;
@@ -943,9 +947,11 @@ function dropObject(drag,event) {
     const target = objectDropRange(x,y,page);
     if (!target) return false;
     target.insertNode(object);
-    if (["left","right"].includes(object.dataset.wrap)) {
+    if (["left","right","square"].includes(object.dataset.wrap)) {
       const box = page.getBoundingClientRect();
-      object.dataset.wrap = x < (box.left + box.right) / 2 ? "left" : "right";
+      const side = x < (box.left + box.right) / 2 ? "left" : "right";
+      if (object.dataset.wrap === "square") object.dataset.wrapSide = side;
+      else object.dataset.wrap = side;
     }
     return true;
   }
