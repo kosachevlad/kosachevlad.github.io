@@ -214,19 +214,19 @@ const Docx = (() => {
       const cx = Math.round(Math.max(1,width)*9525), cy = Math.round(Math.max(1,height)*9525);
       const extent = '<wp:extent cx="'+cx+'" cy="'+cy+'"/>';
       const graphic = '<wp:docPr id="'+id+'" name="'+escape(name)+'" descr="'+escape(alt)+'"/><a:graphic><a:graphicData uri="'+uri+'">'+content(cx,cy,id)+'</a:graphicData></a:graphic>';
-      const square = wrap === "left" || wrap === "right";
+      const square = wrap === "left" || wrap === "right" || wrap === "square";
       const vertical = wrap === "top-bottom";
       if (!square && !vertical && wrap !== "behind" && wrap !== "front") {
         return textRun('<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0">'+extent+graphic+'</wp:inline></w:drawing>');
       }
-      const alignment = vertical ? "center" : wrap === "right" ? "right" : "left";
+      const alignment = vertical ? "center" : wrap === "right" || wrap === "square" && layout.dataset.wrapSide === "right" ? "right" : "left";
       const offset = axis => Math.round((parseFloat(layout.style.getPropertyValue("--object-"+axis)) || 0)*9525);
       const horizontal = square || vertical ? '<wp:align>'+alignment+'</wp:align>' :
         '<wp:posOffset>'+offset("x")+'</wp:posOffset>';
-      const mode = square ? '<wp:wrapSquare wrapText="'+(wrap === "left" ? "right" : "left")+'"/>' :
+      const mode = square ? '<wp:wrapSquare wrapText="'+(wrap === "square" ? "bothSides" : wrap === "left" ? "right" : "left")+'"/>' :
         vertical ? "<wp:wrapTopAndBottom/>" : "<wp:wrapNone/>";
-      return textRun('<w:drawing><wp:anchor distT="'+(vertical ? 57150 : 0)+'" distB="'+(square || vertical ? 57150 : 0)+
-        '" distL="'+(wrap === "right" ? 95250 : 0)+'" distR="'+(wrap === "left" ? 95250 : 0)+
+      return textRun('<w:drawing><wp:anchor distT="'+(vertical || wrap === "square" ? 57150 : 0)+'" distB="'+(square || vertical ? 57150 : 0)+
+        '" distL="'+(["right","square"].includes(wrap) ? 95250 : 0)+'" distR="'+(["left","square"].includes(wrap) ? 95250 : 0)+
         '" simplePos="0" relativeHeight="'+(layers.get(layout) ?? id)+'" behindDoc="'+(wrap === "behind" ? 1 : 0)+
         '" locked="0" layoutInCell="1" allowOverlap="1"><wp:simplePos x="0" y="0"/>'+
         '<wp:positionH relativeFrom="column">'+horizontal+'</wp:positionH>'+
@@ -527,13 +527,14 @@ const Docx = (() => {
       if (square) {
         const text = square.getAttribute("wrapText");
         const align = child(child(anchor,"positionH"),"align")?.textContent;
-        wrap = text === "left" || (text !== "right" && align === "right") ? "right" : "left";
+        wrap = text === "bothSides" ? "square" : text === "left" || (text !== "right" && align === "right") ? "right" : "left";
       } else if (child(anchor,"wrapTopAndBottom")) wrap = "top-bottom";
       else if (child(anchor,"wrapNone")) wrap = /^(1|true)$/.test(anchor.getAttribute("behindDoc")) ? "behind" : "front";
       const styleObject = node => {
         if (Number.isFinite(rotation) && rotation) node.style.rotate = rotation + "deg";
         if (wrap) {
           node.dataset.wrap = wrap;
+          if (wrap === "square") node.dataset.wrapSide = child(child(anchor,"positionH"),"align")?.textContent === "right" ? "right" : "left";
           const height = Number(anchor.getAttribute("relativeHeight"));
           if (Number.isSafeInteger(height) && height > 0) node.style.setProperty("--object-layer",height);
         }
