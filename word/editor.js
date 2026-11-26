@@ -321,7 +321,13 @@ function listLevel(out) {
       }
       sub.append(item);
     }
-    caret(item);
+    const nested = [...item.children].find(child => child.matches("ol,ul"));
+    if (nested) {
+      const range = document.createRange();
+      range.setStartBefore(nested);
+      range.collapse(true);
+      setRange(range);
+    } else caret(item,true);
   });
 }
 function paragraphIndent(out) {
