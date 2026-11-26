@@ -1760,8 +1760,10 @@ $("#font").addEventListener("change",event => {
   exec("fontName",event.target.value);
   fontSelectionRange = null;
 });
-sizeInput.addEventListener("change",event => {
+sizeInput.addEventListener("focus",event => { event.target.dataset.initialValue = event.target.value; });
+sizeInput.addEventListener("blur",event => {
   const value = event.target.value;
+  if (value === event.target.dataset.initialValue) return;
   if (fontSelectionRange && editor.contains(fontSelectionRange.startContainer) && editor.contains(fontSelectionRange.endContainer))
     setRange(fontSelectionRange);
   fontSize(value);
