@@ -1729,7 +1729,13 @@ $("#font").addEventListener("change",event => {
   exec("fontName",event.target.value);
   fontSelectionRange = null;
 });
-sizeInput.addEventListener("change",event => fontSize(event.target.value));
+sizeInput.addEventListener("change",event => {
+  const value = event.target.value;
+  if (fontSelectionRange && editor.contains(fontSelectionRange.startContainer) && editor.contains(fontSelectionRange.endContainer))
+    setRange(fontSelectionRange);
+  fontSize(value);
+  fontSelectionRange = null;
+});
 sizeInput.addEventListener("keydown",event => {
   if (event.key === "Enter") {
     event.preventDefault();
