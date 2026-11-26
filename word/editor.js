@@ -47,9 +47,12 @@ for (let quarter = -12; quarter <= 84; quarter++) {
   $("#ruler").append(mark);
 }
 
-let savedRange, selectedObject, activeMenu, noticeTimer, resolveDialog, localClipboard;
+let savedRange, fontSelectionRange, selectedObject, activeMenu, noticeTimer, resolveDialog, localClipboard;
 let name = "Документ 1";
 let savedHtml;
+let currentFileHandle = null;
+let documentIdentity = crypto.randomUUID?.() || String(Date.now());
+let intentionalNavigation = false;
 let history = [], index = -1, previousType = "", lastChange = 0;
 const draftStorageKey = "word-editor-draft-v1";
 let draftSaveTimer, draftStorageWarning = false;
@@ -59,7 +62,7 @@ function saveDraft() {
   try {
     const copy = editor.cloneNode(true);
     copy.querySelectorAll(".table-selected").forEach(cell => cell.classList.remove("table-selected"));
-    localStorage.setItem(draftStorageKey,JSON.stringify({version:1,name,html:copy.innerHTML,saved:html() === savedHtml}));
+    localStorage.setItem(draftStorageKey,JSON.stringify({version:1,id:documentIdentity,name,html:copy.innerHTML,saved:html() === savedHtml}));
     draftStorageWarning = false;
     return true;
   } catch {
@@ -80,7 +83,7 @@ function restoreDraft() {
     template.innerHTML = draft.html;
     const pages = [...template.content.children].filter(node => node.matches("section.page"));
     if (!pages.length) return false;
-    loadDocument(pages,draft.name);
+    loadDocument(pages,draft.name,{identity:draft.id});
     if (!draft.saved) savedHtml = "";
     return true;
   } catch { return false; }
@@ -98,6 +101,7 @@ function capture() {
   const range = selection().rangeCount && selection().getRangeAt(0);
   if (range && editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
     savedRange = range.cloneRange();
+    if (!range.collapsed) fontSelectionRange = range.cloneRange();
     return savedRange;
   }
 }
@@ -208,7 +212,7 @@ function update() {
   const words = editor.innerText.match(/[\p{L}\p{N}]+(?:['’ʼ-][\p{L}\p{N}]+)*/gu) || [];
   $("#page-status").textContent = "Сторінка " + ([...editor.children].indexOf(pageAt())+1) + " з " + editor.children.length;
   $("#word-status").textContent = "Слів: " + words.length;
-  $("#title").textContent = document.title = name + " — Вебредактор";
+  $("#title").textContent = document.title = name + " — Word 2.0";
   $("[data-action=undo]").disabled = index <= 0;
   $("[data-action=redo]").disabled = index >= history.length-1;
   const parent = element(savedRange?.startContainer);
@@ -224,10 +228,17 @@ function update() {
   const align = ({start:"left",end:"right"})[style.textAlign] || style.textAlign;
   $$("[data-command]").forEach(button => {
     const command = button.dataset.command;
-    const active = command.startsWith("justify") ? align === (command === "justifyFull" ? "justify" : command.slice(7).toLowerCase()) : document.queryCommandState(command);
+    const list = parent.closest("ol,ul");
+    const active = command === "insertOrderedList" ? list?.tagName === "OL" && !list.hasAttribute("data-multilevel") :
+      command === "insertUnorderedList" ? list?.tagName === "UL" :
+      command.startsWith("justify") ? align === (command === "justifyFull" ? "justify" : command.slice(7).toLowerCase()) : document.queryCommandState(command);
     button.classList.toggle("active",active);
     button.setAttribute("aria-pressed",active);
   });
+  const multilevelButton = $('[data-action="multilevel"]');
+  const multilevelActive = !!parent.closest('ol[data-multilevel]');
+  multilevelButton.classList.toggle("active",multilevelActive);
+  multilevelButton.setAttribute("aria-pressed",multilevelActive);
 }
 function flash(message) {
   $("#notice").textContent = message;
@@ -379,8 +390,23 @@ function setListStyle(kind,style) {
       return;
     }
     if (!root) {
-      document.execCommand(kind === "bullet" ? "insertUnorderedList" : "insertOrderedList");
-      root = currentList();
+      const range = selection().getRangeAt(0);
+      const paragraph = element(range.startContainer)?.closest("p");
+      if (paragraph && editor.contains(paragraph) && paragraph.contains(range.endContainer)) {
+        const marker = document.createTextNode("\u200b");
+        if (range.collapsed) range.insertNode(marker);
+        root = document.createElement(kind === "bullet" ? "ul" : "ol");
+        const item = document.createElement("li");
+        item.replaceChildren(...paragraph.childNodes);
+        if (item.textContent === "\u200b") item.querySelector("br")?.remove();
+        root.append(item);
+        paragraph.replaceWith(root);
+        if (range.collapsed) caret(marker,true);
+      } else {
+        document.execCommand(kind === "bullet" ? "insertUnorderedList" : "insertOrderedList");
+        capture();
+        root = currentList();
+      }
     }
     if (!root) return;
     root = unwrapListContainer(root);
@@ -393,6 +419,8 @@ function setListStyle(kind,style) {
       delete group.dataset.numberStyle;
       delete group.dataset.multilevel;
       delete group.dataset.multilevelStyle;
+      group.removeAttribute("type");
+      group.removeAttribute("start");
       if (kind === "bullet") group.dataset.marker = style;
       else if (kind === "number") group.dataset.numberStyle = style;
       else {
@@ -416,6 +444,80 @@ function splitPage() {
     page.after(next);
     caret(next.firstElementChild || next);
     next.scrollIntoView({block:"start"});
+  });
+}
+let lastParagraphInsertAt = 0, lastListInsertAt = 0;
+function listItemAtSelection() {
+  const range = selection().rangeCount && selection().getRangeAt(0);
+  const item = element(range?.startContainer)?.closest("li");
+  return item && editor.contains(item) && item.contains(range.endContainer) ? item : null;
+}
+function insertListItemAtCaret() {
+  if (Date.now() - lastListInsertAt < 80) return;
+  lastListInsertAt = Date.now();
+  capture();
+  change(() => {
+    const item = listItemAtSelection();
+    if (!item) return;
+    const list = item.parentElement;
+    const range = selection().getRangeAt(0);
+    range.deleteContents();
+    const nested = [...item.children].find(child => child.matches("ol,ul"));
+    const content = [...item.childNodes].filter(node => node !== nested);
+    const hasContent = content.some(node => node.textContent?.replace(/\u200b/g,"").trim() || node.nodeType === 1 && node.matches("img,.shape"));
+    if (!hasContent) {
+      if (list.parentElement.closest("li")) {
+        list.parentElement.closest("li").after(item);
+        if (!list.children.length) list.remove();
+        caret(item);
+      } else {
+        const paragraph = document.createElement("p");
+        paragraph.append(document.createElement("br"));
+        list.after(paragraph);
+        item.remove();
+        if (!list.children.length) list.remove();
+        caret(paragraph);
+      }
+      return;
+    }
+    const tail = document.createRange();
+    tail.setStart(range.startContainer,range.startOffset);
+    if (nested) tail.setEndBefore(nested);
+    else tail.setEnd(item,item.childNodes.length);
+    const next = document.createElement("li");
+    next.append(tail.extractContents());
+    if (!next.textContent.replace(/\u200b/g,"").trim() && !next.querySelector("img,.shape")) {
+      const placeholder = document.createTextNode("\u200b");
+      const container = next.firstElementChild?.matches("p,div") ? next.firstElementChild : next;
+      container.replaceChildren(placeholder);
+    }
+    item.after(next);
+    const start = next.firstElementChild?.matches("p,div") ? next.firstElementChild.firstChild : next.firstChild;
+    caret(start || next,start?.nodeType === Node.TEXT_NODE && start.data === "\u200b");
+    requestAnimationFrame(() => {
+      if (next.isConnected && document.activeElement === editor && !next.contains(selection().anchorNode))
+        caret(start || next,start?.nodeType === Node.TEXT_NODE && start.data === "\u200b");
+    });
+  });
+}
+function insertParagraphAtCaret() {
+  if (Date.now() - lastParagraphInsertAt < 80) return;
+  lastParagraphInsertAt = Date.now();
+  capture();
+  change(() => {
+    const range = selection().getRangeAt(0);
+    const paragraph = element(range.startContainer)?.closest("p");
+    if (!paragraph || !editor.contains(paragraph) || !paragraph.contains(range.endContainer)) return;
+    range.deleteContents();
+    const tail = document.createRange();
+    tail.setStart(range.startContainer,range.startOffset);
+    tail.setEnd(paragraph,paragraph.childNodes.length);
+    const next = document.createElement("p");
+    next.append(tail.extractContents());
+    if (!paragraph.textContent && !paragraph.querySelector("img,.shape")) paragraph.replaceChildren(document.createElement("br"));
+    if (!next.hasChildNodes()) next.append(document.createElement("br"));
+    paragraph.after(next);
+    caret(next);
   });
 }
 function inline(node) {
@@ -1189,8 +1291,10 @@ function showMenu(button,keyboard = false) {
   popup.hidden = false;
   button.setAttribute("aria-expanded","true");
   const rect = (button.closest(".size-control") || button).getBoundingClientRect();
+  const viewportHeight = Math.min(innerHeight,window.visualViewport?.height || innerHeight);
+  popup.style.maxHeight = Math.max(100,viewportHeight-8) + "px";
   popup.style.left = Math.max(4,Math.min(rect.left,innerWidth-popup.offsetWidth-4)) + "px";
-  popup.style.top = Math.max(4,Math.min(rect.bottom+2,innerHeight-popup.offsetHeight-4)) + "px";
+  popup.style.top = Math.max(4,Math.min(rect.bottom+2,viewportHeight-popup.offsetHeight-4)) + "px";
   if (["bullet-menu","number-menu","multilevel-menu"].includes(popup.id)) {
     const list = currentList();
     const attribute = popup.id === "bullet-menu" ? "bulletStyle" : popup.id === "number-menu" ? "numberStyle" : "multilevelStyle";
@@ -1307,7 +1411,9 @@ for (let y = 1; y <= 8; y++) {
     $("#table-grid").append(button);
   }
 }
-function ask({title,info="",label="",value="",ok="OK",type="text",viber=false}) {
+let dialogSavePicker = false;
+function ask({title,info="",label="",value="",ok="OK",type="text",viber=false,discard=false,picker=false}) {
+  dialogSavePicker = picker;
   $("#dialog-title").textContent = title;
   $("#dialog-info").textContent = info;
   $("#dialog-info").hidden = !info;
@@ -1317,6 +1423,7 @@ function ask({title,info="",label="",value="",ok="OK",type="text",viber=false}) 
   $("#dialog-input").type = type;
   $("#dialog-input").value = value;
   $("#dialog-ok").textContent = ok;
+  $("#dialog-discard").hidden = !discard;
   const help = $("#save-viber-help");
   help.open = false;
   help.hidden = !viber;
@@ -1333,11 +1440,25 @@ function finishDialog(value) {
   resolveDialog?.(value);
   resolveDialog = null;
 }
-$("#dialog-form").addEventListener("submit",event => {
+$("#dialog-form").addEventListener("submit",async event => {
   event.preventDefault();
-  finishDialog($("#dialog-input").disabled ? true : $("#dialog-input").value);
+  const value = $("#dialog-input").disabled ? true : $("#dialog-input").value;
+  if (dialogSavePicker && window.showSaveFilePicker) {
+    try {
+      const handle = await window.showSaveFilePicker({suggestedName:docxFilename(value),types:[{
+        description:"Документ Word",accept:{"application/vnd.openxmlformats-officedocument.wordprocessingml.document":[".docx"]}
+      }]});
+      finishDialog({filename:handle.name,handle});
+      return;
+    } catch (error) {
+      if (error.name === "AbortError") return;
+      flash("Не вдалося відкрити вибір файлу. Документ буде завантажено.");
+    }
+  }
+  finishDialog(value);
 });
 $("#dialog-cancel").addEventListener("click",() => finishDialog(null));
+$("#dialog-discard").addEventListener("click",() => finishDialog("discard"));
 $("#dialog").addEventListener("cancel",event => {
   event.preventDefault();
   finishDialog(null);
@@ -1353,10 +1474,51 @@ function docxFilename(value) {
   const base = value.trim().replace(/\.docx$/i,"").replace(/[<>:"/\\|?*\x00-\x1f]/g,"_").trim();
   return (base || "Документ") + ".docx";
 }
+async function saveDocument({as=false} = {}) {
+  let filename = docxFilename(name);
+  let handle = as ? null : currentFileHandle;
+  if (as) {
+    const choice = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти",viber:true,picker:true});
+    if (!choice) return false;
+    filename = docxFilename(typeof choice === "string" ? choice : choice.filename);
+    handle = typeof choice === "object" ? choice.handle : null;
+  }
+  const snapshot = html();
+  const blob = Docx.write(editor);
+  if (handle) {
+    const writable = await handle.createWritable();
+    try { await writable.write(blob); await writable.close(); }
+    catch (error) { await writable.abort().catch(() => {}); throw error; }
+    currentFileHandle = handle;
+    savedHtml = snapshot;
+    flash("Збережено " + filename);
+  } else {
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = filename;
+    link.click();
+    setTimeout(() => URL.revokeObjectURL(link.href),30000);
+    flash("Завантажується " + filename + ". Щоб зберегти зміни в початковому файлі, виберіть його під час збереження.");
+  }
+  name = filename.slice(0,-5);
+  update();
+  scheduleDraftSave();
+  restore();
+  return true;
+}
+async function closeDocument() {
+  if (html() !== savedHtml) {
+    const choice = await ask({title:"Зберегти зміни, внесені в документ?",info:name,ok:"Зберегти",discard:true});
+    if (!choice) return;
+    if (choice !== "discard" && !await saveDocument()) return;
+  }
+  intentionalNavigation = true;
+  location.href = "../";
+}
 async function confirmReplace() {
   return html() === savedHtml || await ask({title:"Замінити документ?",info:"У поточному документі є незбережені зміни.",ok:"Продовжити"});
 }
-function loadDocument(pages,filename) {
+function loadDocument(pages,filename,{identity,handle} = {}) {
   selectObject(null);
   activeCell = null;
   selectedCells = [];
@@ -1369,6 +1531,9 @@ function loadDocument(pages,filename) {
   });
   editor.querySelectorAll(".shape[data-wrap]").forEach(syncWrapBounds);
   name = filename;
+  currentFileHandle = handle || null;
+  documentIdentity = identity || crypto.randomUUID?.() || String(Date.now());
+  fontSelectionRange = null;
   savedRange = null;
   history = [];
   index = -1;
@@ -1454,31 +1619,14 @@ async function action(type) {
       case "pageBreak": splitPage(); break;
       case "imageLocal": $("#image-input").click(); break;
       case "openDoc": $("#file-input").click(); break;
+      case "closeDoc": await closeDocument(); break;
       case "newDoc": {
         if (await confirmReplace()) loadDocument([newPage()],"Документ 1");
         break;
       }
       case "saveAndShare": openShareDialog(); break;
-      case "saveDoc": {
-        const input = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти",viber:true});
-        if (!input) break;
-        const filename = docxFilename(input);
-        const snapshot = html();
-        const blob = Docx.write(editor);
-        const file = new File([blob],filename,{type:blob.type});
-        const link = document.createElement("a");
-        link.href = URL.createObjectURL(file);
-        link.download = file.name;
-        link.click();
-        setTimeout(() => URL.revokeObjectURL(link.href),30000);
-        name = filename.slice(0,-5);
-        savedHtml = snapshot;
-        update();
-        scheduleDraftSave();
-        flash("Збережено " + link.download);
-        restore();
-        break;
-      }
+      case "saveDoc": await saveDocument(); break;
+      case "saveAsDoc": await saveDocument({as:true}); break;
       case "imageWeb": {
         const input = await ask({title:"Зображення з інтернету",label:"Пряма адреса зображення (URL)",type:"url",ok:"Вставити"});
         if (!input) break;
@@ -1553,7 +1701,12 @@ document.addEventListener("click",event => {
     $("[data-menu=" + menuId + "] .ink").style.setProperty("--ink",data.color);
   }
 });
-$("#font").addEventListener("change",event => exec("fontName",event.target.value));
+$("#font").addEventListener("change",event => {
+  if (fontSelectionRange && editor.contains(fontSelectionRange.startContainer) && editor.contains(fontSelectionRange.endContainer))
+    setRange(fontSelectionRange);
+  exec("fontName",event.target.value);
+  fontSelectionRange = null;
+});
 sizeInput.addEventListener("change",event => fontSize(event.target.value));
 sizeInput.addEventListener("keydown",event => {
   if (event.key === "Enter") {
@@ -1597,6 +1750,16 @@ editor.addEventListener("pointerdown",event => {
   beginObjectDrag(event,"move");
 });
 editor.addEventListener("beforeinput",event => {
+  if (event.inputType === "insertParagraph" && listItemAtSelection()) {
+    event.preventDefault();
+    insertListItemAtCaret();
+    return;
+  }
+  if (event.inputType === "insertParagraph" && editor.contains(element(selection().anchorNode)?.closest("p"))) {
+    event.preventDefault();
+    insertParagraphAtCaret();
+    return;
+  }
   if (["historyUndo","historyRedo"].includes(event.inputType)) {
     event.preventDefault();
     step(event.inputType === "historyUndo" ? -1 : 1);
@@ -1645,9 +1808,43 @@ document.addEventListener("keydown",event => {
   }
   if ($("#dialog").open || shareDialog.open || event.target.matches?.("input,select")) return;
   const editing = event.target === editor || editor.contains(event.target);
+  if (editing && event.key === "Enter" && !event.shiftKey && !event.altKey && !event.isComposing) {
+    if (listItemAtSelection()) {
+      event.preventDefault();
+      insertListItemAtCaret();
+      return;
+    }
+    if (editor.contains(element(selection().anchorNode)?.closest("p"))) {
+      event.preventDefault();
+      insertParagraphAtCaret();
+      return;
+    }
+  }
   if (editing && event.key === "Tab" && !event.ctrlKey && !event.metaKey && !event.altKey) {
-    event.preventDefault();
-    adjustIndent(event.shiftKey);
+    const parent = element((capture() || savedRange)?.startContainer);
+    const cell = parent?.closest("td,th");
+    if (cell) {
+      event.preventDefault();
+      const cells = [...cell.closest("table").querySelectorAll("td,th")];
+      const next = cells[cells.indexOf(cell)+(event.shiftKey ? -1 : 1)];
+      if (next) caret(next.querySelector("p") || next);
+    } else if (parent?.closest("li") || event.shiftKey) {
+      event.preventDefault();
+      adjustIndent(event.shiftKey);
+    } else {
+      event.preventDefault();
+      change(() => {
+        const range = selection().getRangeAt(0);
+        range.deleteContents();
+        const tab = document.createElement("span");
+        tab.className = "typed-tab";
+        tab.textContent = "\t";
+        range.insertNode(tab);
+        range.setStartAfter(tab);
+        range.collapse(true);
+        setRange(range);
+      });
+    }
     return;
   }
   if ((editing || resizeFrame.contains(event.target) || objectTools.contains(event.target)) && selectedObject && ["Backspace","Delete"].includes(event.key)) {
@@ -1732,4 +1929,10 @@ document.addEventListener("touchend",event => {
 },{passive:false});
 document.addEventListener("touchcancel",clearPullRefresh);
 window.addEventListener("pagehide",saveDraft);
+window.addEventListener("beforeunload",event => {
+  if (!intentionalNavigation && editor.isContentEditable && html() !== savedHtml) event.preventDefault();
+});
+setInterval(() => {
+  if (editor.isContentEditable && html() !== savedHtml) saveDraft();
+},60000);
 if (new URLSearchParams(location.hash.slice(1)).has("doc") || !restoreDraft()) loadDocument([...editor.children],name);
