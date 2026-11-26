@@ -14,6 +14,9 @@ i svg{width:100%;height:100%}
 .rotate-hint{display:none;align-items:center;justify-content:center;gap:8px;width:100%;font-size:12px;line-height:1.2;text-align:center}
 .rotate-hint svg{width:52px;height:28px;flex:none;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
 .rotate-hint circle{fill:currentColor;stroke:none}
+.title-actions{width:175px;height:100%;display:flex;justify-content:flex-end}
+.title-actions button{width:58px;height:100%;color:#fff;font-size:31px;line-height:1}
+.title-actions button:hover{background:#c42b1c}
 .pull-refresh-cue{position:fixed;z-index:10;top:36px;left:50%;transform:translateX(-50%);padding:6px 12px;border-radius:16px;background:#2b579a;color:#fff;box-shadow:0 2px 8px #0003;pointer-events:none;white-space:nowrap}
 .quick,.title-spacer{width:112px}.quick{display:flex;align-items:center;gap:4px;padding-left:11px}
 .app-icon{background:#fff;color:#245495;width:17px;height:17px;text-align:center;font-size:12px;font-weight:700;line-height:17px;margin-right:5px;border-radius:1px}
@@ -69,7 +72,7 @@ i svg{width:100%;height:100%}
 .workspace{overflow:auto;flex:1;min-height:0;scrollbar-color:#bababa #ededed;scrollbar-gutter:stable both-edges;padding:14px 0 29px;background:#e6e6e6;position:relative}
 body.keyboard-compact .office .tabs,body.keyboard-compact .office .ribbon,body.keyboard-compact .ruler-bar,body.keyboard-compact .status{display:none}
 body.keyboard-compact .titlebar{height:36px;padding:2px 8px}
-body.keyboard-compact .titlebar .quick,body.keyboard-compact .titlebar #title,body.keyboard-compact .titlebar .title-spacer{display:none}
+body.keyboard-compact .titlebar .quick,body.keyboard-compact .titlebar #title,body.keyboard-compact .titlebar .title-actions{display:none}
 body.keyboard-compact .rotate-hint{display:flex}
 body.keyboard-compact .workspace{padding-block:6px}
 #editor{width:max-content;min-width:100%;outline:none;caret-color:#171717;cursor:text}
@@ -97,6 +100,7 @@ body.keyboard-compact .workspace{padding-block:6px}
   white-space:pre;
 }
 .page p,.page div{margin:0 0 8pt}
+.page .typed-tab{white-space:pre;tab-size:4}
 .page td p,.page th p{margin:0}
 .page p:empty:after{content:"\200b"}
 .page ul,.page ol{padding-left:25pt;margin:0 0 8pt}
@@ -116,12 +120,15 @@ body.keyboard-compact .workspace{padding-block:6px}
 .page ul[data-marker="check"]>li::marker{content:"✓  "}
 .page ol[data-number-style]{list-style-type:none}
 .page ol[data-number-style="decimal"]>li::marker{content:counter(list-item) ".  "}
-.page ol[data-number-style="paren"]>li::marker{content:counter(list-item) ")  "}
 .page ol[data-number-style="roman"]>li::marker{content:counter(list-item, upper-roman) ".  "}
 .page ol[data-number-style="upper"]>li::marker{content:counter(list-item, upper-alpha) ".  "}
-.page ol[data-number-style="lowerParen"]>li::marker{content:counter(list-item, lower-alpha) ")  "}
 .page ol[data-number-style="lower"]>li::marker{content:counter(list-item, lower-alpha) ".  "}
 .page ol[data-number-style="lowerRoman"]>li::marker{content:counter(list-item, lower-roman) ".  "}
+.page ol[data-number-style="paren"],.page ol[data-number-style="lowerParen"]{list-style:none;counter-reset:list-number}
+.page ol[data-number-style="paren"]>li,.page ol[data-number-style="lowerParen"]>li{counter-increment:list-number;position:relative}
+.page ol[data-number-style="paren"]>li::before,.page ol[data-number-style="lowerParen"]>li::before{position:absolute;right:calc(100% + 6px);white-space:nowrap;font-size:var(--list-marker-size)}
+.page ol[data-number-style="paren"]>li::before{content:counter(list-number) ")"}
+.page ol[data-number-style="lowerParen"]>li::before{content:counter(list-number,lower-alpha) ")"}
 .page ol[data-multilevel][data-multilevel-style="paren"]>li::before{content:counter(item) ")"}
 .page ol[data-multilevel][data-multilevel-style="paren"] ol[data-multilevel]>li::before{content:counter(item,lower-alpha) ")"}
 .page ol[data-multilevel][data-multilevel-style="paren"] ol[data-multilevel] ol[data-multilevel]>li::before{content:counter(item,lower-roman) ")"}
@@ -316,4 +323,51 @@ dialog input{width:100%;border:1px solid #aaa;padding:6px 8px}
   .page::before,.page::after,.tab-stop{display:none}
   .desktop-zoom{display:none}
   .phone-zoom{display:inline}
+}
+/* Larger controls match Word 2.0 while the document keeps its A4 dimensions. */
+.office{font-size:20px}
+.titlebar{height:53px;font-size:19px}
+.quick{width:175px;gap:6px;padding-left:18px}
+.app-icon{width:26px;height:26px;font-size:19px;line-height:26px;margin-right:8px}
+i[data-icon]{width:26px;height:26px}
+.tabs{height:48px}
+.tabs button{padding-inline:24px}
+.ribbon{height:139px}
+.group{min-width:133px;padding:8px 13px 5px}
+.stack button{height:38px;padding:3px 6px;gap:8px}
+.row{height:43px}
+.row button{min-width:39px;height:39px;padding:4px 5px;gap:5px}
+.list-control{height:39px}
+.list-control button:first-child{min-width:38px}
+.list-control button:last-child{min-width:19px;width:19px}
+.row .symbol{font-size:20px}
+.symbol sub,.symbol sup{font-size:14px}
+.font-select select,.font-select input{height:38px;padding:1px 6px}
+.font-select select{width:216px}
+.size-control{width:88px;height:38px}
+.font-select .size-control input{height:36px}
+.row .size-toggle{min-width:31px;height:36px}
+.group-name{font-size:18px;line-height:24px}
+.large{min-width:89px;min-height:93px;padding:5px 8px;line-height:23px}
+.large i{width:39px;height:39px;margin-bottom:6px}
+.file-panel .large{min-width:113px}
+.size-menu{width:88px;font-size:18px;max-height:min(480px,calc(100dvh - 8px))}
+.size-menu button{min-height:30px}
+body.keyboard-compact .titlebar{height:36px;font-size:12px}
+@media(max-width:600px){
+  .office{font-size:16px}
+  .titlebar{height:42px;font-size:14px}
+  .quick,.title-actions{width:92px}
+  .quick{padding-left:6px;gap:2px}
+  .title-actions button{width:42px;font-size:25px}
+  .tabs{height:38px}
+  .tabs button{padding-inline:13px}
+  .ribbon{height:112px}
+  .group{min-width:100px;padding:5px 8px 3px}
+  .row{height:35px}
+  .row button,.list-control{height:33px}
+  .group-name{font-size:13px;line-height:18px}
+  .large{min-height:75px;font-size:14px;line-height:17px}
+  .large i{width:31px;height:31px}
+  body.keyboard-compact .titlebar{height:36px}
 }
