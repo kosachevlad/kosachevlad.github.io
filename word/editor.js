@@ -1448,22 +1448,39 @@ function finishDialog(value) {
   resolveDialog?.(value);
   resolveDialog = null;
 }
-$("#dialog-form").addEventListener("submit",async event => {
-  event.preventDefault();
+let dialogConfirming = false;
+async function confirmDialog() {
+  if (dialogConfirming) return;
+  dialogConfirming = true;
   const value = $("#dialog-input").disabled ? true : $("#dialog-input").value;
+  if (value !== true && !String(value).trim()) {
+    $("#dialog-input").focus();
+    dialogConfirming = false;
+    return;
+  }
   if (dialogSavePicker && window.showSaveFilePicker) {
     try {
       const handle = await window.showSaveFilePicker({suggestedName:docxFilename(value),types:[{
         description:"Документ Word",accept:{"application/vnd.openxmlformats-officedocument.wordprocessingml.document":[".docx"]}
       }]});
       finishDialog({filename:handle.name,handle});
+      dialogConfirming = false;
       return;
     } catch (error) {
-      if (error.name === "AbortError") return;
+      if (error.name === "AbortError") { dialogConfirming = false; return; }
       flash("Не вдалося відкрити вибір файлу. Документ буде завантажено.");
     }
   }
   finishDialog(value);
+  dialogConfirming = false;
+}
+$("#dialog-ok").addEventListener("click",confirmDialog);
+$("#dialog-form").addEventListener("submit",event => {
+  event.preventDefault();
+  void confirmDialog();
+});
+$("#dialog-input").addEventListener("keydown",event => {
+  if (event.key === "Enter") { event.preventDefault(); void confirmDialog(); }
 });
 $("#dialog-cancel").addEventListener("click",() => finishDialog(null));
 $("#dialog-discard").addEventListener("click",() => finishDialog("discard"));
