@@ -188,12 +188,14 @@ body.keyboard-compact .workspace{padding-block:6px}
 .page{display:flow-root;isolation:isolate}
 .page :is(img,.shape)[data-wrap=left]{float:left;margin:var(--wrap-y,0px) calc(10px + var(--wrap-x,0px)) calc(6px + var(--wrap-y,0px)) var(--wrap-x,0px)}
 .page :is(img,.shape)[data-wrap=right]{float:right;margin:var(--wrap-y,0px) var(--wrap-x,0px) calc(6px + var(--wrap-y,0px)) calc(10px + var(--wrap-x,0px))}
+.page :is(img,.shape)[data-wrap=square]{float:left;margin:var(--wrap-y,0px) calc(10px + var(--wrap-x,0px)) calc(6px + var(--wrap-y,0px)) var(--wrap-x,0px)}
+.page :is(img,.shape)[data-wrap=square][data-wrap-side=right]{float:right;margin:var(--wrap-y,0px) var(--wrap-x,0px) calc(6px + var(--wrap-y,0px)) calc(10px + var(--wrap-x,0px))}
 .page :is(img,.shape)[data-wrap=top-bottom]{display:block;clear:both;margin:calc(6px + var(--wrap-y,0px)) auto}
 .page :is(p,div,h1,h2,h3,h4,h5,h6,li,td,th):has(> :is(img,.shape):is([data-wrap=behind],[data-wrap=front])),
 .page :is(p,h1,h2,h3,h4,h5,h6,li):has(:is(img,.shape):is([data-wrap=behind],[data-wrap=front])){position:relative;min-height:1lh}
 .page :is(img,.shape):is([data-wrap=behind],[data-wrap=front]){position:absolute;top:var(--object-y,0px);left:var(--object-x,0px)}
 .page > :is(img,.shape):is([data-wrap=behind],[data-wrap=front]){top:calc(var(--margin) + var(--object-y,0px));left:calc(var(--margin) + var(--object-x,0px))}
-.page :is(img,.shape):is([data-wrap=left],[data-wrap=right],[data-wrap=top-bottom]){position:relative}
+.page :is(img,.shape):is([data-wrap=left],[data-wrap=right],[data-wrap=square],[data-wrap=top-bottom]){position:relative}
 .page :is(img,.shape)[data-wrap]{z-index:calc(1 + var(--object-layer,0))}
 .page :is(img,.shape)[data-wrap=behind]{z-index:calc(-2147483647 + var(--object-layer,0))}
 .object-frame{position:absolute;z-index:2;border:1px solid #2676ff;pointer-events:none}
