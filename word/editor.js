@@ -1419,9 +1419,7 @@ for (let y = 1; y <= 8; y++) {
     $("#table-grid").append(button);
   }
 }
-let dialogSavePicker = false;
 function ask({title,info="",label="",value="",ok="OK",type="text",viber=false,discard=false,picker=false}) {
-  dialogSavePicker = picker;
   $("#dialog-title").textContent = title;
   $("#dialog-info").textContent = info;
   $("#dialog-info").hidden = !info;
@@ -1431,6 +1429,7 @@ function ask({title,info="",label="",value="",ok="OK",type="text",viber=false,di
   $("#dialog-input").type = type;
   $("#dialog-input").value = value;
   $("#dialog-ok").textContent = ok;
+  $("#dialog-choose-file").hidden = !picker || !window.showSaveFilePicker;
   $("#dialog-discard").hidden = !discard;
   const help = $("#save-viber-help");
   help.open = false;
@@ -1458,23 +1457,20 @@ async function confirmDialog() {
     dialogConfirming = false;
     return;
   }
-  if (dialogSavePicker && window.showSaveFilePicker) {
-    try {
-      const handle = await window.showSaveFilePicker({suggestedName:docxFilename(value),types:[{
-        description:"Документ Word",accept:{"application/vnd.openxmlformats-officedocument.wordprocessingml.document":[".docx"]}
-      }]});
-      finishDialog({filename:handle.name,handle});
-      dialogConfirming = false;
-      return;
-    } catch (error) {
-      if (error.name === "AbortError") { dialogConfirming = false; return; }
-      flash("Не вдалося відкрити вибір файлу. Документ буде завантажено.");
-    }
-  }
   finishDialog(value);
   dialogConfirming = false;
 }
 $("#dialog-ok").addEventListener("click",confirmDialog);
+$("#dialog-choose-file").addEventListener("click",async () => {
+  try {
+    const handle = await window.showSaveFilePicker({suggestedName:docxFilename($("#dialog-input").value),types:[{
+      description:"Документ Word",accept:{"application/vnd.openxmlformats-officedocument.wordprocessingml.document":[".docx"]}
+    }]});
+    finishDialog({filename:handle.name,handle});
+  } catch (error) {
+    if (error.name !== "AbortError") flash("Не вдалося вибрати папку. Скористайтеся кнопкою «Зберегти».");
+  }
+});
 $("#dialog-form").addEventListener("submit",event => {
   event.preventDefault();
   void confirmDialog();
