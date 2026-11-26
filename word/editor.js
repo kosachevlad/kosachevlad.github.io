@@ -102,6 +102,7 @@ function capture() {
   if (range && editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
     savedRange = range.cloneRange();
     if (!range.collapsed) fontSelectionRange = range.cloneRange();
+    else if (document.activeElement === editor) fontSelectionRange = null;
     return savedRange;
   }
 }
@@ -1519,7 +1520,7 @@ async function saveDocument({as=false} = {}) {
     link.download = filename;
     link.click();
     setTimeout(() => URL.revokeObjectURL(link.href),30000);
-    flash("Завантажується " + filename + ". Щоб зберегти зміни в початковому файлі, виберіть його під час збереження.");
+    flash("Завантажується " + filename + ". Якщо потрібно оновити початковий файл, замініть його завантаженою копією.");
   }
   name = filename.slice(0,-5);
   update();
