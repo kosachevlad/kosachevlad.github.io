@@ -53,6 +53,31 @@ let savedHtml;
 let currentFileHandle = null;
 let documentIdentity = crypto.randomUUID?.() || String(Date.now());
 let intentionalNavigation = false;
+function fileHandleStore(mode,work) {
+  return new Promise((resolve,reject) => {
+    if (!window.indexedDB) return resolve(null);
+    const request = indexedDB.open("word-editor-files",1);
+    request.onupgradeneeded = () => request.result.createObjectStore("handles");
+    request.onerror = () => reject(request.error);
+    request.onsuccess = () => {
+      const database = request.result;
+      const transaction = database.transaction("handles",mode);
+      const operation = work(transaction.objectStore("handles"));
+      operation.onsuccess = () => resolve(operation.result);
+      operation.onerror = () => reject(operation.error);
+      transaction.oncomplete = () => database.close();
+      transaction.onerror = () => database.close();
+    };
+  });
+}
+function rememberFileHandle(handle) {
+  return fileHandleStore("readwrite",store => store.put(handle,documentIdentity)).catch(() => null);
+}
+function restoreFileHandle(identity) {
+  return fileHandleStore("readonly",store => store.get(identity)).then(handle => {
+    if (identity === documentIdentity && handle) currentFileHandle = handle;
+  }).catch(() => {});
+}
 let history = [], index = -1, previousType = "", lastChange = 0;
 const draftStorageKey = "word-editor-draft-v1";
 let draftSaveTimer, draftStorageWarning = false;
@@ -84,6 +109,7 @@ function restoreDraft() {
     const pages = [...template.content.children].filter(node => node.matches("section.page"));
     if (!pages.length) return false;
     loadDocument(pages,draft.name,{identity:draft.id});
+    if (draft.id) void restoreFileHandle(draft.id);
     if (!draft.saved) savedHtml = "";
     return true;
   } catch { return false; }
@@ -1499,6 +1525,10 @@ function docxFilename(value) {
 async function saveDocument({as=false} = {}) {
   let filename = docxFilename(name);
   let handle = as ? null : currentFileHandle;
+  if (!as && !handle) {
+    await restoreFileHandle(documentIdentity);
+    handle = currentFileHandle;
+  }
   if (as) {
     const choice = await ask({title:"Зберегти як",label:"Ім’я файлу",value:name,ok:"Зберегти",viber:true,picker:true});
     if (!choice) return false;
@@ -1512,6 +1542,7 @@ async function saveDocument({as=false} = {}) {
     try { await writable.write(blob); await writable.close(); }
     catch (error) { await writable.abort().catch(() => {}); throw error; }
     currentFileHandle = handle;
+    await rememberFileHandle(handle);
     savedHtml = snapshot;
     flash("Збережено " + filename);
   } else {
