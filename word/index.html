@@ -3,10 +3,10 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Документ — вебредактор</title>
-<link rel="stylesheet" href="./style.css?v=tablet-keyboard-2">
+<title>Документ — Word 2.0</title>
+<link rel="stylesheet" href="./style.css?v=word2-port-1">
 <script defer src="./docx.js?v=list-galleries-1"></script>
-<script defer src="./editor.js?v=tablet-keyboard-1"></script>
+<script defer src="./editor.js?v=word2-port-1"></script>
 <script defer src="./sharing.js?v=2"></script>
 </head>
 <body>
@@ -17,8 +17,8 @@
       <button data-action="undo" title="Скасувати (Ctrl+Z)" aria-label="Скасувати" disabled><i data-icon="undo"></i></button>
       <button data-action="redo" title="Повторити (Ctrl+Y)" aria-label="Повторити" disabled><i data-icon="redo"></i></button>
     </div>
-    <div id="title">Документ 1 — Вебредактор</div>
-    <span class="title-spacer" aria-hidden="true"></span>
+    <div id="title">Документ 1 — Word 2.0</div>
+    <div class="title-actions"><button type="button" data-action="closeDoc" aria-label="Закрити редактор" title="Закрити редактор">×</button></div>
     <div class="rotate-hint" role="status">
       <svg viewBox="0 0 52 28" aria-hidden="true" focusable="false"><rect x="2" y="9" width="22" height="14" rx="2"/><circle cx="5" cy="16" r=".8"/><path d="M28 20a12 12 0 0 0 10-14m0 0-4 2m4-2 2 4"/><rect x="40" y="2" width="10" height="22" rx="2"/><circle cx="45" cy="21" r=".8"/></svg>
       <span>Поверніть планшет вертикально, щоб побачити всі інструменти.</span>
@@ -111,7 +111,8 @@
   <div class="ribbon file-panel" id="file-panel" role="tabpanel" aria-labelledby="file-tab" hidden>
     <button class="large" data-action="newDoc"><i data-icon="file"></i>Новий<br>документ</button>
     <button class="large" data-action="openDoc"><i data-icon="open"></i>Відкрити</button>
-    <button class="large" data-action="saveDoc"><i data-icon="save"></i>Зберегти як</button>
+    <button class="large" data-action="saveDoc"><i data-icon="save"></i>Зберегти</button>
+    <button class="large" data-action="saveAsDoc"><i data-icon="save"></i>Зберегти як</button>
     <button class="large" data-action="saveAndShare"><i data-icon="share"></i>Зберегти й<br>поділитися</button>
   </div>
   <div class="ribbon table-design-ribbon" id="table-design-panel" role="tabpanel" aria-labelledby="table-design-tab" hidden>
@@ -223,7 +224,7 @@
     </li>
   </ol>
 </details>
-<div class="dialog-actions"><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
+<div class="dialog-actions"><button type="button" id="dialog-discard" hidden>Не зберігати</button><button type="button" id="dialog-cancel">Скасувати</button><button type="submit" class="primary" id="dialog-ok">OK</button></div></form></dialog>
 <dialog id="share-dialog" aria-labelledby="share-title">
   <h2 id="share-title">Зберегти й поділитися</h2>
   <p>Кожен, хто отримає посилання, зможе переглядати копію протягом 90 днів.</p>
