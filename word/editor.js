@@ -453,15 +453,12 @@ function splitPage() {
     next.scrollIntoView({block:"start"});
   });
 }
-let lastParagraphInsertAt = 0, lastListInsertAt = 0;
 function listItemAtSelection() {
   const range = selection().rangeCount && selection().getRangeAt(0);
   const item = element(range?.startContainer)?.closest("li");
   return item && editor.contains(item) && item.contains(range.endContainer) ? item : null;
 }
 function insertListItemAtCaret() {
-  if (Date.now() - lastListInsertAt < 80) return;
-  lastListInsertAt = Date.now();
   capture();
   change(() => {
     const item = listItemAtSelection();
@@ -508,8 +505,6 @@ function insertListItemAtCaret() {
   });
 }
 function insertParagraphAtCaret() {
-  if (Date.now() - lastParagraphInsertAt < 80) return;
-  lastParagraphInsertAt = Date.now();
   capture();
   change(() => {
     const range = selection().getRangeAt(0);
