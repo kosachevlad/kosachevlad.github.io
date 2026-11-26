@@ -253,6 +253,13 @@ function blocks() {
   );
 }
 function exec(command,value) {
+  if (command === "insertOrderedList" || command === "insertUnorderedList") {
+    const bullet = command === "insertUnorderedList";
+    const list = currentList();
+    setListStyle(bullet ? "bullet" : "number",
+      list?.tagName === (bullet ? "UL" : "OL") && !list.hasAttribute("data-multilevel") ? "none" : bullet ? "disc" : "decimal");
+    return;
+  }
   change(() => {
     if (command.startsWith("justify")) {
       const align = command === "justifyFull" ? "justify" : command.slice(7).toLowerCase();
